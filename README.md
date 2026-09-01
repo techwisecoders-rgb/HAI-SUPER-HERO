@@ -171,3 +171,5 @@ middleware.ts                   protects /admin/*
 2. Import into Vercel.
 3. Add the environment variables from `.env.example` to the Vercel project settings.
 4. Deploy. The `middleware.ts` runs on the edge and gates `/admin/*` correctly.
+#   H A I - S U P E R - H E R O  
+ 
