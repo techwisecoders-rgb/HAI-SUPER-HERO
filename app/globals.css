@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ----------------------------------------------------------------
+   HAI SUPER HERO global styles
+   The original app's `<style>` block was inline. The body is the
+   plain dark slate (`#2b3540`) of the original; each page provides
+   its own background.
+   ---------------------------------------------------------------- */
+
+:root {
+  color-scheme: dark;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #2b3540;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button { font-family: inherit; }
+
+/* The original app's `<style>` used a dvh mobile keyboard trick. */
+@supports (height: 100dvh) {
+  .h-dvh { height: 100dvh; }
+  .min-h-dvh { min-height: 100dvh; }
+}
+
+/* ----------------------------------------------------------------
+   Auth panel styles (used by /auth and the AuthPanel component).
+   These are global (not CSS Modules) so the AuthPanel component,
+   which uses plain class names, can pick them up.
+   ---------------------------------------------------------------- */
+.authPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: #e5edf5;
+}
+.authHeader { display: flex; flex-direction: column; gap: 4px; }
+.authTitle { color: #ffffff; font-size: 20px; font-weight: 600; }
+.authSubtitle { color: #8b95a1; font-size: 13px; }
+
+.authTabs {
+  display: flex; gap: 6px;
+  background: #0f1a25;
+  border-radius: 12px;
+  padding: 4px;
+  border: 1px solid #1f2c39;
+}
+.authTab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #8b95a1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.18s ease;
+}
+.authTab:hover { color: #ffffff; }
+.authTabActive { background: #00bcd4; color: #06222b; }
+
+.authForm { display: flex; flex-direction: column; gap: 10px; }
+.authLabel {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 12px; color: #8b95a1;
+}
+.authLabel > span { font-weight: 500; }
+.authInput {
+  background: #0f1a25;
+  border: 1px solid #1f2c39;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.authInput:focus { border-color: #00bcd4; }
+.authInput::placeholder { color: #4a5560; }
+.authOtpInput {
+  text-align: center;
+  letter-spacing: 6px;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.authErr {
+  background: #3a1f24;
+  color: #ffb4b4;
+  border: 1px solid #6b2a30;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.authOtpHint {
+  background: #0f1a25;
+  border: 1px solid #1f2c39;
+  color: #c0d1de;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.authPrimaryBtn {
+  background: linear-gradient(135deg, #00bcd4, #00d9a0);
+  color: #06222b;
+  border: none;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+.authPrimaryBtn:hover { filter: brightness(1.05); }
+.authPrimaryBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+.authSecondaryBtn {
+  background: transparent;
+  border: 1px solid #1f2c39;
+  color: #8b95a1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+}
+.authSecondaryBtn:hover { color: #ffffff; border-color: #00bcd4; }
+.authLoggedIn {
+  background: #0f1a25;
+  border: 1px solid #1f2c39;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.authLoggedInLabel {
+  font-size: 11px; color: #8b95a1;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.authLoggedInEmail {
+  font-size: 15px; color: #ffffff; font-weight: 600;
+  word-break: break-all;
+}
+.authLoggedInHint { font-size: 12px; color: #8b95a1; line-height: 1.4; }
+.authLogoutBtn {
+  background: transparent;
+  border: 1px solid #6b2a30;
+  color: #ffb4b4;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 6px;
+}
+.authLogoutBtn:hover { background: #3a1f24; }

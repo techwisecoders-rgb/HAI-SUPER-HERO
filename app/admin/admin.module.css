@@ -1,0 +1,174 @@
+/* /admin/admin.module.css */
+
+.shell {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: 100dvh;
+}
+@media (max-width: 800px) {
+  .shell { grid-template-columns: 1fr; }
+}
+
+.sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(11, 11, 18, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+.sidebarHeader {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.sidebarTitle {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.18em;
+  color: #ffd166;
+  font-weight: 700;
+}
+.search {
+  margin: 0.75rem 1rem;
+  height: 36px;
+  padding: 0 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f3f3f7;
+  outline: none;
+  font-size: 0.9rem;
+}
+.list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 0.5rem 1rem;
+}
+.item {
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.6rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #f3f3f7;
+  cursor: pointer;
+  margin-bottom: 0.25rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.item:hover { background: rgba(255, 255, 255, 0.05); }
+.itemActive { background: rgba(122, 92, 255, 0.18); border-color: rgba(122, 92, 255, 0.4); }
+.itemTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0.2rem;
+}
+.itemName { font-weight: 600; color: #f3f3f7; font-size: 0.95rem; }
+.unread { width: 8px; height: 8px; border-radius: 50%; background: #ff6b9d; flex: 0 0 auto; }
+.itemPreview { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.itemActiveTag {
+  margin-top: 4px;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: #ffd166;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+.mainHeader {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+}
+.mainTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f3f3f7;
+  letter-spacing: 0.02em;
+}
+.mainSub {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 2px;
+}
+.thread {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.composer {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.75rem 1rem calc(env(safe-area-inset-bottom, 0) + 0.75rem);
+  display: flex;
+  gap: 0.6rem;
+  background: rgba(15, 18, 28, 0.95);
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  box-shadow: 0 -4px 20px -8px rgba(0, 0, 0, 0.5);
+}
+.composerInput {
+  flex: 1 1 auto;
+  height: 44px;
+  border-radius: 9999px;
+  padding: 0 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f3f3f7;
+  outline: none;
+  font-size: 0.95rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.composerInput:focus { border-color: #7a5cff; background: rgba(255,255,255,0.09); }
+.composerInput:disabled { opacity: 0.55; cursor: not-allowed; }
+.composerSend {
+  height: 44px;
+  padding: 0 1.3rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #7a5cff, #ff6b9d);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px -6px rgba(122, 92, 255, 0.6);
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+.composerSend:hover:not(:disabled) { filter: brightness(1.1); }
+.composerSend:active:not(:disabled) { transform: scale(0.97); }
+.composerSend:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.empty {
+  margin: auto;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.signOut {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+.signOut:hover { background: rgba(255, 255, 255, 0.06); }

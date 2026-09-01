@@ -1,0 +1,44 @@
+/* /auth/page.module.css — Layout for the /auth page. The actual auth
+   form styling lives in app/globals.css under .auth* selectors so the
+   component can stay self-contained. */
+
+.shell {
+  min-height: 100dvh;
+  background: linear-gradient(135deg, #0f1a25 0%, #1e2932 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 18px;
+  color: #ffffff;
+}
+.brandTitle { font-size: 28px; font-weight: 700; margin: 0; }
+.brandSub { color: #8b95a1; font-size: 14px; margin: 4px 0 0; }
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: #14202b;
+  border: 1px solid #1f2c39;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.footer {
+  margin-top: 16px;
+  text-align: center;
+  color: #8b95a1;
+  font-size: 12px;
+}
+.footerLink {
+  color: #00bcd4;
+  cursor: pointer;
+  text-decoration: underline;
+}
