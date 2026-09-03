@@ -1,0 +1,95 @@
+/* OtpGate.module.css — small reusable OTP verification panel. */
+
+.gate {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(15, 30, 50, 0.6);
+  border: 1.5px solid rgba(0, 229, 255, 0.35);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-top: 16px;
+  animation: gateFadeIn 0.25s ease;
+}
+
+@keyframes gateFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hint {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.hint strong { color: #ffffff; }
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.otpInput {
+  background: #0f1a25;
+  border: 1px solid #1f2c39;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  text-align: center;
+  padding: 14px 16px;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.15s ease;
+  font-family: inherit;
+}
+.otpInput:focus { border-color: #00bcd4; }
+.otpInput:disabled { opacity: 0.5; }
+.otpInput::placeholder { color: #4a5560; letter-spacing: 6px; }
+
+.primary {
+  background: linear-gradient(135deg, #00bcd4, #00d9a0);
+  color: #06222b;
+  border: none;
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+.primary:hover:not(:disabled) { filter: brightness(1.05); }
+.primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.secondary {
+  background: transparent;
+  border: 1px solid #1f2c39;
+  color: #8b95a1;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+}
+.secondary:hover:not(:disabled) { color: #ffffff; border-color: #00bcd4; }
+.secondary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.err {
+  background: #3a1f24;
+  color: #ffb4b4;
+  border: 1px solid #6b2a30;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.info {
+  background: rgba(0, 188, 212, 0.12);
+  color: #62ecff;
+  border: 1px solid rgba(0, 188, 212, 0.4);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}

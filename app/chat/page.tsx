@@ -1,15 +1,17 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useKeyboardAwareInput } from "@/lib/use-keyboard-aware-input";
 import { SESSION_COOKIE, APP_USER_COOKIE, APP_EMAIL_COOKIE } from "@/lib/cookies";
 import { useAuth, notifyAuthChanged } from "@/lib/use-auth";
 import { CONTACT } from "@/content";
-import type { Message } from "@/types";
+import type { Message, ContactSettings } from "@/types";
+import { ThinkingIndicator } from "@/components/ThinkingIndicator";
+import { HeaderMenu } from "@/components/HeaderMenu";
 import styles from "./page.module.css";
 
 function formatTime(d: Date | string): string {
@@ -62,14 +64,68 @@ async function ensureServerSession(): Promise<string | null> {
 }
 
 export default function ChatPage() {
+  return (
+    <Suspense fallback={<main className={styles.shell} />}>
+      <ChatInner />
+    </Suspense>
+  );
+}
+
+function ChatInner() {
   const router = useRouter();
+  const params = useSearchParams();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [contact, setContact] = useState<ContactSettings>({
+    phone: CONTACT.phone,
+    whatsapp: CONTACT.whatsapp,
+  });
+  const [unread, setUnread] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
   const barRef = useKeyboardAwareInput<HTMLDivElement>();
   const { email: authEmail } = useAuth();
+
+  // Optional URL params: ?new=1 → wipe local list on mount;
+  // ?focus=search → auto-trigger the in-chat search handler.
+  useEffect(() => {
+    if (params.get("new") === "1") setMessages([]);
+  }, [params]);
+
+  // Fetch admin-editable contact numbers (phone + WhatsApp). Falls back
+  // to the bundled CONTACT constants when the API/DB is unavailable.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/contact")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d?.contact) return;
+        setContact({
+          phone: d.contact.phone ?? CONTACT.phone,
+          whatsapp: d.contact.whatsapp ?? CONTACT.whatsapp,
+        });
+      })
+      .catch(() => { /* keep defaults */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Apply light / dark theme to the chat shell + scroll container.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const shell = document.querySelector(`.${styles.shell}`) as HTMLElement | null;
+    const list  = document.querySelector(`.${styles.list}`)  as HTMLElement | null;
+    if (!shell || !list) return;
+    if (theme === "dark") {
+      shell.style.background = "#1e2932";
+      list.style.background  = "#2b3540";
+    } else {
+      shell.style.background = "#f0f4f8";
+      list.style.background  = "#e8eef4";
+    }
+  }, [theme, messages.length]);
 
   // Logout the current user. Server-side clears all 3 cookies via
   // /api/auth/logout; we also remove the local js-cookie copies and
@@ -107,6 +163,10 @@ export default function ChatPage() {
       if (r.ok && mounted) {
         const data = (await r.json()) as { messages: Message[] };
         setMessages(data.messages ?? []);
+        // If the most recent message is a real admin reply, the
+        // "thinking" indicator should be hidden.
+        const last = (data.messages ?? []).at(-1);
+        if (last && last.sender_type === "admin") setThinking(false);
       }
     };
 
@@ -129,9 +189,13 @@ export default function ChatPage() {
         },
         (payload) => {
           const m = payload.new as Message;
-          setMessages((prev) =>
-            prev.some((x) => x.id === m.id) ? prev : [...prev, m]
-          );
+          setMessages((prev) => {
+            if (prev.some((x) => x.id === m.id)) return prev;
+            return [...prev, m];
+          });
+          // A real admin reply stops the "thinking" indicator. An
+          // "auto" reply does NOT — a human reply can still follow.
+          if (m.sender_type === "admin") setThinking(false);
         },
       )
       .subscribe();
@@ -196,50 +260,94 @@ export default function ChatPage() {
       if (saved) {
         setMessages((prev) => (prev.some((x) => x.id === saved.id) ? prev : [...prev, saved]));
       }
+      // Show the "thinking" indicator until either a real admin reply
+      // arrives (sender_type === "admin" hides it) or the user starts
+      // a new chat. An auto reply does NOT hide it.
+      setThinking(true);
     } finally { setSending(false); }
   }, [draft, sessionId, sending]);
+
+  // "New chat": clear local list + hide the thinking indicator.
+  const startNewChat = useCallback(() => {
+    setMessages([]);
+    setThinking(false);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => (t === "dark" ? "light" : "dark"));
+  }, []);
+
+  // After sending a message, show the notification badge on the ⋮ menu
+  // icon. (HeaderMenu clears it the first time the user opens it.)
+  useEffect(() => {
+    if (thinking) setUnread(true);
+  }, [thinking]);
+
+  // Clear the badge when the user lands on the chat with no pending
+  // messages (so the badge doesn't stay stuck from a previous visit).
+  useEffect(() => {
+    if (!thinking && messages.length === 0) setUnread(false);
+  }, [thinking, messages.length]);
 
   return (
     <div className={styles.shell}>
       <div className={styles.top}>
         <header className={styles.header}>
           <div className={styles.headerContent}>
-            {/* Top-left: Login button (or signed-in badge + Logout when authed). */}
-            {authEmail ? (
-              <div className={styles.headerAuthGroup}>
-                <div
-                  className={styles.headerUser}
-                  title={authEmail}
-                  aria-label={`Signed in as ${authEmail}`}
-                >
-                  <span className={styles.headerUserDot} aria-hidden />
-                  <span className={styles.headerUserLabel}>{authEmail}</span>
-                </div>
-                <button
-                  type="button"
-                  className={styles.headerLogoutBtn}
-                  onClick={() => void logout()}
-                  aria-label="Log out"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
+            {/* Top-left: Avatar button (opens the lightweight quick-profile
+                page). When the user is OTP-authed, also show the email +
+                Logout button next to it. The avatar is always available. */}
+            <div className={styles.headerAuthGroup}>
               <button
                 type="button"
-                className={styles.headerLoginBtn}
-                onClick={() => router.push("/auth")}
-                aria-label="Login or register"
+                className={styles.avatarBtn}
+                aria-label="Open quick profile"
+                onClick={() => router.push("/profile")}
+                title="Quick profile"
               >
-                Login
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
+                </svg>
               </button>
-            )}
+              {authEmail ? (
+                <>
+                  <div
+                    className={styles.headerUser}
+                    title={authEmail}
+                    aria-label={`Signed in as ${authEmail}`}
+                  >
+                    <span className={styles.headerUserDot} aria-hidden />
+                    <span className={styles.headerUserLabel}>{authEmail}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.headerLogoutBtn}
+                    onClick={() => void logout()}
+                    aria-label="Log out"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : null}
+            </div>
 
             <div className={styles.headerCenter}>
               <h1 className={styles.title}>HI [Human Intelligence]</h1>
               <p className={styles.subtitle}>We are not from AI, but HI, who created AI.</p>
             </div>
-            <div className={styles.statusDot} aria-label="online" />
+            <div className={styles.headerRight}>
+              <HeaderMenu
+                messages={messages.map((m) => ({
+                  id: m.id,
+                  text: m.text,
+                  created_at: m.created_at,
+                }))}
+                onClearChat={() => setMessages([])}
+                onNewChat={startNewChat}
+                onToggleTheme={toggleTheme}
+                unread={unread}
+              />
+            </div>
           </div>
         </header>
 
@@ -253,33 +361,54 @@ export default function ChatPage() {
 
         <div className={styles.welcomeSection}>
           <div className={styles.welcomeRow}>
-            <svg className={styles.welcomeIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
+            <a
+              href={`tel:${contact.phone}`}
+              className={`${styles.welcomeIcon} ${styles.welcomeIconLink}`}
+              aria-label="Call us"
+              title={`Call ${contact.phone}`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+            </a>
             <div className={styles.welcomeContent}>
               <h2 className={styles.welcomeTitle}>What can I do for you?</h2>
               <p className={styles.welcomeText}>Just a Call away or Convey me here</p>
             </div>
-            <svg className={styles.welcomeIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
+            <a
+              href={`https://wa.me/${contact.whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles.welcomeIcon} ${styles.welcomeIconLink}`}
+              aria-label="Chat on WhatsApp"
+              title="WhatsApp"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M17.6 6.3A7.85 7.85 0 0 0 12 4a7.94 7.94 0 0 0-6.8 12L4 20l4.1-1.1A7.94 7.94 0 0 0 20 12a7.85 7.85 0 0 0-2.4-5.7zM12 18.6a6.6 6.6 0 0 1-3.4-.9l-.2-.1-2.4.6.6-2.4-.1-.2A6.6 6.6 0 1 1 18.6 12 6.6 6.6 0 0 1 12 18.6zm3.6-5c-.2-.1-1.2-.6-1.4-.7-.2-.1-.3-.1-.4.1l-.6.7c-.1.2-.2.2-.4.1a5.4 5.4 0 0 1-2.7-2.4c-.2-.3.2-.3.6-1 .1-.1 0-.2 0-.3l-.7-1.6c-.2-.4-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1.1 2.7.1.2 1.8 2.8 4.5 3.9.6.3 1.1.4 1.5.5a3.6 3.6 0 0 0 1.6.1c.5-.1 1.2-.5 1.4-1l.2-1c0-.2-.1-.2-.3-.3z" />
+              </svg>
+            </a>
           </div>
         </div>
       </div>
 
       <div ref={listRef} className={styles.list}>
         <div className={styles.messages}>
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={`${styles.msgRow} ${m.sender_type === "user" ? styles.msgUser : styles.msgAdmin}`}
-            >
-              <div className={styles.bubble}>
-                <div className={styles.bubbleText}>{m.text}</div>
-                <div className={styles.bubbleTime}>{formatTime(m.created_at)}</div>
+          {messages.map((m) => {
+            const isUser = m.sender_type === "user";
+            const isAuto = m.sender_type === "auto";
+            return (
+              <div
+                key={m.id}
+                className={`${styles.msgRow} ${isUser ? styles.msgUser : styles.msgAdmin} ${isAuto ? styles.msgAuto : ""}`}
+              >
+                <div className={styles.bubble} data-message-bubble="1">
+                  <div className={styles.bubbleText}>{m.text}</div>
+                  <div className={styles.bubbleTime}>{formatTime(m.created_at)}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
+          {thinking && <ThinkingIndicator />}
         </div>
       </div>
 
@@ -291,7 +420,7 @@ export default function ChatPage() {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
         />
-        <a href={`tel:${CONTACT.phone}`} className={`${styles.iconBtn} ${styles.callBtn}`} aria-label="Call us">
+        <a href={`tel:${contact.phone}`} className={`${styles.iconBtn} ${styles.callBtn}`} aria-label="Call us">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
           </svg>

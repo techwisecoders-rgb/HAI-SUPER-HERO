@@ -18,7 +18,10 @@
 html, body {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  /* Note: `overflow: hidden` used to live here, but that prevented
+     /register, /profile, /admin and the privacy page from scrolling
+     on small viewports. Each page that needs an overflow lock
+     (chat, chakra landing) applies it on its own root element. */
 }
 
 body {
@@ -26,6 +29,9 @@ body {
   background: #2b3540;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Allow vertical scrolling by default. Pages that need to lock it
+     (e.g. /chat) set it explicitly on their own root container. */
+  overflow-y: auto;
 }
 
 a { color: inherit; text-decoration: none; }

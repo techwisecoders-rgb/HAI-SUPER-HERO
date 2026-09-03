@@ -6,7 +6,10 @@ import bcrypt from "bcryptjs";
 const ROUNDS = 10;
 
 export async function hashPassword(plain: string): Promise<string> {
-  return bcrypt.hash(plain, ROUNDS);
+  // Same `$2b$` → `$2a$` rewrite as hashOtp() below, for consistency
+  // with pgcrypto. Verification still works on the Node side.
+  const h = await bcrypt.hash(plain, ROUNDS);
+  return h.startsWith("$2b$") ? "$2a$" + h.slice(4) : h;
 }
 
 export async function verifyPassword(plain: string, hash: string): Promise<boolean> {
@@ -41,5 +44,12 @@ export async function hashOtp(code: string): Promise<string> {
   // OTPs are short and low-entropy (6 digits = 1M possibilities), so a
   // global salt is fine; bcrypt's per-user salt would not add real
   // security here and would slow verification noticeably.
-  return bcrypt.hash(code, 8);
+  //
+  // We strip `$2b$` → `$2a$` so the resulting hash is compatible
+  // with pgcrypto's `crypt()` function (which only recognizes `$2a$`
+  // and `$2y$`, not `$2b$`). The hash bytes themselves are identical
+  // between `$2a$` and `$2b$`, so verification still works for any
+  // Node-side `bcrypt.compare()` call.
+  const h = await bcrypt.hash(code, 8);
+  return h.startsWith("$2b$") ? "$2a$" + h.slice(4) : h;
 }

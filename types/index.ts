@@ -1,6 +1,14 @@
 // Shared TypeScript types used by both the React app and Route Handlers.
 
-export type SenderType = "user" | "admin";
+/**
+ * Sender types for a chat message.
+ *  - "user"  : the visitor's own message
+ *  - "admin" : a real admin (human) reply — stops the "thinking" indicator
+ *  - "auto"  : an automated/bot reply — styled differently from admin
+ *              replies but does NOT stop the "thinking" indicator (so a
+ *              real human reply can still follow).
+ */
+export type SenderType = "user" | "admin" | "auto";
 
 export interface Session {
   id: string;
@@ -54,4 +62,29 @@ export interface PopularQuery {
   id: string;
   text: string;
   sort_order: number;
+}
+
+/**
+ * Worker registration profile — submitted from /register.
+ * Mirrors the form in the reference HTML. */
+export interface WorkerRegistration {
+  id: string;
+  created_at: string;
+  session_id: string | null;
+  user_id: string | null;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  address: string;
+  work_type: string;
+  work_description: string;
+  qualification: string | null;
+  years_experience: string | null;
+  availability: string | null;
+}
+
+/** Admin-editable contact numbers used by the chat welcome row. */
+export interface ContactSettings {
+  phone: string;
+  whatsapp: string;
 }

@@ -37,10 +37,6 @@
 
 /* Top-left Login button (or signed-in badge). */
 .headerLoginBtn {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
   background: transparent;
   border: 1.5px solid #00bcd4;
   color: #00bcd4;
@@ -57,11 +53,45 @@
   color: #06222b;
   box-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
 }
-/* Wrapper that positions the signed-in badge + Logout button in the
-   top-left corner of the chat header. */
+/* Wrapper that positions the avatar (always shown) + Login / signed-in
+   badge + Logout in the top-left of the chat header. */
 .headerAuthGroup {
   position: absolute;
-  left: 0;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 60%;
+}
+
+/* Avatar / profile button (top-left). */
+.avatarBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 188, 212, 0.6);
+  background: rgba(0, 188, 212, 0.08);
+  color: #00e5ff;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+.avatarBtn:hover {
+  background: rgba(0, 188, 212, 0.18);
+  transform: scale(1.05);
+}
+.avatarBtn svg { width: 18px; height: 18px; }
+
+/* Top-right area (reserved for the ⋮ menu). */
+.headerRight {
+  position: absolute;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -301,6 +331,40 @@
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ----- Auto-reply bubble (sender_type === "auto") -----
+   Visually distinct from human admin replies: same cyan-glow body
+   as the thinking indicator, so it's clearly "not a human reply".
+   Real admin replies use the solid darker `.msgAdmin .bubble` style. */
+.msgAuto { justify-content: flex-start; }
+.msgAuto .bubble {
+  background: linear-gradient(145deg, #1a2736, #243447);
+  border: 1.5px solid rgba(0, 229, 255, 0.45);
+  box-shadow:
+    0 0 12px rgba(0, 229, 255, 0.25),
+    0 0 28px rgba(0, 229, 255, 0.12);
+  color: #e2e8f0;
+  border-bottom-left-radius: 4px;
+}
+
+/* Welcome-row icons are now anchors (tel: + wa.me) but should look
+   like the original SVG icons. */
+.welcomeIconLink {
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+.welcomeIconLink:hover {
+  color: #00e5ff;
+  transform: scale(1.1);
+}
+
+/* Light-theme overrides for the chat shell. Applied inline by the
+   page when `theme === "light"` so the JS-set background colours
+   cascade correctly. */
+:global(html[data-chat-theme="light"]) .welcomeText,
+:global(html[data-chat-theme="light"]) .subtitle {
+  color: #4b5563;
 }
 
 @media (max-width: 768px) {

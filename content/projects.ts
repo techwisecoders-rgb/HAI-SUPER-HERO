@@ -53,6 +53,37 @@ export const CONTACT = {
   // The original uses `tel:9963935878` in both the chat call button and the
   // About Us contact card.
   phone: "9963935878",
+  // WhatsApp link takes the number in international format (with country
+  // code, no '+'). Falls back to the phone number with an inferred '91'
+  // country code (India) when not set explicitly.
+  whatsapp: "919963935878",
   email: "heawen.ias14319@gmail.com",
   privacyHref: "/privacy",
 } as const;
+
+/** Work types offered by the "Register as a worker" form. */
+export const WORK_TYPES = [
+  "Electrician",
+  "Plumber",
+  "Carpenter",
+  "Painter",
+  "AC Technician",
+  "Driver",
+  "Delivery",
+  "Photographer",
+  "Videographer",
+  "Graphic Designer",
+  "Video Editor",
+  "Software Developer",
+  "Web Developer",
+  "Android Developer",
+  "Tutor",
+  "Personal Assistant",
+  "Fitness Trainer",
+  "Beauty Services",
+  "Event Support",
+  "Sales",
+  "Marketing",
+  "Management",
+  "Other",
+] as const;
