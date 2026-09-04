@@ -17,12 +17,11 @@
 //   * Every STATUS_INTERVAL_MS, a new bubble is appended below the
 //     existing ones with the next status message. Previous bubbles
 //     STAY on screen (no disappearing).
-//   * EVERY bubble shows the three-dot up-and-down animation while it
-//     is the most-recent one. Earlier bubbles render their text
-//     statically (no dots).
-//   * After all STATUS_MESSAGES have been shown, the cycle restarts
-//     from the beginning, so the indicator can keep streaming status
-//     updates while waiting for an admin reply.
+//   * EVERY bubble shows the three-dot up-and-down animation
+//     simultaneously (no "latest-only" highlighting).
+//   * The cycle STOPS once the final STATUS_MESSAGES entry has been
+//     shown — it does not loop back to the beginning. All 24 bubbles
+//     remain on screen with the dots continuing to animate.
 //
 // Strings may contain literal "\n" sequences; they render as line breaks
 // because the .text CSS rule has `white-space: pre-line`.
@@ -68,8 +67,8 @@ interface Props {
 export function ThinkingIndicator({ label }: Props) {
   // Number of status bubbles currently shown. Starts at 1 (the first
   // bubble is visible immediately on mount) and grows by 1 every
-  // STATUS_INTERVAL_MS. After reaching STATUS_MESSAGES.length the cycle
-  // restarts from 1, so the user keeps seeing new status updates.
+  // STATUS_INTERVAL_MS. The cycle STOPS once shown reaches
+  // STATUS_MESSAGES.length — it does not wrap around.
   const [shown, setShown] = useState(1);
 
   useEffect(() => {
@@ -77,7 +76,8 @@ export function ThinkingIndicator({ label }: Props) {
     let n = 1;
     function tick() {
       if (cancelled) return;
-      n = (n % STATUS_MESSAGES.length) + 1; // 1 → 2 → … → 24 → 1 → 2 → …
+      if (n >= STATUS_MESSAGES.length) return; // cycle complete — stop
+      n += 1;
       setShown(n);
       timeoutId = window.setTimeout(tick, STATUS_INTERVAL_MS);
     }
@@ -89,25 +89,22 @@ export function ThinkingIndicator({ label }: Props) {
   }, []);
 
   const total = shown;
-  const lastIndex = total - 1;
 
   return (
     <div className={styles.stack} role="status" aria-live="polite" aria-label={label ?? "Thinking"}>
-      {Array.from({ length: total }, (_, i) => {
-        const isLatest = i === lastIndex;
-        return (
-          <div key={i} className={styles.bubble}>
-            {isLatest ? (
-              <div className={styles.dots} aria-hidden>
-                <span className={styles.dot} />
-                <span className={styles.dot} />
-                <span className={styles.dot} />
-              </div>
-            ) : null}
-            <div className={styles.text}>{STATUS_MESSAGES[i]}</div>
+      {Array.from({ length: total }, (_, i) => (
+        <div key={i} className={styles.bubble}>
+          {/* Every bubble shows the dots animation — no "latest-only"
+              gating. The dots bounce up-and-down in unison across all
+              bubbles. */}
+          <div className={styles.dots} aria-hidden>
+            <span className={styles.dot} />
+            <span className={styles.dot} />
+            <span className={styles.dot} />
           </div>
-        );
-      })}
+          <div className={styles.text}>{STATUS_MESSAGES[i]}</div>
+        </div>
+      ))}
     </div>
   );
 }
