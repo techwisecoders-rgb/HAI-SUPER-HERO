@@ -213,10 +213,22 @@ function ChatInner() {
       if (r.ok && mounted) {
         const data = (await r.json()) as { messages: Message[] };
         setMessages(data.messages ?? []);
-        // If the most recent message is a real admin reply, the
-        // "thinking" indicator should be hidden.
+        // Sync the "thinking" indicator with the conversation state.
+        //   * If the most recent message is a real admin reply, the
+        //     indicator is hidden.
+        //   * If the most recent message is a user message (typical
+        //     when arriving from /trending with a pre-filled query,
+        //     or when a previous admin reply ended and the user has
+        //     sent another), the indicator should be SHOWN so the
+        //     24-bubble status cycle restarts from message #1.
         const last = (data.messages ?? []).at(-1);
-        if (last && last.sender_type === "admin") setThinking(false);
+        if (last) {
+          if (last.sender_type === "admin") {
+            setThinking(false);
+          } else if (last.sender_type === "user") {
+            setThinking(true);
+          }
+        }
         // Seed the special-reply state from the conversation history.
         // Without this, a page refresh would incorrectly re-fire the
         // "first-time" greeting even though the user has messaged
@@ -416,12 +428,17 @@ function ChatInner() {
               href={`https://wa.me/${contact.whatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${styles.welcomeIcon} ${styles.welcomeIconLink}`}
+              className={`${styles.welcomeIcon} ${styles.welcomeIconLink} ${styles.whatsappIcon}`}
               aria-label="Chat on WhatsApp"
               title="WhatsApp"
             >
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M17.6 6.3A7.85 7.85 0 0 0 12 4a7.94 7.94 0 0 0-6.8 12L4 20l4.1-1.1A7.94 7.94 0 0 0 20 12a7.85 7.85 0 0 0-2.4-5.7zM12 18.6a6.6 6.6 0 0 1-3.4-.9l-.2-.1-2.4.6.6-2.4-.1-.2A6.6 6.6 0 1 1 18.6 12 6.6 6.6 0 0 1 12 18.6zm3.6-5c-.2-.1-1.2-.6-1.4-.7-.2-.1-.3-.1-.4.1l-.6.7c-.1.2-.2.2-.4.1a5.4 5.4 0 0 1-2.7-2.4c-.2-.3.2-.3.6-1 .1-.1 0-.2 0-.3l-.7-1.6c-.2-.4-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1.1 2.7.1.2 1.8 2.8 4.5 3.9.6.3 1.1.4 1.5.5a3.6 3.6 0 0 0 1.6.1c.5-.1 1.2-.5 1.4-1l.2-1c0-.2-.1-.2-.3-.3z" />
+                {/* Official WhatsApp brand mark: a circular green speech
+                    bubble with a phone receiver and dots forming the
+                    WhatsApp wordmark. Renders via `currentColor` so it
+                    picks up the welcomeIconLink color and matches the
+                    phone icon's overall visual weight at 38×38. */}
+                <path d="M19.05 4.91A10 10 0 0 0 4.18 18.16L3 22l3.92-1.16A10 10 0 1 0 19.05 4.91Zm-7.04 15.4h-.01a8.36 8.36 0 0 1-4.26-1.16l-.31-.18-2.32.69.7-2.27-.2-.33a8.36 8.36 0 1 1 15.51-4.43 8.36 8.36 0 0 1-8.35 8.35Zm4.59-6.27c-.25-.13-1.5-.74-1.73-.82-.23-.08-.4-.13-.57.13-.17.25-.66.83-.8 1-.15.17-.3.18-.55.06-.25-.13-1.07-.39-2.03-1.25a7.66 7.66 0 0 1-1.41-1.75c-.15-.25-.02-.39.11-.51.11-.11.25-.3.38-.45.13-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.13-.57-1.36-.78-1.87-.2-.49-.42-.43-.57-.43h-.49a.94.94 0 0 0-.68.32 2.86 2.86 0 0 0-.9 2.13 4.97 4.97 0 0 0 1.04 2.64 11.4 11.4 0 0 0 4.37 3.86c1.62.7 2.25.76 3.06.64a2.6 2.6 0 0 0 1.71-1.21 2.1 2.1 0 0 0 .15-1.21c-.06-.11-.23-.18-.48-.3Z" />
               </svg>
             </a>
           </div>

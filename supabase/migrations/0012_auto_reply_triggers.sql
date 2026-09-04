@@ -137,7 +137,7 @@ on conflict do nothing;
 insert into public.auto_reply_rules (pattern, reply, priority)
 values (
   'hi',
-  'Hello Boss! Your Super Hero is here,Describe me any type of work. i will complete those with my super powers',
+  'Hello boss. Your super hero is here,,,Describe me the type of work you want. I will be complete those with my super power...',
   9999
 )
 on conflict do nothing;
@@ -146,6 +146,6 @@ on conflict do nothing;
 -- also refreshes the "hi" rule's reply text. Safe because we filter by
 -- pattern + priority, so only the intended row is touched.
 update public.auto_reply_rules
-   set reply = 'Hello Boss! Your Super Hero is here,Describe me any type of work. i will complete those with my super powers'
+   set reply = 'Hello boss. Your super hero is here,,,Describe me the type of work you want. I will be complete those with my super power...'
  where pattern = 'hi'
    and priority = 9999;

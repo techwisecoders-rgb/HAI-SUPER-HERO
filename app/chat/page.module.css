@@ -369,6 +369,21 @@
   transform: scale(1.1);
 }
 
+/* WhatsApp icon in the welcome row. We deliberately MATCH the phone
+   icon's default slate-grey (#71808f, defined on .welcomeIcon) so
+   both icons read as a matched pair in the dark palette, rather
+   than using WhatsApp's brand green. The path uses
+   fill="currentColor" so the colour cascades into the SVG. Hover
+   colour is also kept consistent with the phone icon's hover
+   (cyan #00e5ff) — declared here so source order wins over the
+   earlier .welcomeIconLink:hover rule. */
+.whatsappIcon {
+  color: #71808f;
+}
+.whatsappIcon:hover {
+  color: #00e5ff;
+}
+
 /* Light-theme overrides for the chat shell. Applied inline by the
    page when `theme === "light"` so the JS-set background colours
    cascade correctly. */
