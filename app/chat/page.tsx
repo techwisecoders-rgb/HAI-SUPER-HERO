@@ -445,7 +445,19 @@ function ChatInner() {
               </div>
             );
           })}
-          {thinking && <ThinkingIndicator />}
+          {thinking && (
+            <ThinkingIndicator
+              // Re-mount the indicator every time the user sends a new
+              // message. This restarts the 24-bubble cycle from
+              // message #1 — the previous cycle's bubbles vanish and
+              // the new one begins fresh. Using `key` (a React built-in)
+              // is cleaner than threading a "restart counter" prop
+              // through the component. The key increments only when
+              // the user sends a message (auto/admin replies don't
+              // change it).
+              key={messages.filter((m) => m.sender_type === "user").length}
+            />
+          )}
         </div>
       </div>
 

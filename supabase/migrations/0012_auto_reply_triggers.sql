@@ -137,7 +137,15 @@ on conflict do nothing;
 insert into public.auto_reply_rules (pattern, reply, priority)
 values (
   'hi',
-  'Hello Boss. Welcome to HAI SUPER HERO. Tell me what you need — I will connect you with the right help.',
+  'Hello Boss! Your Super Hero is here,Describe me any type of work. i will complete those with my super powers',
   9999
 )
 on conflict do nothing;
+
+-- Idempotent UPDATE so re-running this migration on an existing DB
+-- also refreshes the "hi" rule's reply text. Safe because we filter by
+-- pattern + priority, so only the intended row is touched.
+update public.auto_reply_rules
+   set reply = 'Hello Boss! Your Super Hero is here,Describe me any type of work. i will complete those with my super powers'
+ where pattern = 'hi'
+   and priority = 9999;
