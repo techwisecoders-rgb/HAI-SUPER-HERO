@@ -14,6 +14,7 @@ export interface Session {
   id: string;
   created_at: string;
   last_seen_at: string;
+  last_read_by_admin_at?: string | null;
   display_name: string | null;
   metadata: Record<string, unknown> | null;
 }

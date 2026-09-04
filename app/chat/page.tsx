@@ -11,7 +11,10 @@ import { useAuth, notifyAuthChanged } from "@/lib/use-auth";
 import { CONTACT } from "@/content";
 import type { Message, ContactSettings } from "@/types";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
-import { HeaderMenu } from "@/components/HeaderMenu";
+import {
+  fireDesktopNotification,
+  registerNotificationServiceWorker,
+} from "@/lib/notifications";
 import styles from "./page.module.css";
 
 function formatTime(d: Date | string): string {
@@ -84,10 +87,8 @@ function ChatInner() {
     phone: CONTACT.phone,
     whatsapp: CONTACT.whatsapp,
   });
-  const [unread, setUnread] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
   const barRef = useKeyboardAwareInput<HTMLDivElement>();
-  const { email: authEmail } = useAuth();
 
   // Optional URL params: ?new=1 → wipe local list on mount;
   // ?focus=search → auto-trigger the in-chat search handler.
@@ -153,6 +154,12 @@ function ChatInner() {
     return () => { cancelled = true; };
   }, []);
 
+  // Pre-register the Service Worker so notifications work the moment
+  // an admin replies (this is idempotent and safe to call on every mount).
+  useEffect(() => {
+    void registerNotificationServiceWorker();
+  }, []);
+
   useEffect(() => {
     if (!sessionId) return;
     const supabase = getBrowserSupabase();
@@ -189,10 +196,25 @@ function ChatInner() {
         },
         (payload) => {
           const m = payload.new as Message;
-          setMessages((prev) => {
-            if (prev.some((x) => x.id === m.id)) return prev;
-            return [...prev, m];
-          });
+          setMessages((prev) =>
+            prev.some((x) => x.id === m.id) ? prev : [...prev, m]
+          );
+          // Fire a desktop notification when the ADMIN (or auto-bot)
+          // replies. We skip "user" sender types because that's the
+          // visitor's own message echoed back — not something they
+          // need to be alerted about.
+          if (m.sender_type !== "user") {
+            const preview =
+              m.text.length > 120 ? m.text.slice(0, 117) + "…" : m.text;
+            const title =
+              m.sender_type === "admin"
+                ? "New reply from HAI SUPER HERO"
+                : "HAI SUPER HERO auto-reply";
+            void fireDesktopNotification(title, preview, {
+              tag: `hai-chat-${m.id}`,
+              url: "/chat",
+            });
+          }
           // A real admin reply stops the "thinking" indicator. An
           // "auto" reply does NOT — a human reply can still follow.
           if (m.sender_type === "admin") setThinking(false);
@@ -219,6 +241,22 @@ function ChatInner() {
               setMessages((prev) =>
                 prev.some((x) => x.id === m.id) ? prev : [...prev, m]
               );
+              // Also fire a notification on the rebuilt channel in case
+              // the catch-up refetch shows us messages that arrived
+              // while the tab was hidden.
+              if (m.sender_type !== "user") {
+                const preview =
+                  m.text.length > 120 ? m.text.slice(0, 117) + "…" : m.text;
+                const title =
+                  m.sender_type === "admin"
+                    ? "New reply from HAI SUPER HERO"
+                    : "HAI SUPER HERO auto-reply";
+                void fireDesktopNotification(title, preview, {
+                  tag: `hai-chat-${m.id}`,
+                  url: "/chat",
+                });
+              }
+              if (m.sender_type === "admin") setThinking(false);
             },
           )
           .subscribe();
@@ -267,90 +305,9 @@ function ChatInner() {
     } finally { setSending(false); }
   }, [draft, sessionId, sending]);
 
-  // "New chat": clear local list + hide the thinking indicator.
-  const startNewChat = useCallback(() => {
-    setMessages([]);
-    setThinking(false);
-  }, []);
-
-  const toggleTheme = useCallback(() => {
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
-  }, []);
-
-  // After sending a message, show the notification badge on the ⋮ menu
-  // icon. (HeaderMenu clears it the first time the user opens it.)
-  useEffect(() => {
-    if (thinking) setUnread(true);
-  }, [thinking]);
-
-  // Clear the badge when the user lands on the chat with no pending
-  // messages (so the badge doesn't stay stuck from a previous visit).
-  useEffect(() => {
-    if (!thinking && messages.length === 0) setUnread(false);
-  }, [thinking, messages.length]);
-
   return (
     <div className={styles.shell}>
       <div className={styles.top}>
-        <header className={styles.header}>
-          <div className={styles.headerContent}>
-            {/* Top-left: Avatar button (opens the lightweight quick-profile
-                page). When the user is OTP-authed, also show the email +
-                Logout button next to it. The avatar is always available. */}
-            <div className={styles.headerAuthGroup}>
-              <button
-                type="button"
-                className={styles.avatarBtn}
-                aria-label="Open quick profile"
-                onClick={() => router.push("/profile")}
-                title="Quick profile"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                  <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
-                </svg>
-              </button>
-              {authEmail ? (
-                <>
-                  <div
-                    className={styles.headerUser}
-                    title={authEmail}
-                    aria-label={`Signed in as ${authEmail}`}
-                  >
-                    <span className={styles.headerUserDot} aria-hidden />
-                    <span className={styles.headerUserLabel}>{authEmail}</span>
-                  </div>
-                  <button
-                    type="button"
-                    className={styles.headerLogoutBtn}
-                    onClick={() => void logout()}
-                    aria-label="Log out"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : null}
-            </div>
-
-            <div className={styles.headerCenter}>
-              <h1 className={styles.title}>HI [Human Intelligence]</h1>
-              <p className={styles.subtitle}>We are not from AI, but HI, who created AI.</p>
-            </div>
-            <div className={styles.headerRight}>
-              <HeaderMenu
-                messages={messages.map((m) => ({
-                  id: m.id,
-                  text: m.text,
-                  created_at: m.created_at,
-                }))}
-                onClearChat={() => setMessages([])}
-                onNewChat={startNewChat}
-                onToggleTheme={toggleTheme}
-                unread={unread}
-              />
-            </div>
-          </div>
-        </header>
-
         <Link href="/trending" className={styles.popularSearches} aria-label="Open popular searches">
           <h2>Popular Searches</h2>
           <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

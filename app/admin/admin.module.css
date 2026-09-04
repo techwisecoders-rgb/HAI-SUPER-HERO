@@ -70,6 +70,41 @@
 }
 .itemName { font-weight: 600; color: #f3f3f7; font-size: 0.95rem; }
 .unread { width: 8px; height: 8px; border-radius: 50%; background: #ff6b9d; flex: 0 0 auto; }
+
+.unreadCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: #ff3b30;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 8px rgba(255, 59, 48, 0.6);
+  flex: 0 0 auto;
+}
+
+.totalBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  padding: 0 7px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #ff3b30, #ff6b9d);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 12px rgba(255, 59, 48, 0.55);
+  vertical-align: middle;
+}
 .itemPreview { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .itemActiveTag {
   margin-top: 4px;

@@ -140,6 +140,19 @@ function ProfileBody() {
   // OTP stage — used by both first-time (save profile) and Login (verify).
   if (stage === "otp") {
     const email = (form.email || authedEmail || "").trim();
+    // For the FIRST-TIME flow (no authed email yet), we route the OTP
+    // straight to /api/profile/save which atomically verifies-and-writes.
+    // For the LOGIN flow (already authed), the default /api/otp/verify
+    // endpoint is enough — the cookies are already set.
+    //
+    // This avoids the previous double-OTP bug where OtpGate would
+    // verify one code, then the onVerified callback would fire ANOTHER
+    // send + prompt for a second code. Now we send exactly ONE OTP and
+    // verify it exactly once.
+    const saveProfileEndpoint = "/api/profile/save" as const;
+    const verifyEndpoint: "/api/otp/verify" | typeof saveProfileEndpoint =
+      authedEmail ? "/api/otp/verify" : saveProfileEndpoint;
+
     return (
       <main className={styles.page}>
         <header className={styles.header}>
@@ -154,26 +167,13 @@ function ProfileBody() {
             <OtpGate
               email={email}
               purpose="quick_profile"
+              verifyEndpoint={verifyEndpoint}
+              // For the first-time save flow, also pass displayName+city
+              // so /api/profile/save can write the profile in the same
+              // atomic verify-then-save step.
+              extra={authedEmail ? undefined : { displayName: form.name, city: form.city }}
               onVerified={async () => {
                 if (!authedEmail) {
-                  const send = await fetch("/api/otp/send", {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ email, purpose: "quick_profile" }),
-                  });
-                  if (!send.ok) return;
-                  const v = window.prompt("A new 6-digit code has been sent to your email. Please enter it to save your profile:");
-                  if (!v || !/^\d{6}$/.test(v)) return;
-                  const save = await fetch("/api/profile/save", {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ email, displayName: form.name, city: form.city, otp: v }),
-                  });
-                  if (!save.ok) {
-                    const d = (await save.json().catch(() => null)) as { error?: string } | null;
-                    setNote({ kind: "err", msg: d?.error ?? "Could not save profile." });
-                    return;
-                  }
                   try {
                     localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(form));
                     localStorage.setItem(PROFILE_NAME_KEY, form.name);

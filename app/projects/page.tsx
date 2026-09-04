@@ -55,12 +55,16 @@ export default function ProjectsPage() {
   return (
     <main className={styles.wrap}>
       <header className={styles.header}>
-        <button type="button" className={styles.back} onClick={() => router.back()}>â†</button>
+        <button type="button" className={styles.back} onClick={() => router.back()}>←</button>
         <h1>Our Recent Projects</h1>
       </header>
 
       <div className={styles.carousel}>
-        <div className={styles.carouselTrack} ref={trackRef}>
+        <div
+          className={styles.carouselTrack}
+          ref={trackRef}
+          style={{ transform: `translateX(-${active * 100}%)` }}
+        >
           {projects.map((p) => (
             <a key={p.id} href={p.url} target="_blank" rel="noreferrer noopener" className={styles.slide}>
               <img src={p.image_url} alt={p.title} loading="lazy" />
@@ -72,8 +76,8 @@ export default function ProjectsPage() {
           ))}
         </div>
         <div className={styles.buttons}>
-          <button type="button" onClick={() => setActive((a) => (a - 1 + projects.length) % Math.max(projects.length, 1))} aria-label="Previous project">â®</button>
-          <button type="button" onClick={() => setActive((a) => (a + 1) % Math.max(projects.length, 1))} aria-label="Next project">â¯</button>
+          <button type="button" onClick={() => setActive((a) => (a - 1 + projects.length) % Math.max(projects.length, 1))} aria-label="Previous project">❮</button>
+          <button type="button" onClick={() => setActive((a) => (a + 1) % Math.max(projects.length, 1))} aria-label="Next project">❯</button>
         </div>
         <div className={styles.dots}>
           {projects.map((p, i) => (
@@ -104,7 +108,7 @@ export default function ProjectsPage() {
 
           {FOUNDERS.map((f) => (
             <div key={f.name} className={styles.founder}>
-              <div className={styles.avatar}>ðŸŽ“</div>
+              <div className={styles.avatar}>🎓</div>
               <div className={styles.founderInfo}>
                 <span className={styles.founderName}>{f.name}</span>
                 <span className={styles.founderRole}>{f.role}</span>

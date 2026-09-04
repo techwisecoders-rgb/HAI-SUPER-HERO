@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "db:migrate": "node scripts/migrate.mjs",
+    "db:migrate:direct": "node scripts/migrate-direct.mjs",
     "db:seed": "node scripts/write-seed.mjs",
     "db:verify": "node scripts/verify.mjs",
     "admin:create": "node scripts/create-admin.mjs"

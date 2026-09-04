@@ -44,9 +44,14 @@ interface Props {
    * Which endpoint to POST the verify call to. Defaults to
    * `/api/otp/verify`. Set to `/api/worker/verify-otp` for the
    * worker-registration flow (which atomically also marks the
-   * worker_registrations row verified).
+   * worker_registrations row verified), or `/api/profile/save` for
+   * the quick-profile flow (which atomically verifies-and-saves the
+   * profile).
+   *
+   * The endpoint is expected to accept the same body shape as
+   * `/api/otp/verify`: `{ email, purpose, otp, ...extra }`.
    */
-  verifyEndpoint?: "/api/otp/verify" | "/api/worker/verify-otp";
+  verifyEndpoint?: "/api/otp/verify" | "/api/worker/verify-otp" | "/api/profile/save";
 }
 
 type Stage = "send" | "verify";
@@ -106,14 +111,27 @@ export function OtpGate({
     }
     setBusy(true);
     try {
-      // For the generic endpoint we send {email, purpose, otp, ...extra}.
-      // For the worker endpoint we send {registrationId, otp} (no
-      // email/purpose needed because the registrationId is the lookup
-      // key — extra is merged only for the generic path).
-      const body: Record<string, unknown> =
-        verifyEndpoint === "/api/worker/verify-otp"
-          ? { otp, ...(extra ?? {}) }
-          : { email, purpose, otp, ...(extra ?? {}) };
+      // Build the request body based on which endpoint we're calling:
+      //   * /api/otp/verify      — {email, purpose, otp, ...extra}
+      //   * /api/profile/save    — {email, displayName, city, otp}
+      //                             (note: takes displayName+city
+      //                              directly, not purpose)
+      //   * /api/worker/verify-otp — {registrationId, otp}
+      //                             (the registrationId is the lookup
+      //                              key — extra is merged only here
+      //                              for the generic path)
+      let body: Record<string, unknown>;
+      if (verifyEndpoint === "/api/worker/verify-otp") {
+        body = { otp, ...(extra ?? {}) };
+      } else if (verifyEndpoint === "/api/profile/save") {
+        // /api/profile/save takes email/displayName/city/otp directly,
+        // not a `purpose` field. The `extra` prop carries displayName
+        // + city from the parent.
+        body = { email, otp, ...(extra ?? {}) };
+      } else {
+        // /api/otp/verify (default)
+        body = { email, purpose, otp, ...(extra ?? {}) };
+      }
       const r = await fetch(verifyEndpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },

@@ -5,8 +5,12 @@
 
 import styles from "./admin.module.css";
 import type { Message, Session } from "@/types";
+import { NotificationBell } from "@/components/NotificationBell";
 
-type SessionWithLast = Session & { last_message: Message | null };
+type SessionWithLast = Session & {
+  last_message: Message | null;
+  unread_count: number;
+};
 
 export function AdminView(props: {
   sessions: SessionWithLast[];
@@ -22,28 +26,45 @@ export function AdminView(props: {
   loadingList: boolean;
   active: SessionWithLast | null;
   error: string | null;
+  tabVisible: boolean;
 }) {
   const {
     sessions, activeId, setActiveId, messages, query, setQuery,
     draft, setDraft, send, sending, loadingList, active, error,
+    tabVisible,
   } = props;
+
+  const totalUnread = sessions.reduce((sum, s) => sum + (s.unread_count ?? 0), 0);
 
   return (
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
-          <span className={styles.sidebarTitle}>SESSIONS</span>
-          <button
-            type="button"
-            className={styles.signOut}
-            onClick={async () => {
-              const { signOutAction } = await import("./actions");
-              await signOutAction();
-              window.location.href = "/admin/login";
-            }}
-          >
-            Sign out
-          </button>
+          <span className={styles.sidebarTitle}>
+            SESSIONS
+            {totalUnread > 0 && (
+              <span
+                className={styles.totalBadge}
+                aria-label={`${totalUnread} unread messages`}
+              >
+                {totalUnread > 99 ? "99+" : totalUnread}
+              </span>
+            )}
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <NotificationBell />
+            <button
+              type="button"
+              className={styles.signOut}
+              onClick={async () => {
+                const { signOutAction } = await import("./actions");
+                await signOutAction();
+                window.location.href = "/admin/login";
+              }}
+            >
+              Sign out
+            </button>
+          </div>
         </div>
         <input
           className={styles.search}
@@ -70,7 +91,16 @@ export function AdminView(props: {
                   {(s.display_name || "Visitor").slice(0, 24)}
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  {!s.last_message && <span className={styles.unread} aria-label="no messages yet" />}
+                  {s.unread_count > 0 ? (
+                    <span
+                      className={styles.unreadCount}
+                      aria-label={`${s.unread_count} unread`}
+                    >
+                      {s.unread_count > 9 ? "9+" : s.unread_count}
+                    </span>
+                  ) : !s.last_message ? (
+                    <span className={styles.unread} aria-label="no messages yet" />
+                  ) : null}
                   <span>{new Date(s.last_seen_at).toLocaleString()}</span>
                 </span>
               </div>

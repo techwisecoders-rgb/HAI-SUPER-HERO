@@ -15,6 +15,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase/server";
+import {
+  formatWorkerRegistrationConfirmedMessage,
+} from "@/lib/worker-registration-message";
 
 export const runtime = "nodejs";
 
@@ -45,6 +48,38 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
+    const registration = row as {
+      id: string;
+      session_id: string | null;
+      full_name: string;
+      phone: string;
+      email: string | null;
+      address: string;
+      work_type: string;
+      work_description: string;
+      qualification: string | null;
+      years_experience: string | null;
+      availability: string | null;
+    } | null;
+
+    // Mirror the confirmation into the chat so the visitor and admin
+    // both see "✅ Worker registration confirmed" in the same thread.
+    // Fire-and-forget — never block the verify response on a chat
+    // mirror failure.
+    if (registration?.session_id) {
+      const chatText = formatWorkerRegistrationConfirmedMessage(registration);
+      void supabase.rpc("append_auto_message" as never, {
+        p_session_id: registration.session_id,
+        p_text: chatText,
+      } as never).then(
+        () => undefined,
+        (e: unknown) => {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error("[worker/verify-otp] chat-mirror insert failed:", msg);
+        },
+      );
+    }
+
     return NextResponse.json({ ok: true, registration: row });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown error";

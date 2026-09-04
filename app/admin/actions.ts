@@ -42,14 +42,53 @@ export async function listSessionsAction(query?: string) {
     if (!lastBySession.has(m.session_id)) lastBySession.set(m.session_id, m);
   }
 
+  // Unread counts per session: number of "user" messages newer than
+  // last_read_by_admin_at (or all user messages if never read).
+  // We compute it in JS to avoid an extra round-trip.
+  const { data: allUserMsgs, error: uErr } = await supabase
+    .from("messages")
+    .select("session_id, created_at")
+    .eq("sender_type", "user")
+    .in("session_id", ids);
+  if (uErr) throw new Error(uErr.message);
+  const unreadBySession = new Map<string, number>();
+  for (const m of (allUserMsgs ?? []) as Array<{ session_id: string; created_at: string }>) {
+    const s = (sessions ?? []).find((x) => x.id === m.session_id);
+    if (!s) continue;
+    const lastRead = (s as { last_read_by_admin_at?: string | null }).last_read_by_admin_at;
+    if (!lastRead || new Date(m.created_at) > new Date(lastRead)) {
+      unreadBySession.set(m.session_id, (unreadBySession.get(m.session_id) ?? 0) + 1);
+    }
+  }
+
   const q = (query ?? "").trim().toLowerCase();
   return (sessions ?? [])
-    .map((s) => ({ ...s, last_message: lastBySession.get(s.id) ?? null }))
+    .map((s) => ({
+      ...s,
+      last_message: lastBySession.get(s.id) ?? null,
+      unread_count: unreadBySession.get(s.id) ?? 0,
+    }))
     .filter((s) => {
       if (!q) return true;
       const t = (s.last_message?.text ?? "").toLowerCase();
       return t.includes(q);
     });
+}
+
+/**
+ * Mark a session as "read by admin" — bumps its last_read_by_admin_at
+ * to now so unread counts drop to zero. Called when the admin opens a
+ * session OR sends a reply (sending implies "I've read everything").
+ */
+export async function markSessionReadAction(sessionId: string) {
+  await requireAdmin();
+  if (!/^[0-9a-f-]{36}$/i.test(sessionId)) throw new Error("bad session id");
+  const supabase = getServiceSupabase();
+  const { error } = await supabase.rpc("mark_session_read", {
+    p_session_id: sessionId,
+  });
+  if (error) throw new Error(error.message);
+  return { ok: true };
 }
 
 const SendBody = z.object({
@@ -65,6 +104,12 @@ export async function sendAdminMessageAction(input: z.infer<typeof SendBody>) {
     .rpc("append_admin_message", { p_session_id: parsed.sessionId, p_text: parsed.text })
     .single();
   if (error) throw new Error(error.message);
+  // Sending a reply implies "I've read everything up to here" — bump
+  // last_read_by_admin_at so the unread counter drops to zero on the
+  // next listSessionsAction() call. Best-effort; never blocks send.
+  await supabase
+    .rpc("mark_session_read", { p_session_id: parsed.sessionId })
+    .then(() => undefined, () => undefined);
   return { ok: true, message: data, adminId: user.id };
 }
 

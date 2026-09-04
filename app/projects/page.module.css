@@ -131,11 +131,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
   flex-shrink: 0;
-  letter-spacing: 0.5px;
   box-shadow: 0 0 10px rgba(0, 200, 230, 0.35);
 }
 .founderInfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

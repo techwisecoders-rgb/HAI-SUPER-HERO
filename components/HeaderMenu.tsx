@@ -18,6 +18,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./HeaderMenu.module.css";
+import { NotificationBell } from "./NotificationBell";
 
 interface MessageLike {
   id: string;
@@ -180,6 +181,9 @@ export function HeaderMenu({ messages, onClearChat, onNewChat, onToggleTheme, un
           <button type="button" role="menuitem" className={styles.item} onClick={handleExport}>
             <span className={styles.icon} aria-hidden>↥</span> Export chat
           </button>
+          <div className={styles.notifRow}>
+            <NotificationBell />
+          </div>
         </div>
       )}
     </div>

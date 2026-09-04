@@ -19,6 +19,10 @@ import {
 import { getServiceSupabase } from "@/lib/supabase/server";
 import { generateOtp, hashOtp } from "@/lib/auth/helpers";
 import { sendOtpEmail, isEmailConfigured } from "@/lib/email/send";
+import {
+  formatWorkerRegistrationMessage,
+  formatWorkerRegistrationConfirmedMessage,
+} from "@/lib/worker-registration-message";
 
 export const runtime = "nodejs";
 
@@ -81,17 +85,68 @@ export async function POST(req: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    const registration = row as { id: string; email: string | null } | null;
+    const registration = row as {
+      id: string;
+      session_id: string | null;
+      full_name: string;
+      phone: string;
+      email: string | null;
+      address: string;
+      work_type: string;
+      work_description: string;
+      qualification: string | null;
+      years_experience: string | null;
+      availability: string | null;
+    } | null;
     if (!registration) {
       return NextResponse.json({ error: "Failed to create registration" }, { status: 500 });
     }
 
-    // No email → can't deliver an OTP. Auto-verify the row.
+    // Mirror the registration into the chat for this visitor's session,
+    // so both the visitor and the admin can see the details in the
+    // existing thread (no separate "registrations" page required).
+    //
+    // We only insert the chat message when there's a session_id — the
+    // form requires a session cookie (the /register page is reachable
+    // only after /chat has bootstrapped one), but we still defensively
+    // check in case of edge cases.
+    if (registration.session_id) {
+      const chatText = formatWorkerRegistrationMessage(registration);
+      // Fire-and-forget: a chat-mirror failure must NOT break the
+      // registration submission. We log and move on.
+      void supabase.rpc("append_user_message" as never, {
+        p_session_id: registration.session_id,
+        p_text: chatText,
+      } as never).then(
+        () => undefined,
+        (e: unknown) => {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error("[worker/register] chat-mirror insert failed:", msg);
+        },
+      );
+    }
+
+    // No email → can't deliver an OTP. Auto-verify the row AND
+    // immediately mirror the confirmation into the chat, since the
+    // visitor will never get a follow-up OTP step to trigger it.
     if (!registration.email) {
       await supabase
         .from("worker_registrations")
         .update({ verified_at: new Date().toISOString() })
         .eq("id", registration.id);
+      if (registration.session_id) {
+        const chatText = formatWorkerRegistrationConfirmedMessage(registration);
+        void supabase.rpc("append_auto_message" as never, {
+          p_session_id: registration.session_id,
+          p_text: chatText,
+        } as never).then(
+          () => undefined,
+          (e: unknown) => {
+            const msg = e instanceof Error ? e.message : String(e);
+            console.error("[worker/register] auto-confirm chat-mirror failed:", msg);
+          },
+        );
+      }
       return NextResponse.json({
         ok: true,
         registrationId: registration.id,

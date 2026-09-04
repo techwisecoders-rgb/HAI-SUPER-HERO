@@ -79,3 +79,11 @@
   font-size: 14px;
   color: #00e5ff;
 }
+
+.notifRow {
+  padding: 8px 12px 12px;
+  border-top: 1px solid rgba(0, 229, 255, 0.12);
+  display: flex;
+  justify-content: stretch;
+}
+.notifRow > * { width: 100%; justify-content: center; }
