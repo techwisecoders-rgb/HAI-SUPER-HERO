@@ -400,13 +400,47 @@ function ChatInner() {
   return (
     <div className={styles.shell}>
       <div className={styles.top}>
-        <Link href="/trending" className={styles.popularSearches} aria-label="Open popular searches">
-          <h2>Popular Searches</h2>
-          <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
-        </Link>
+        {/* Top action row: [Register icon] [Popular Searches pill] [About Us icon].
+            Each icon is a small circular button that visually matches the
+            chat's cyan accent, and the pill stays centered in the middle. */}
+        <div className={styles.topActions}>
+          <Link
+            href="/register"
+            className={`${styles.topIcon} ${styles.topIconLink}`}
+            aria-label="Register as a worker"
+            title="Register"
+          >
+            {/* "user-plus" icon — represents joining / signing up. */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <line x1="19" y1="8" x2="19" y2="14" />
+              <line x1="22" y1="11" x2="16" y2="11" />
+            </svg>
+          </Link>
+
+          <Link href="/trending" className={styles.popularSearches} aria-label="Open popular searches">
+            <h2>Popular Searches</h2>
+            <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+          </Link>
+
+          <Link
+            href="/projects"
+            className={`${styles.topIcon} ${styles.topIconLink}`}
+            aria-label="About us"
+            title="About us"
+          >
+            {/* "info" icon — circle with an i, the classic About / Help glyph. */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+          </Link>
+        </div>
 
         <div className={styles.welcomeSection}>
           <div className={styles.welcomeRow}>
