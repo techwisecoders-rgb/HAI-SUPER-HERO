@@ -15,6 +15,10 @@ import {
   fireDesktopNotification,
   registerNotificationServiceWorker,
 } from "@/lib/notifications";
+import {
+  evaluateSpecialReplies,
+  type SpecialReplyState,
+} from "@/lib/chat-auto-replies";
 import styles from "./page.module.css";
 
 function formatTime(d: Date | string): string {
@@ -89,12 +93,51 @@ function ChatInner() {
   });
   const listRef = useRef<HTMLDivElement | null>(null);
   const barRef = useKeyboardAwareInput<HTMLDivElement>();
+  // Mutable state for the client-side special-reply logic (first-time
+  // greeting, returning-visitor, completion milestones). Persists across
+  // `send()` calls but resets on remount of the page component. The
+  // helper in `lib/chat-auto-replies.ts` mutates this object in place.
+  const specialReplyStateRef = useRef<SpecialReplyState>({
+    hasMessagedBefore: false,
+    workCompletions: 0,
+  });
 
   // Optional URL params: ?new=1 → wipe local list on mount;
   // ?focus=search → auto-trigger the in-chat search handler.
   useEffect(() => {
     if (params.get("new") === "1") setMessages([]);
   }, [params]);
+
+  /**
+   * Append client-side special ("auto"-type) replies to the given
+   * message list, based on the rules in `lib/chat-auto-replies.ts`.
+   * Returns the new list (mutates `specialReplyStateRef.current`
+   * in place via the helper). Each reply is given a synthetic
+   * local-only id and the current timestamp so the chat renderer
+   * shows them with the standard "auto" bubble styling.
+   */
+  const appendLocalAutoReplies = useCallback(
+    (list: Message[], userText: string): Message[] => {
+      const replies = evaluateSpecialReplies(
+        list,
+        userText,
+        specialReplyStateRef.current,
+        new Date(),
+      );
+      if (replies.length === 0) return list;
+      const nowIso = new Date().toISOString();
+      const additions: Message[] = replies.map((text) => ({
+        id: `local-auto-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        session_id: sessionId ?? "",
+        sender_type: "auto",
+        admin_id: null,
+        text,
+        created_at: nowIso,
+      }));
+      return [...list, ...additions];
+    },
+    [sessionId],
+  );
 
   // Fetch admin-editable contact numbers (phone + WhatsApp). Falls back
   // to the bundled CONTACT constants when the API/DB is unavailable.
@@ -174,6 +217,24 @@ function ChatInner() {
         // "thinking" indicator should be hidden.
         const last = (data.messages ?? []).at(-1);
         if (last && last.sender_type === "admin") setThinking(false);
+        // Seed the special-reply state from the conversation history.
+        // Without this, a page refresh would incorrectly re-fire the
+        // "first-time" greeting even though the user has messaged
+        // before.
+        const ms = data.messages ?? [];
+        specialReplyStateRef.current.hasMessagedBefore =
+          ms.some((m) => m.sender_type === "user");
+        // Count completions from history (case-insensitive substring
+        // match — mirrors the rule logic in chat-auto-replies.ts).
+        const completionMatches = ms.filter(
+          (m) =>
+            m.sender_type === "user" &&
+            (m.text.toLowerCase().includes("work is successfully completed") ||
+              m.text
+                .toLowerCase()
+                .includes("first work is successfully completed")),
+        ).length;
+        specialReplyStateRef.current.workCompletions = completionMatches;
       }
     };
 
@@ -196,9 +257,18 @@ function ChatInner() {
         },
         (payload) => {
           const m = payload.new as Message;
-          setMessages((prev) =>
-            prev.some((x) => x.id === m.id) ? prev : [...prev, m]
-          );
+          setMessages((prev) => {
+            // Already appended (e.g., by the optimistic update in
+            // `send()`) — skip.
+            if (prev.some((x) => x.id === m.id)) return prev;
+            // For a user message arriving via realtime (e.g., echoed
+            // from another device), also evaluate the special replies
+            // so they fire the same way they do on local send.
+            if (m.sender_type === "user") {
+              return appendLocalAutoReplies([...prev, m], m.text);
+            }
+            return [...prev, m];
+          });
           // Fire a desktop notification when the ADMIN (or auto-bot)
           // replies. We skip "user" sender types because that's the
           // visitor's own message echoed back — not something they
@@ -270,7 +340,7 @@ function ChatInner() {
       document.removeEventListener("visibilitychange", onVisible);
       supabase.removeChannel(channel);
     };
-  }, [sessionId]);
+  }, [sessionId, appendLocalAutoReplies]);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
@@ -295,15 +365,25 @@ function ChatInner() {
       // up immediately, even before the realtime subscription echoes it back.
       // The realtime handler dedups on `id`, so this is safe either way.
       const { message: saved } = (await r.json()) as { ok: boolean; message?: Message };
-      if (saved) {
-        setMessages((prev) => (prev.some((x) => x.id === saved.id) ? prev : [...prev, saved]));
-      }
+      // Optimistically append the saved message AND evaluate the
+      // client-side special replies in a single state update, so the
+      // user sees their message and any matching motivational replies
+      // appear together. The realtime subscription may deliver
+      // server-side `auto` replies shortly after; we re-run the
+      // evaluator then too (see the realtime handler below) so any
+      // deferred milestones fire correctly.
+      setMessages((prev) => {
+        const base = saved && !prev.some((x) => x.id === saved.id)
+          ? [...prev, saved]
+          : prev;
+        return appendLocalAutoReplies(base, text);
+      });
       // Show the "thinking" indicator until either a real admin reply
       // arrives (sender_type === "admin" hides it) or the user starts
       // a new chat. An auto reply does NOT hide it.
       setThinking(true);
     } finally { setSending(false); }
-  }, [draft, sessionId, sending]);
+  }, [draft, sessionId, sending, appendLocalAutoReplies]);
 
   return (
     <div className={styles.shell}>
