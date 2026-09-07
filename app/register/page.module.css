@@ -142,6 +142,7 @@
 }
 .noteOk { color: #00ff88; }
 .noteErr { color: #ff8a8a; }
+.noteWarn { color: #ffb86b; }
 
 @media (max-width: 480px) {
   .header { padding: 14px 14px; }
@@ -188,3 +189,49 @@
 }
 .secondaryBtn:hover:not(:disabled) { color: #ffffff; border-color: #00bcd4; }
 .secondaryBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ── "Your registration" view (returning visitors) ── */
+.details {
+  margin: 14px 0 6px;
+  padding: 0;
+  border-top: 1px solid rgba(0, 229, 255, 0.15);
+}
+.detailRow {
+  display: grid;
+  grid-template-columns: 38% 1fr;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+  align-items: start;
+}
+.detailRow:last-child {
+  border-bottom: none;
+}
+.detailRow dt {
+  margin: 0;
+  color: #00e5ff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.detailRow dd {
+  margin: 0;
+  color: #e6edf3;
+  font-size: 14px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+@media (max-width: 480px) {
+  .detailRow {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding: 8px 0;
+  }
+  .detailRow dt {
+    font-size: 11px;
+  }
+  .detailRow dd {
+    font-size: 13px;
+  }
+}

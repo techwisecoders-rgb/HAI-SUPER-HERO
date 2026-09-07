@@ -2,14 +2,18 @@
 
 // /register — "Register as a worker" (2-step OTP-gated flow).
 //
-// Step 1: fill out the form, click Submit Registration. The server
+// Step 1: on mount, GET /api/worker/registration. If the caller's
+//         session or app_user already has a row linked to it, render
+//         a "Your registration" view with the saved details and a
+//         "Register again" button. Otherwise show the empty form.
+// Step 2: fill out the form, click Submit Registration. The server
 //         inserts a *pending* worker_registrations row and (if an
 //         email was supplied) emails a 6-digit OTP.
-// Step 2: OtpGate renders inline. The user enters the 6-digit code,
+// Step 3: OtpGate renders inline. The user enters the 6-digit code,
 //         which is verified via /api/worker/verify-otp and marks
 //         the registration as verified.
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { WORK_TYPES } from "@/content";
 import { OtpGate } from "@/components/OtpGate";
@@ -19,7 +23,27 @@ const AVAILABILITY_OPTIONS = [
   "Full-time", "Part-time", "Weekends only", "On-call", "Flexible",
 ] as const;
 
-type Stage = "form" | "otp" | "done";
+interface WorkerRegistration {
+  id: string;
+  created_at: string;
+  session_id: string | null;
+  user_id: string | null;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  address: string;
+  work_type: string;
+  work_description: string;
+  qualification: string | null;
+  years_experience: string | null;
+  availability: string | null;
+  // `verified_at` is null until the user enters the OTP. We surface this
+  // so a returning visitor whose previous registration is unverified
+  // knows they need to verify (or re-submit).
+  verified_at: string | null;
+}
+
+type Stage = "form" | "otp" | "done" | "registered";
 
 function RegisterForm() {
   const router = useRouter();
@@ -34,6 +58,43 @@ function RegisterForm() {
   const [stage, setStage] = useState<Stage>("form");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [note, setNote] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
+  // The most recent worker_registrations row tied to this session /
+  // app_user, fetched on mount. null = never registered (or still
+  // loading); populated = we should render the "Your registration"
+  // view instead of the empty form.
+  const [existing, setExisting] = useState<WorkerRegistration | null>(null);
+  const [loadingExisting, setLoadingExisting] = useState(true);
+
+  // On mount, check whether this visitor has already registered. If
+  // yes, render the "Your registration" view. The fetch only depends
+  // on the session / app_user cookies which don't change during a
+  // single visit, so a one-shot fetch is sufficient.
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingExisting(true);
+    fetch("/api/worker/registration", { credentials: "same-origin" })
+      .then(async (r) => {
+        if (!r.ok) {
+          // Surface as a soft "no registration" rather than blocking
+          // the form — a 5xx here shouldn't lock the user out of
+          // /register forever. Worst case they fill in the form again.
+          return { registration: null as WorkerRegistration | null };
+        }
+        return (await r.json()) as { registration: WorkerRegistration | null };
+      })
+      .then((d) => {
+        if (cancelled) return;
+        setExisting(d.registration);
+        setLoadingExisting(false);
+        if (d.registration) setStage("registered");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setExisting(null);
+        setLoadingExisting(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -102,6 +163,93 @@ function RegisterForm() {
     }
   }
 
+  if (stage === "registered" && existing) {
+    // Returning visitor — render their saved details instead of the
+    // empty form. They can still re-submit if they want to update
+    // their information by clicking "Update details", which pre-fills
+    // the form with the current values.
+    const reg = existing;
+    const prefill = () => {
+      setForm({
+        fullName: reg.full_name,
+        phone: reg.phone,
+        email: reg.email ?? "",
+        address: reg.address,
+        workType: reg.work_type,
+        workDescription: reg.work_description,
+        qualification: reg.qualification ?? "",
+        yearsExperience: reg.years_experience ?? "",
+        availability: reg.availability ?? "",
+      });
+      setPendingId(null);
+      setNote(null);
+      setStage("form");
+    };
+    return (
+      <main className={styles.page}>
+        <header className={styles.header}>
+          <button type="button" className={styles.back} onClick={() => router.push(back)} aria-label="Back">←</button>
+          <h1 className={styles.title}>Your Registration</h1>
+        </header>
+        <div className={styles.body}>
+          <div className={styles.card}>
+            <p className={styles.summary}>
+              Hi <strong>{reg.full_name}</strong>, here are the worker details you submitted. You can update and re-submit if anything has changed.
+            </p>
+
+            {!reg.verified_at && (
+              <p className={`${styles.note} ${styles.noteWarn}`} role="status">
+                This registration is pending email verification. Submit again (or use your most recent OTP) to complete it.
+              </p>
+            )}
+
+            <dl className={styles.details}>
+              <div className={styles.detailRow}>
+                <dt>Full Name</dt><dd>{reg.full_name}</dd>
+              </div>
+              <div className={styles.detailRow}>
+                <dt>Phone</dt><dd>{reg.phone}</dd>
+              </div>
+              {reg.email && (
+                <div className={styles.detailRow}>
+                  <dt>Email</dt><dd>{reg.email}</dd>
+                </div>
+              )}
+              <div className={styles.detailRow}>
+                <dt>Address</dt><dd>{reg.address}</dd>
+              </div>
+              <div className={styles.detailRow}>
+                <dt>Work Type</dt><dd>{reg.work_type}</dd>
+              </div>
+              <div className={styles.detailRow}>
+                <dt>Describe the work</dt><dd>{reg.work_description}</dd>
+              </div>
+              {reg.qualification && (
+                <div className={styles.detailRow}>
+                  <dt>Qualification</dt><dd>{reg.qualification}</dd>
+                </div>
+              )}
+              {reg.years_experience && (
+                <div className={styles.detailRow}>
+                  <dt>Years of Experience</dt><dd>{reg.years_experience}</dd>
+                </div>
+              )}
+              {reg.availability && (
+                <div className={styles.detailRow}>
+                  <dt>Availability</dt><dd>{reg.availability}</dd>
+                </div>
+              )}
+            </dl>
+
+            <button type="button" className={styles.submitBtn} onClick={prefill}>
+              Update details
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (stage === "otp" && form.email && pendingId) {
     return (
       <main className={styles.page}>
@@ -142,6 +290,25 @@ function RegisterForm() {
           <div className={styles.card}>
             <p className={styles.summary}>Thanks, {form.fullName}! Your worker profile has been saved.</p>
             <button type="button" className={styles.submitBtn} onClick={() => router.push(back)}>Continue</button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Don't flash the empty form while we check for an existing
+  // registration. We render a neutral placeholder instead; once the
+  // lookup finishes the registered view (or this form) takes over.
+  if (loadingExisting && stage === "form") {
+    return (
+      <main className={styles.page}>
+        <header className={styles.header}>
+          <button type="button" className={styles.back} onClick={() => router.push(back)} aria-label="Back">←</button>
+          <h1 className={styles.title}>Register Your Work</h1>
+        </header>
+        <div className={styles.body}>
+          <div className={styles.card}>
+            <p className={styles.intro}>Checking your previous registration…</p>
           </div>
         </div>
       </main>

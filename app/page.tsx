@@ -1,12 +1,9 @@
-// Server component: reads the consent cookie from the request so the
-// cookie banner is NOT rendered in the SSR HTML for returning visitors
-// (avoids a flash of the banner before the client effect runs).
-import { cookies } from "next/headers";
-import { CONSENT_COOKIE } from "@/lib/cookies";
-import { HomeScene } from "./HomeScene";
+// Root route: redirect straight to /chat so the landing ("first") page is
+// never shown. Using next/navigation's redirect() in a server component
+// issues a server-side 307 redirect, so the browser never even renders
+// any HTML for "/" — it goes straight to /chat.
+import { redirect } from "next/navigation";
 
 export default function HomePage() {
-  const c = cookies().get(CONSENT_COOKIE)?.value;
-  const alreadyConsented = c === "true" || c === "false";
-  return <HomeScene showBanner={!alreadyConsented} />;
+  redirect("/chat");
 }

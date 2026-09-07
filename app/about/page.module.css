@@ -1,0 +1,233 @@
+/* /about/page.module.css
+   Standalone About page (linked from the chat top bar). Mirrors the
+   visual language of /projects (same dark gradient background,
+   same About-card design) but with an animated hero title at the top
+   and a hero image between the title and the card. */
+
+.wrap {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #07111f, #101827, #172033);
+  color: white;
+  padding-bottom: 30px;
+}
+
+/* Sticky header with the back button (left) and the animated title.
+   The header background is slightly translucent with a blur so the
+   title stays readable as the page scrolls. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.97);
+  backdrop-filter: blur(10px);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2px solid rgba(0, 188, 212, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.back {
+  position: absolute;
+  left: 15px;
+  background: white;
+  color: #00a7bd;
+  border: none;
+  border-radius: 30px;
+  padding: 9px 18px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.back:hover { background: #00d9d9; color: white; }
+
+/* Hero title — large, cyan, with a glow-pulse animation that cycles
+   the text-shadow opacity in/out smoothly. Matches the cyan accent
+   palette used throughout the app. */
+.heroTitle {
+  color: #00e5ff;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin: 0;
+  text-align: center;
+  text-shadow:
+    0 0 12px rgba(0, 229, 255, 0.7),
+    0 0 28px rgba(0, 229, 255, 0.45),
+    0 0 48px rgba(0, 229, 255, 0.2);
+  animation: glowPulse 2.6s ease-in-out infinite;
+}
+
+@media (max-width: 480px) {
+  .heroTitle { font-size: 24px; letter-spacing: 1px; }
+}
+
+/* Hero image — full-bleed, capped at 1000px, with rounded corners
+   and a subtle zoom on hover (matches the carousel slide style in
+   /projects). */
+.heroImageWrap {
+  width: 95%;
+  max-width: 1000px;
+  margin: 30px auto 10px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.55);
+}
+.heroImage {
+  width: 100%;
+  height: 380px;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.heroImageWrap:hover .heroImage { transform: scale(1.04); }
+
+@media (max-width: 768px) {
+  .heroImage { height: 240px; }
+}
+@media (max-width: 480px) {
+  .heroImage { height: 180px; }
+}
+
+/* Glow-pulse keyframe. Animate the text-shadow's outer blur radii
+   so the cyan halo fades in and out without the text moving or
+   changing colour. */
+@keyframes glowPulse {
+  0%, 100% {
+    text-shadow:
+/* ------- About Us Card (same design as /projects) ------- */
+.about { width: 95%; max-width: 420px; margin: 30px auto 50px; padding: 0 10px; }
+.card {
+  background: linear-gradient(160deg, #0f172a 0%, #0b1220 100%);
+  border: 1.5px solid rgba(0, 229, 255, 0.25);
+  border-radius: 22px;
+  padding: 22px 20px 18px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), 0 0 20px rgba(0, 229, 255, 0.08);
+}
+.cardHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.cardIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00e5ff, #0099bb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.45);
+}
+.cardIcon svg { width: 22px; height: 22px; color: #0b1220; }
+.cardHeader h2 { color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; letter-spacing: 0.3px; }
+.cardLabel {
+  color: #00e5ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 0 0 10px 2px;
+  opacity: 0.9;
+}
+
+.founder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 30, 50, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.founder:hover { border-color: rgba(0, 229, 255, 0.4); box-shadow: 0 0 12px rgba(0, 229, 255, 0.15); }
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00c4e0, #007a99);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(0, 200, 230, 0.35);
+}
+.founderInfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.founderName { color: #ffffff; font-size: 15px; font-weight: 600; line-height: 1.2; }
+.founderRole { color: #7a8fa3; font-size: 12px; font-weight: 400; }
+
+.contact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 30, 50, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  text-decoration: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.contact:hover { border-color: rgba(0, 229, 255, 0.4); box-shadow: 0 0 12px rgba(0, 229, 255, 0.15); }
+.contactIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0, 229, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.contactIcon svg { width: 18px; height: 18px; color: #00e5ff; }
+.contactInfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.contactLabel {
+  color: #7a8fa3;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.contactValue { color: #ffffff; font-size: 14px; font-weight: 500; word-break: break-all; }
+
+.privacyRow { display: flex; justify-content: center; margin: 16px 0 12px; }
+.privacyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 1.5px solid rgba(0, 229, 255, 0.45);
+  border-radius: 50px;
+  background: transparent;
+  color: #00e5ff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.privacyBtn:hover { background: rgba(0, 229, 255, 0.12); box-shadow: 0 0 14px rgba(0, 229, 255, 0.3); }
+.privacyBtn svg { width: 14px; height: 14px; }
+
+.copy {
+  text-align: center;
+  color: #5a6a7a;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  margin: 0;
+  padding-top: 4px;
+}
+      0 0 8px rgba(0, 229, 255, 0.4),
+      0 0 18px rgba(0, 229, 255, 0.25),
+      0 0 32px rgba(0, 229, 255, 0.1);
+  }
+  50% {
+    text-shadow:
+      0 0 16px rgba(0, 229, 255, 0.85),
+      0 0 38px rgba(0, 229, 255, 0.55),
+      0 0 64px rgba(0, 229, 255, 0.3);
+  }
+}

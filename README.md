@@ -10,7 +10,6 @@ A modern, production-ready rebuild of the original single-file HTML/CSS/JS HAI S
 
 The look and feel (Chakra splash, gradient palette, dvh keyboard-avoidance for the chat input bar, rotating carousels) is preserved. The architecture, persistence, realtime, and admin tooling are new.
 
-
 ## Quick start
 
 ```bash
@@ -172,6 +171,3 @@ middleware.ts                   protects /admin/*
 2. Import into Vercel.
 3. Add the environment variables from `.env.example` to the Vercel project settings.
 4. Deploy. The `middleware.ts` runs on the edge and gates `/admin/*` correctly.
-#   H A I - S U P E R - H E R O 
- 
- 
