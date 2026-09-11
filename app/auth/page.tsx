@@ -25,6 +25,8 @@ function AuthBody() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? "/chat";
+  const isBusinessDestination = next === "/business";
+  const initialMode = isBusinessDestination || params.get("mode") === "login" ? "login" : "register";
   const { email: authEmail } = useAuth();
 
   return (
@@ -37,6 +39,8 @@ function AuthBody() {
       <div className={styles.card}>
         <AuthPanel
           authenticatedEmail={authEmail}
+          initialMode={initialMode}
+          otpSubmitLabel={next === "/business" ? "Verify & Continue" : undefined}
           onAuthenticated={() => router.replace(next)}
         />
       </div>

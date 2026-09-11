@@ -18,9 +18,9 @@
 
 import { cookies } from "next/headers";
 import { CONSENT_COOKIE } from "@/lib/cookies";
-import { CookieBanner } from "@/components/CookieBanner";
 import { ConsentRefresh } from "./ConsentRefresh";
 import ChatClient from "./ChatClient";
+import ChatConsentBanner from "./ChatConsentBanner";
 import styles from "./page.module.css";
 
 export default function ChatPage() {
@@ -40,15 +40,7 @@ export default function ChatPage() {
   return (
     <main className={styles.shell}>
       <ConsentRefresh />
-      <CookieBanner
-        onAccepted={() => {
-          // The banner already POSTed and stored the cookies. Tell the
-          // server component to re-evaluate so it switches to the chat
-          // UI. (ConsentRefresh is a tiny client component that calls
-          // router.refresh() when triggered.)
-          window.dispatchEvent(new Event("hai-consent-accepted"));
-        }}
-      />
+      <ChatConsentBanner />
     </main>
   );
 }

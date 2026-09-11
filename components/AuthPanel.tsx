@@ -26,13 +26,26 @@ type Stage = "form" | "otp";
 interface AuthPanelProps {
   /** Called when the user has fully authenticated. */
   onAuthenticated?: (info: { userId: string; email: string; sessionId: string }) => void;
+  /** Called after the user logs out, allowing a parent overlay to close. */
+  onLogout?: () => void;
   /** Already-authenticated user email, if any. */
   authenticatedEmail: string | null;
+  /** Start in login-only mode for flows such as the business portal. */
+  initialMode?: Mode;
+  /** Label for the final OTP submission button. */
+  otpSubmitLabel?: string;
 }
 
-export function AuthPanel({ onAuthenticated, authenticatedEmail }: AuthPanelProps) {
+export function AuthPanel({
+  onAuthenticated,
+  onLogout,
+  authenticatedEmail,
+  initialMode = "register",
+  otpSubmitLabel = "Verify & Enter Chat",
+}: AuthPanelProps) {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("register");
+  const loginOnly = initialMode === "login";
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [stage, setStage] = useState<Stage>("form");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -136,6 +149,7 @@ export function AuthPanel({ onAuthenticated, authenticatedEmail }: AuthPanelProp
     // Hard-reload the page so the server-rendered header also flips.
     router.replace("/chat");
     router.refresh();
+    onLogout?.();
   }
 
   // Already authenticated -> show profile + logout only.
@@ -173,26 +187,28 @@ export function AuthPanel({ onAuthenticated, authenticatedEmail }: AuthPanelProp
 
       {stage === "form" && (
         <>
-          <div className="authTabs" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "register"}
-              className={`authTab ${mode === "register" ? "authTabActive" : ""}`}
-              onClick={() => switchMode("register")}
-            >
-              Register
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "login"}
-              className={`authTab ${mode === "login" ? "authTabActive" : ""}`}
-              onClick={() => switchMode("login")}
-            >
-              Login
-            </button>
-          </div>
+          {!loginOnly && (
+            <div className="authTabs" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "register"}
+                className={`authTab ${mode === "register" ? "authTabActive" : ""}`}
+                onClick={() => switchMode("register")}
+              >
+                Register
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "login"}
+                className={`authTab ${mode === "login" ? "authTabActive" : ""}`}
+                onClick={() => switchMode("login")}
+              >
+                Login
+              </button>
+            </div>
+          )}
 
           <form onSubmit={(e) => void submitForm(e)} className="authForm">
             <label className="authLabel">
@@ -254,7 +270,7 @@ export function AuthPanel({ onAuthenticated, authenticatedEmail }: AuthPanelProp
             disabled={busy || otp.length !== 6}
             className="authPrimaryBtn"
           >
-            {busy ? "Verifying…" : "Verify & Enter Chat"}
+            {busy ? "Verifying…" : otpSubmitLabel}
           </button>
           <button
             type="button"

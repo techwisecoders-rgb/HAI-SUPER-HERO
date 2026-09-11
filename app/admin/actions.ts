@@ -6,12 +6,56 @@
 import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase/server";
 import { getServerSupabase } from "@/lib/supabase/server-user";
+import { hashPassword } from "@/lib/auth/helpers";
 
 async function requireAdmin() {
   const sb = getServerSupabase();
   const { data, error } = await sb.auth.getUser();
   if (error || !data.user) throw new Error("not_authenticated");
   return data.user;
+}
+
+const CreateBusinessBody = z
+  .object({
+    email: z.string().trim().email().max(254),
+    password: z.string().min(6).max(128),
+    confirmPassword: z.string().min(6).max(128),
+  })
+  .refine((input) => input.password === input.confirmPassword, {
+    message: "passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+/** Create business login credentials. The business profile is created by its owner after sign-in. */
+export async function createBusinessAction(input: z.infer<typeof CreateBusinessBody>) {
+  await requireAdmin();
+  const parsed = CreateBusinessBody.safeParse(input);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "invalid input");
+  }
+
+  const email = parsed.data.email.toLowerCase();
+  const supabase = getServiceSupabase();
+  const existing = await supabase.rpc("find_app_user_by_email", { p_email: email });
+  if (existing.error) throw new Error(existing.error.message);
+  if (existing.data && existing.data.length > 0) {
+    throw new Error("email already registered");
+  }
+
+  const passwordHash = await hashPassword(parsed.data.password);
+  const created = await supabase.rpc("create_app_user", {
+    p_email: email,
+    p_password_hash: passwordHash,
+  });
+  if (created.error || !created.data || created.data.length === 0) {
+    throw new Error(created.error?.message ?? "could not create business credentials");
+  }
+
+  return {
+    ok: true,
+    email,
+    userId: created.data[0].id,
+  };
 }
 
 export async function listSessionsAction(query?: string) {

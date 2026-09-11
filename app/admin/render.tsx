@@ -3,6 +3,7 @@
 //  page.tsx; both are colocated for readability.)
 "use client";
 
+import { useState } from "react";
 import styles from "./admin.module.css";
 import type { Message, Session } from "@/types";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -35,6 +36,36 @@ export function AdminView(props: {
   } = props;
 
   const totalUnread = sessions.reduce((sum, s) => sum + (s.unread_count ?? 0), 0);
+  const [businessFormOpen, setBusinessFormOpen] = useState(false);
+  const [businessEmail, setBusinessEmail] = useState("");
+  const [businessPassword, setBusinessPassword] = useState("");
+  const [businessConfirmPassword, setBusinessConfirmPassword] = useState("");
+  const [businessBusy, setBusinessBusy] = useState(false);
+  const [businessError, setBusinessError] = useState<string | null>(null);
+  const [businessSuccess, setBusinessSuccess] = useState<string | null>(null);
+
+  const submitBusinessRegistration = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusinessError(null);
+    setBusinessSuccess(null);
+    setBusinessBusy(true);
+    try {
+      const { createBusinessAction } = await import("./actions");
+      const result = await createBusinessAction({
+        email: businessEmail,
+        password: businessPassword,
+        confirmPassword: businessConfirmPassword,
+      });
+      setBusinessSuccess(`Business credentials created for ${result.email}.`);
+      setBusinessEmail("");
+      setBusinessPassword("");
+      setBusinessConfirmPassword("");
+    } catch (error) {
+      setBusinessError(error instanceof Error ? error.message : "could not create business credentials");
+    } finally {
+      setBusinessBusy(false);
+    }
+  };
 
   return (
     <div className={styles.shell}>
@@ -53,6 +84,17 @@ export function AdminView(props: {
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <NotificationBell />
+            <button
+              type="button"
+              className={styles.registerBusinessButton}
+              onClick={() => {
+                setBusinessError(null);
+                setBusinessSuccess(null);
+                setBusinessFormOpen(true);
+              }}
+            >
+              Register as business
+            </button>
             <button
               type="button"
               className={styles.signOut}
@@ -204,6 +246,98 @@ export function AdminView(props: {
           </button>
         </div>
       </section>
+
+      {businessFormOpen && (
+        <div className={styles.modalBackdrop} role="presentation">
+          <section
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="business-registration-title"
+          >
+            <div className={styles.modalHeader}>
+              <div>
+                <h2 id="business-registration-title" className={styles.modalTitle}>
+                  Register as business
+                </h2>
+                <p className={styles.modalDescription}>
+                  Create login credentials for a business owner. They will sign in at /business and create their profile there.
+                </p>
+              </div>
+              <button
+                type="button"
+                className={styles.modalClose}
+                onClick={() => setBusinessFormOpen(false)}
+                aria-label="Close business registration"
+              >
+                ×
+              </button>
+            </div>
+
+            <form className={styles.businessForm} onSubmit={(event) => void submitBusinessRegistration(event)}>
+              <label className={styles.businessField}>
+                <span>Business email</span>
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={businessEmail}
+                  onChange={(event) => setBusinessEmail(event.target.value)}
+                  className={styles.businessInput}
+                  placeholder="owner@business.com"
+                />
+              </label>
+              <label className={styles.businessField}>
+                <span>Password</span>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  value={businessPassword}
+                  onChange={(event) => setBusinessPassword(event.target.value)}
+                  className={styles.businessInput}
+                  placeholder="At least 6 characters"
+                />
+              </label>
+              <label className={styles.businessField}>
+                <span>Confirm password</span>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  value={businessConfirmPassword}
+                  onChange={(event) => setBusinessConfirmPassword(event.target.value)}
+                  className={styles.businessInput}
+                  placeholder="Re-enter password"
+                />
+              </label>
+
+              {businessError && <p className={styles.businessError}>{businessError}</p>}
+              {businessSuccess && <p className={styles.businessSuccess}>{businessSuccess}</p>}
+
+              <div className={styles.businessActions}>
+                <button
+                  type="button"
+                  className={styles.businessCancel}
+                  onClick={() => setBusinessFormOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type={businessSuccess ? "button" : "submit"}
+                  disabled={businessBusy}
+                  className={styles.businessSubmit}
+                  onClick={businessSuccess ? () => setBusinessFormOpen(false) : undefined}
+                >
+                  {businessSuccess ? "Done" : businessBusy ? "Creating…" : "Create credentials"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
 
       {error && (
         <div

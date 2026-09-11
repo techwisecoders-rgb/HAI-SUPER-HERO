@@ -13,6 +13,26 @@
 
 .top { flex: 0 0 auto; flex-shrink: 0; background: #1e2932; z-index: 20; position: relative; }
 
+.portalTrigger {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 30;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: 2.2rem;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+  transition: transform 0.15s ease;
+}
+
+.portalTrigger:hover {
+  transform: scale(1.06);
+}
+
 .header {
   background: #1e2932;
   padding: 8px 20px;
@@ -157,7 +177,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 8px 12px 4px;
+  padding: 8px 12px 4px 64px;
   flex-wrap: nowrap;
 }
 .topActions > .popularSearches {

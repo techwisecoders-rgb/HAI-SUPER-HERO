@@ -207,3 +207,136 @@
   cursor: pointer;
 }
 .signOut:hover { background: rgba(255, 255, 255, 0.06); }
+
+.registerBusinessButton {
+  color: #06222b;
+  background: linear-gradient(135deg, #00bcd4, #00d9a0);
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.4rem 0.65rem;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.registerBusinessButton:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+.modalBackdrop {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 50;
+}
+.modal {
+  background: #101827;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 1.5rem 5rem rgba(0, 0, 0, 0.45);
+  max-height: calc(100dvh - 2rem);
+  max-width: 28rem;
+  overflow-y: auto;
+  padding: 1.25rem;
+  width: 100%;
+}
+.modalHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+.modalTitle {
+  color: #fff;
+  font-size: 1.05rem;
+  margin: 0;
+}
+.modalDescription {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  margin: 0.35rem 0 0;
+}
+.modalClose {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1.2rem;
+  height: 2rem;
+  justify-content: center;
+  line-height: 1;
+  width: 2rem;
+}
+.modalClose:hover { color: #fff; border-color: #00bcd4; }
+.businessForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+.businessField {
+  color: rgba(255, 255, 255, 0.65);
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+  gap: 0.35rem;
+}
+.businessInput {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.65rem;
+  color: #fff;
+  font: inherit;
+  outline: none;
+  padding: 0.7rem 0.8rem;
+}
+.businessInput:focus { border-color: #00bcd4; }
+.businessError,
+.businessSuccess {
+  border-radius: 0.5rem;
+  font-size: 0.78rem;
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+}
+.businessError { background: rgba(244, 63, 94, 0.12); color: #fda4af; }
+.businessSuccess { background: rgba(16, 185, 129, 0.12); color: #6ee7b7; }
+.businessActions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+.businessCancel,
+.businessSubmit {
+  border-radius: 9999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.55rem 0.85rem;
+}
+.businessCancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.75);
+}
+.businessSubmit {
+  background: linear-gradient(135deg, #00bcd4, #00d9a0);
+  border: none;
+  color: #06222b;
+}
+.businessSubmit:disabled { cursor: not-allowed; opacity: 0.55; }
+
+@media (max-width: 520px) {
+  .registerBusinessButton { font-size: 0.7rem; padding: 0.35rem 0.5rem; }
+  .businessActions { flex-direction: column-reverse; }
+  .businessCancel,
+  .businessSubmit { width: 100%; }
+}

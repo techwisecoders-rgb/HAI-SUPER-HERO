@@ -11,6 +11,7 @@ import { useAuth, notifyAuthChanged } from "@/lib/use-auth";
 import { CONTACT } from "@/content";
 import type { Message, ContactSettings } from "@/types";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
+import PortalMenu from "@/components/PortalMenu";
 import {
   fireDesktopNotification,
   registerNotificationServiceWorker,
@@ -68,6 +69,7 @@ function ChatInner() {
   const [thinking, setThinking] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [contact, setContact] = useState<ContactSettings>({ phone: CONTACT.phone, whatsapp: CONTACT.whatsapp });
+  const [portalOpen, setPortalOpen] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
   const barRef = useKeyboardAwareInput<HTMLDivElement>();
   const specialReplyStateRef = useRef<SpecialReplyState>({ hasMessagedBefore: false, workCompletions: 0 });
@@ -376,14 +378,9 @@ function ChatInner() {
     <div className={styles.shell}>
       <div className={styles.top}>
         <div className={styles.topActions}>
-          <Link href="/register" className={`${styles.topIcon} ${styles.topIconLink}`} aria-label="Register as a worker" title="Register">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <line x1="19" y1="8" x2="19" y2="14" />
-              <line x1="22" y1="11" x2="16" y2="11" />
-            </svg>
-          </Link>
+          <button type="button" className={styles.portalTrigger} onClick={() => setPortalOpen(true)} aria-label="Open portal menu" title="Portal">
+            👤
+          </button>
 
           <Link href="/trending" className={styles.popularSearches} aria-label="Open popular searches">
             <h2>Popular Searches</h2>
@@ -462,6 +459,8 @@ function ChatInner() {
           </svg>
         </button>
       </div>
+
+      <PortalMenu open={portalOpen} onClose={() => setPortalOpen(false)} />
     </div>
   );
 }
