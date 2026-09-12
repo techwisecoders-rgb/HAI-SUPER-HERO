@@ -97,7 +97,16 @@ export async function GET(req: NextRequest) {
   const user = await getAuthenticatedBusinessUser(req);
   if (!user) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   const profile = await getBusinessProfileForUser(user.id);
-  if (!profile) return NextResponse.json({ profile: null });
+  if (!profile) return NextResponse.json({
+    profile: null,
+    listings: [],
+    delivery_areas: [],
+    social_links: [],
+    reviews: [],
+    staff_roles: [],
+    entries: [],
+    orders: [],
+  });
   const data = await aggregate(profile);
   return NextResponse.json({
     profile,

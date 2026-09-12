@@ -86,17 +86,6 @@ export function AdminView(props: {
             <NotificationBell />
             <button
               type="button"
-              className={styles.registerBusinessButton}
-              onClick={() => {
-                setBusinessError(null);
-                setBusinessSuccess(null);
-                setBusinessFormOpen(true);
-              }}
-            >
-              Register as business
-            </button>
-            <button
-              type="button"
               className={styles.signOut}
               onClick={async () => {
                 const { signOutAction } = await import("./actions");
@@ -175,6 +164,17 @@ export function AdminView(props: {
               </div>
             )}
           </div>
+          <button
+            type="button"
+            className={styles.registerBusinessButton}
+            onClick={() => {
+              setBusinessError(null);
+              setBusinessSuccess(null);
+              setBusinessFormOpen(true);
+            }}
+          >
+            Register as business
+          </button>
         </header>
 
         <div className={styles.thread}>

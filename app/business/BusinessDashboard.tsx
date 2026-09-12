@@ -144,9 +144,9 @@ export default function BusinessDashboard() {
   }
 
   const profile = data.profile;
-  const totalOrders = data.orders.length;
-  const pendingOrders = data.orders.filter((order) => order.status === "pending").length;
-  const averageRating = data.reviews.length
+  const totalOrders = data.orders?.length ?? 0;
+  const pendingOrders = data.orders?.filter((order) => order.status === "pending").length ?? 0;
+  const averageRating = data.reviews?.length
     ? data.reviews.reduce((sum, review) => sum + review.rating, 0) / data.reviews.length
     : 0;
 
@@ -223,10 +223,10 @@ export default function BusinessDashboard() {
           </section>
 
           <section className={styles.metrics}>
-            <div><span>Active listings</span><strong>{data.listings.filter((item) => item.active).length}</strong><small>{data.listings.length} total</small></div>
-            <div><span>Delivery areas</span><strong>{data.delivery_areas.filter((item) => item.active).length}</strong><small>service coverage</small></div>
+            <div><span>Active listings</span><strong>{data.listings?.filter((item) => item.active).length ?? 0}</strong><small>{data.listings?.length ?? 0} total</small></div>
+            <div><span>Delivery areas</span><strong>{data.delivery_areas?.filter((item) => item.active).length ?? 0}</strong><small>service coverage</small></div>
             <div><span>Open orders</span><strong>{pendingOrders}</strong><small>{totalOrders} total orders</small></div>
-            <div><span>Average rating</span><strong>{averageRating.toFixed(1)}<small className={styles.metricStar}> ★</small></strong><small>{data.reviews.length} reviews</small></div>
+            <div><span>Average rating</span><strong>{averageRating.toFixed(1)}<small className={styles.metricStar}> ★</small></strong><small>{data.reviews?.length ?? 0} reviews</small></div>
           </section>
 
           <section className={styles.section} id="profile">
@@ -335,7 +335,7 @@ export default function BusinessDashboard() {
             resource="reviews"
             title="Customer reviews"
             blurb="Curate trustworthy feedback and highlight your best experiences."
-            items={data.reviews.map((item) => ({ ...item, reviewerName: item.reviewer_name }))}
+            items={data.reviews?.map((item) => ({ ...item, reviewerName: item.reviewer_name })) ?? []}
             fields={[
               { key: "reviewerName", label: "Reviewer name", required: true },
               { key: "rating", label: "Rating", type: "number", required: true },
@@ -386,7 +386,7 @@ export default function BusinessDashboard() {
             resource="orders"
             title="Orders"
             blurb="Review customer requests and move each order through your delivery workflow."
-            items={data.orders.map((item) => ({
+            items={data.orders?.map((item) => ({
               ...item,
               customerName: item.customer_name,
               customerPhone: item.customer_phone,
@@ -395,7 +395,7 @@ export default function BusinessDashboard() {
               deliveryStatus: item.delivery_status,
               deliveryBoyName: item.delivery_boy_name,
               items: JSON.stringify(item.items, null, 2),
-            }))}
+            })) ?? []}
             fields={[
               { key: "customerName", label: "Customer name", required: true },
               { key: "customerPhone", label: "Customer phone", required: true },
