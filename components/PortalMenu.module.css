@@ -13,7 +13,7 @@
   height: 100vh;
   background-color: #05070f;
   z-index: 1000;
-  overflow: hidden;
+  overflow: clip;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #ffffff;
 }
@@ -119,6 +119,8 @@
   max-width: 420px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   background-color: #0e1322;
   border-radius: 10px;
   padding: 28px;
@@ -258,5 +260,10 @@
   .registerForm,
   .authCard {
     padding: 24px 20px;
+  }
+
+  .authCard {
+    max-height: calc(100dvh - 60px);
+    overscroll-behavior: contain;
   }
 }

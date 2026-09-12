@@ -4,6 +4,7 @@
 
 .shell {
   min-height: 100dvh;
+  overflow-y: auto;
   background: linear-gradient(135deg, #0f1a25 0%, #1e2932 100%);
   display: flex;
   flex-direction: column;
@@ -41,4 +42,11 @@
   color: #00bcd4;
   cursor: pointer;
   text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .shell { padding: 20px 12px; }
+  .brandTitle { font-size: 22px; }
+  .brandSub { font-size: 12px; }
+  .card { padding: 16px; }
 }

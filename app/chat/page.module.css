@@ -481,9 +481,11 @@
   .headerLoginBtn { padding: 5px 10px; font-size: 12px; }
   .headerUserLabel { display: none; }
   .phoneNumber { display: inline-block; }
-  .topActions { padding: 6px 10px 2px; gap: 6px; }
+  .topActions { padding: 6px 10px 2px 50px; gap: 6px; }
   .topIcon { width: 34px; height: 34px; }
   .topIcon svg { width: 18px; height: 18px; }
+  .portalTrigger { font-size: 1.8rem; top: 10px; left: 10px; }
+  .topActions > .popularSearches { max-width: 65%; }
 }
 
 @media (max-width: 480px) {
