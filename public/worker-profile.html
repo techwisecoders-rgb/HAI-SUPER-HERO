@@ -1,0 +1,3579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Profile</title>
+
+    <style>
+        /* =====================================================
+           RESET
+        ===================================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            background: #0d0e11;
+            color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 95px;
+        }
+
+
+        /* =====================================================
+           WORK STATUS / PAYMENT STATUS CARD
+        ===================================================== */
+
+        .work-status-card {
+            display: none;
+            /* Hidden by default on main page */
+            width: 100%;
+            max-width: 790px;
+            margin: 12px auto 0;
+            background: #1b1c21;
+            border: 1px solid #303139;
+            border-radius: 15px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.20);
+            position: relative;
+        }
+
+        /* PAGE MODE STYLING FOR SEPARATE PAGE VIEW OF WORK STATUS CARD */
+        .work-status-card.page-mode {
+            display: block !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            margin: 0;
+            border-radius: 0;
+            z-index: 2000;
+            overflow-y: auto;
+            background: #0d0e11;
+            padding: 20px;
+        }
+
+        .work-status-page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #282930;
+        }
+
+        .work-status-card.page-mode,
+        .jobs-card-container.page-mode {
+            padding-bottom: 100px !important;
+        }
+
+        .work-status-page-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .work-status-close-btn {
+            background: #202127;
+            border: 1px solid #343640;
+            color: #a1a1aa;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .status-tab-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            background: #141519;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid #282930;
+        }
+
+        .status-main-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #8e9098;
+            padding: 9px 12px;
+            font-size: 13.5px;
+            font-weight: 700;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .status-main-tab:hover {
+            color: #ffffff;
+            background: #1d1e24;
+        }
+
+        .status-main-tab.active {
+            background: #23242a;
+            color: #ffffff;
+            border: 1px solid #383a45;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-main-tab.active[data-target="paymentTab"] {
+            color: #4ade80;
+            border-color: #1c5232;
+            background: #12281a;
+        }
+
+        .tab-content-panel {
+            display: block;
+        }
+
+        .tab-content-panel.hidden {
+            display: none;
+        }
+
+        /* =====================================================
+           WORK STATUS
+        ===================================================== */
+
+        .status-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .status-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .green-dot {
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+        }
+
+        .green-dot.offline {
+            background: #64748b;
+            box-shadow: none;
+        }
+
+        .status-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* =====================================================
+           TOGGLE SWITCH
+        ===================================================== */
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333642;
+            transition: .3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked+.toggle-slider {
+            background-color: #16a34a;
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* =====================================================
+           STATUS SUB ROW
+        ===================================================== */
+
+        .status-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #11281c;
+            border: 1px solid #1c5232;
+            color: #4ade80;
+            font-size: 11.5px;
+            font-weight: 800;
+            padding: 5px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pill.offline {
+            background: #23252d;
+            border-color: #383a47;
+            color: #94a3b8;
+        }
+
+        .status-subtext {
+            color: #8e9098;
+            font-size: 13px;
+        }
+
+        /* =====================================================
+           STATS GRID
+        ===================================================== */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .stat-box {
+            background: #141519;
+            border: 1px solid #282930;
+            border-radius: 12px;
+            padding: 14px 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #8e9098;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .stat-value.verified {
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 16px;
+        }
+
+        .stat-sub {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stat-sub.green {
+            color: #4ade80;
+        }
+
+        .stat-sub.gray {
+            color: #6b6d76;
+        }
+
+        /* =====================================================
+           DROPDOWNS
+        ===================================================== */
+
+        .btn-dropdown-toggle {
+            width: 100%;
+            background: #141519;
+            border: 1px dashed #343744;
+            color: #d1d5db;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: .2s;
+        }
+
+        .btn-dropdown-toggle:hover {
+            background: #20222a;
+            border-color: #4f5366;
+            color: #ffffff;
+        }
+
+        .arrow-icon {
+            transition: transform .3s ease;
+        }
+
+        .btn-dropdown-toggle.active .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .4s ease-in-out;
+        }
+
+        .dropdown-container.open {
+            max-height: 2000px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid #282930;
+        }
+
+        .dropdown-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #9ca3af;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .past-works-list,
+        .payment-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .past-work-card,
+        .payment-history-card {
+            background: #141519;
+            border: 1px solid #282930;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .past-work-header,
+        .payment-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .past-work-type,
+        .payment-work-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .past-work-cost,
+        .payment-amount {
+            font-size: 15px;
+            font-weight: 800;
+            color: #4ade80;
+        }
+
+        .past-work-meta,
+        .payment-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #8e9098;
+        }
+
+        .review-box {
+            background: #1c1d24;
+            border-left: 3px solid #38bdf8;
+            padding: 10px 12px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 10px;
+        }
+
+        .review-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .reviewer-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .review-rating {
+            color: #ffc107;
+            font-size: 12px;
+        }
+
+        .review-text {
+            font-size: 12.5px;
+            color: #94a3b8;
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        /* =====================================================
+           PAYMENT
+        ===================================================== */
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .payment-method-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #1a2332;
+            border: 1px solid #23354e;
+            color: #38bdf8;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .payout-info-box {
+            background: #141519;
+            border: 1px solid #282930;
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .payout-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .payout-bank {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .payout-acc {
+            font-size: 12px;
+            color: #8e9098;
+        }
+
+        .btn-withdraw {
+            width: 100%;
+            height: 40px;
+            background: #16a34a;
+            border: none;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: .2s;
+            margin-bottom: 14px;
+        }
+
+        .btn-withdraw:hover {
+            background: #22c55e;
+        }
+
+        /* =====================================================
+           FLOATING HOME
+        ===================================================== */
+
+        .floating-home-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 90px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #0d0e11;
+            border: 1px solid #303139;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1001;
+            transition: transform .2s, background .2s;
+        }
+
+        .floating-home-btn.show {
+            display: flex;
+        }
+
+        .floating-home-btn:hover {
+            transform: scale(1.1);
+            background: #e2e8f0;
+        }
+
+        /* =====================================================
+           TOP PROFILE / MERGED HEADER (UPDATED STRUCTURE)
+        ===================================================== */
+
+        .reference-header {
+            width: 100%;
+            max-width: 790px;
+            margin: 0 auto 12px;
+            position: relative;
+            border-radius: 18px;
+            border: 1px solid #26384f;
+            background: #111823;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, .38);
+            overflow: hidden;
+        }
+
+        .cover-container {
+            width: 100%;
+            height: 180px;
+            position: relative;
+            background: white url("a_clean_modern_widescreen_app_profile_header_ui.png") center/cover no-repeat;
+        }
+
+        .cover-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(3, 12, 24, .2) 0%, rgba(3, 12, 24, .6) 100%);
+            pointer-events: none;
+        }
+
+        .header-image-actions {
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 5;
+        }
+
+        .header-image-btn {
+            border: 1px solid rgba(255, 255, 255, .3);
+            background: rgba(5, 15, 28, .72);
+            color: #fff;
+            border-radius: 9px;
+            padding: 8px 11px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .header-image-btn:hover {
+            background: #1677d2;
+        }
+
+        .header-ellipse-btn {
+            border: 1px solid rgba(255, 255, 255, .3);
+            background: rgba(5, 15, 28, .72);
+            color: #fff;
+            border-radius: 9px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-ellipse-btn:hover {
+            background: #1677d2;
+        }
+
+        .header-back {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, .28);
+            background: rgba(5, 15, 28, .65);
+            color: #fff;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-back:hover {
+            background: rgba(40, 126, 220, .8);
+        }
+
+        .profile-body-section {
+            position: relative;
+            padding: 0 20px 20px 20px;
+            background: #111823;
+        }
+
+        .portrait-wrapper {
+            position: relative;
+            margin-top: -50px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header-portrait {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            object-position: center top;
+            border-radius: 16px;
+            border: 3px solid #111823;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, .45);
+        }
+
+        .header-details {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .name-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .worker-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .verified-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #1684ed;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .profession {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            width: fit-content;
+            padding: 2px 6px;
+            border-radius: 8px;
+            background: rgba(35, 36, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #d8d8dc;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .profession-icon {
+            padding-left: 4px;
+            font-size: 14px;
+        }
+
+        .job-description-select {
+            height: 30px;
+            min-width: 180px;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #d8d8dc;
+            padding: 0 9px 0 2px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .job-description-select option {
+            background: #1b1c21;
+            color: #ffffff;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 7px;
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .location-row {
+            color: #cbd5e1;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 4px;
+        }
+
+        .bottom-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .available {
+            width: 19px;
+            height: 19px;
+            border-radius: 50%;
+            background: #1684ed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .stars {
+            color: #ffc107;
+            font-size: 15px;
+            letter-spacing: -2px;
+        }
+
+        .rating-number {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .jobs {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .edit-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, .3);
+            background: rgba(255, 255, 255, .1);
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: .2s;
+        }
+
+        .edit-button:hover {
+            background: #1677d2;
+            transform: scale(1.05);
+        }
+
+        /* =====================================================
+           SKILLS
+        ===================================================== */
+
+        .skills-card {
+            width: 100%;
+            max-width: 790px;
+            margin: 12px auto 0;
+            background: #1b1c21;
+            border: 1px solid #303139;
+            border-radius: 15px;
+            padding: 14px 16px 16px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .20);
+        }
+
+        .skills-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .skills-title {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .add-skill-button {
+            height: 34px;
+            padding: 0 12px;
+            border-radius: 9px;
+            border: 1px solid #1c5232;
+            background: #12281a;
+            color: #4ade80;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: .2s;
+        }
+
+        .add-skill-button:hover {
+            background: #183b24;
+            transform: scale(1.03);
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .skill-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: #14273d;
+            border: 1px solid #1d4268;
+            color: #82b1f5;
+            border-radius: 20px;
+            padding: 7px 8px 7px 11px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .delete-skill {
+            width: 20px;
+            height: 20px;
+            border: none;
+            border-radius: 50%;
+            background: #2b3442;
+            color: #94a3b8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            line-height: 1;
+            transition: .2s;
+        }
+
+        .delete-skill:hover {
+            background: #5c242c;
+            color: #f87171;
+        }
+
+        /* =====================================================
+           DOCUMENTS
+        ===================================================== */
+
+        .documents-card {
+            width: 100%;
+            max-width: 790px;
+            margin: 12px auto 0;
+            background: #1b1c21;
+            border: 1px solid #303139;
+            border-radius: 15px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .20);
+        }
+
+        .documents-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 14px;
+        }
+
+        .documents-header-icon {
+            font-size: 18px;
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .doc-card {
+            background: #141519;
+            border: 1px solid #282930;
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .doc-icon-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .doc-icon-badge.green {
+            background: #11281c;
+            color: #4ade80;
+        }
+
+        .doc-icon-badge.blue {
+            background: #132438;
+            color: #38bdf8;
+        }
+
+        .doc-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .doc-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            margin-bottom: 14px;
+        }
+
+        .doc-status.verified {
+            color: #4ade80;
+        }
+
+        .doc-status.digital {
+            color: #38bdf8;
+        }
+
+        .btn-doc-view {
+            width: 100%;
+            height: 38px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: .2s;
+        }
+
+        .btn-doc-view.white {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .btn-doc-view.white:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-doc-view.dark {
+            background: #20222a;
+            color: #ffffff;
+            border: 1px solid #323542;
+        }
+
+        .btn-doc-view.dark:hover {
+            background: #2a2c38;
+        }
+
+        /* =====================================================
+           JOB REQUESTS
+        ===================================================== */
+
+        .jobs-card-container {
+            display: none;
+            /* Hidden by default on main page */
+            width: 100%;
+            max-width: 790px;
+            margin: 12px auto 0;
+            background: #1b1c21;
+            border: 1px solid #303139;
+            border-radius: 15px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .20);
+        }
+
+        /* PAGE MODE STYLING FOR SEPARATE PAGE VIEW */
+        .jobs-card-container.page-mode {
+            display: block !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            margin: 0;
+            border-radius: 0;
+            z-index: 2000;
+            overflow-y: auto;
+            background: #0d0e11;
+            padding: 20px;
+        }
+
+        .jobs-container-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #282930;
+        }
+
+        .jobs-container-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .jobs-close-page-btn {
+            display: none;
+            background: #202127;
+            border: 1px solid #343640;
+            color: #a1a1aa;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .jobs-card-container.page-mode .jobs-close-page-btn {
+            display: block;
+        }
+
+        .jobs-count-badge {
+            background: #1684ed;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+
+        .job-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            background: #141519;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid #282930;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #8e9098;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all .2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff;
+            background: #1d1e24;
+        }
+
+        .tab-btn.active {
+            background: #23242a;
+            color: #ffffff;
+            border: 1px solid #383a45;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+        }
+
+        .tab-btn.active[data-tab="urgent"] {
+            color: #f87171;
+            border-color: #5c242c;
+            background: #2a1b1d;
+        }
+
+        .tab-badge {
+            background: #282930;
+            color: #a0a2ab;
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 8px;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: #383a45;
+            color: #ffffff;
+        }
+
+        .tab-btn.active[data-tab="urgent"] .tab-badge {
+            background: #3b181e;
+            color: #f87171;
+        }
+
+        .jobs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .job-item {
+            background: #141519;
+            border: 1px solid #2a2b33;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .job-item.hidden {
+            display: none;
+        }
+
+        .job-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            gap: 8px;
+        }
+
+        .job-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .client-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .urgent-badge {
+            background: #3b181e;
+            color: #f87171;
+            border: 1px solid #5c242c;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 5px;
+            letter-spacing: .5px;
+        }
+
+        .time-ago {
+            color: #8e9098;
+            font-size: 12px;
+        }
+
+        .order-id {
+            color: #555761;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* =====================================================
+           TRANSPORT OPTION
+        ===================================================== */
+
+        .job-top-right {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
+        }
+
+        .transport-select {
+            height: 28px;
+            background: #202127;
+            border: 1px solid #343640;
+            border-radius: 7px;
+            color: #d8d8dc;
+            padding: 0 7px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .transport-select:hover {
+            border-color: #4b4e5b;
+            background: #25272f;
+        }
+
+        .transport-select:focus {
+            border-color: #1684ed;
+        }
+
+        .transport-select option {
+            background: #1b1c21;
+            color: #ffffff;
+        }
+
+        .job-service {
+            font-size: 13.5px;
+            color: #d8d8dc;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .job-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .location-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #202127;
+            border: 1px solid #2e2f38;
+            color: #999ba3;
+            font-size: 12px;
+            padding: 4px 9px;
+            border-radius: 10px;
+        }
+
+        .price-pill {
+            background: #12331f;
+            border: 1px solid #1c5232;
+            color: #4ade80;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 9px;
+            border-radius: 10px;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-accept {
+            flex: 1;
+            height: 38px;
+            background: #23783b;
+            border: 1px solid #2da04e;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: .2s;
+        }
+
+        .btn-accept:hover {
+            background: #2ca04f;
+        }
+
+        .btn-decline {
+            flex: 1;
+            height: 38px;
+            background: #2a1b1d;
+            border: 1px solid #4a282c;
+            color: #f87171;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: .2s;
+        }
+
+        .btn-decline:hover {
+            background: #3b2226;
+            color: #fca5a5;
+        }
+
+        /* =====================================================
+           BOTTOM MESSAGE BAR
+        ===================================================== */
+
+        .message-area {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 76px;
+            padding: 12px 20px;
+            background: rgba(13, 14, 17, 0.96);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid #292a30;
+            z-index: 3500;
+            /* Higher than modal overlays (3000) */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message-inner {
+            width: 100%;
+            max-width: 790px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-button {
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            border: 1px solid #35363e;
+            background: #1b1c21;
+            color: #ffffff;
+            font-size: 21px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: .2s;
+        }
+
+        .message-box {
+            flex: 1;
+            height: 48px;
+            background: #1b1c21;
+            border: 1px solid #35363e;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            padding: 0 7px 0 18px;
+        }
+
+        .message-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: white;
+            font-size: 14px;
+        }
+
+        .send-button {
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #000000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message-status {
+            position: fixed;
+            left: 50%;
+            bottom: 90px;
+            transform: translateX(-50%) translateY(10px);
+            background: #ffffff;
+            color: #000000;
+            padding: 10px 17px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            transition: .25s;
+            z-index: 2000;
+        }
+
+        .message-status.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* =====================================================
+           NO JOB MESSAGE
+        ===================================================== */
+
+        .no-jobs-message {
+            display: none;
+            text-align: center;
+            padding: 28px 15px;
+            background: #141519;
+            border: 1px dashed #343744;
+            border-radius: 12px;
+            color: #8e9098;
+        }
+
+        .no-jobs-message.show {
+            display: block;
+        }
+
+        .no-jobs-icon {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .no-jobs-title {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .no-jobs-text {
+            font-size: 12px;
+        }
+
+        /* =====================================================
+           MODALS
+        ===================================================== */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .75);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 3000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 430px;
+            background: #1b1c21;
+            border: 1px solid #383a45;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .55);
+            overflow: hidden;
+            animation: modalIn .2s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: 16px 18px;
+            border-bottom: 1px solid #303139;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #303139;
+            border-radius: 8px;
+            background: #202127;
+            color: #a1a1aa;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .modal-close:hover {
+            color: #ffffff;
+            background: #303139;
+        }
+
+        .modal-body {
+            padding: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            color: #a1a1aa;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 43px;
+            background: #141519;
+            border: 1px solid #343640;
+            border-radius: 0px;
+            padding: 0 12px;
+            color: #ffffff;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            border-color: #1684ed;
+            box-shadow: 0 0 0 2px rgba(22, 132, 237, .12);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            height: 42px;
+            border-radius: 99px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .modal-btn.cancel {
+            background: #202127;
+            border: 1px solid #343640;
+            color: #a1a1aa;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #292a30;
+            color: #ffffff;
+        }
+
+        .modal-btn.save {
+            background: #1684ed;
+            border: 1px solid #1684ed;
+            color: #ffffff;
+        }
+
+        .modal-btn.save:hover {
+            background: #237fd4;
+        }
+
+        .skill-add-info {
+            color: #8e9098;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+
+        /* =====================================================
+           ADDITIONAL SECTIONS STYLING
+        ===================================================== */
+
+        .extra-section {
+            width: 100%;
+            max-width: 790px;
+            margin: 12px auto 0;
+            background: #1b1c21;
+            border: 1px solid #303139;
+            border-radius: 15px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+        }
+
+        .extra-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .extra-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .section-edit {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            border: 1px solid #303139;
+            background: #202127;
+            color: #aeb6c5;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .section-edit:hover {
+            background: #303139;
+            color: #fff;
+        }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .social-link,
+        .empty-state {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 11px;
+            border-radius: 9px;
+            background: #141519;
+            border: 1px solid #282930;
+            color: #b9c7dc;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .section-text {
+            color: #b7bbc6;
+            font-size: 13px;
+            line-height: 1.65;
+            white-space: pre-wrap;
+        }
+
+        .resume-preview,
+        .works-grid,
+        .posts-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .resume-preview,
+        .resume-preview img,
+        .work-image,
+        .post-image {
+            width: 100%;
+            max-height: 260px;
+            height: auto;
+            object-fit: contain;
+            max-width: 100%;
+            display: block;
+            margin: 0 auto;
+            border-radius: 10px;
+            border: 1px solid #303139;
+        }
+
+        .featured-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .featured-chip {
+            padding: 8px 11px;
+            border-radius: 9px;
+            background: #14273d;
+            border: 1px solid #1d4268;
+            color: #82b1f5;
+            font-size: 12px;
+        }
+
+        .post-card {
+            background: #141519;
+            border: 1px solid #282930;
+            border-radius: 11px;
+            padding: 12px;
+        }
+
+        .post-card h4 {
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .post-card p {
+            color: #aeb4c2;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .file-input {
+            width: 100%;
+            color: #aeb4c2;
+            font-size: 12px;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width:600px) {
+
+            body {
+                padding: 12px;
+                padding-bottom: 88px;
+            }
+
+            .stats-grid,
+            .payment-grid,
+            .documents-grid,
+            .resume-preview,
+            .works-grid,
+            .posts-list {
+                grid-template-columns: 1fr;
+            }
+
+            .floating-home-btn {
+                right: 14px;
+                bottom: 84px;
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+
+            .job-header {
+                align-items: flex-start;
+            }
+
+            .job-top-right {
+                flex-shrink: 0;
+            }
+
+            .transport-select {
+                max-width: 125px;
+            }
+
+            .job-description-select {
+                min-width: 140px;
+                max-width: 180px;
+            }
+
+            .skills-header {
+                gap: 10px;
+            }
+
+            .add-skill-button {
+                padding: 0 9px;
+            }
+
+            .skill-pill {
+                white-space: normal;
+            }
+
+            .modal-overlay {
+                padding: 12px;
+            }
+
+            .cover-container {
+                height: 140px;
+            }
+
+            .header-portrait {
+                width: 80px;
+                height: 80px;
+            }
+
+            .portrait-wrapper {
+                margin-top: -40px;
+            }
+
+            .header-image-actions {
+                right: 10px;
+                top: 10px;
+            }
+
+            .header-image-btn {
+                padding: 5px 8px;
+                font-size: 10px;
+            }
+
+            .header-ellipse-btn {
+                padding: 5px 9px;
+                font-size: 13px;
+            }
+        }
+
+
+        /* =====================================================
+           ADD OR DROP IMAGE UPLOADS
+        ===================================================== */
+        .upload-section-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            background: #141519;
+            border: 1px solid #282930;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+        }
+
+        .upload-section-info strong {
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .upload-section-info span {
+            color: #8e9098;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .upload-drop-zone {
+            width: 100%;
+            min-height: 145px;
+            border: 2px dashed #3b4352;
+            border-radius: 13px;
+            background: #101217;
+            color: #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            text-align: center;
+            cursor: pointer;
+            padding: 20px;
+            transition: .2s ease;
+            user-select: none;
+        }
+
+        .upload-drop-zone:hover,
+        .upload-drop-zone.drag-over {
+            border-color: #1684ed;
+            background: #101c2a;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .upload-drop-zone.upload-loading {
+            opacity: .65;
+            pointer-events: none;
+        }
+
+        .upload-drop-zone strong {
+            font-size: 13px;
+            letter-spacing: .3px;
+        }
+
+        .upload-drop-zone small {
+            color: #777f8f;
+            font-size: 11px;
+        }
+
+        .upload-drop-icon {
+            font-size: 30px;
+            line-height: 1;
+            margin-bottom: 3px;
+        }
+
+        .upload-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .upload-preview-card {
+            position: relative;
+            min-width: 0;
+            background: #141519;
+            border: 1px solid #282930;
+            border-radius: 10px;
+            padding: 7px;
+        }
+
+        .upload-preview-card img {
+            width: 100%;
+            height: 120px;
+            display: block;
+            object-fit: contain;
+            background: #0d0e11;
+            border-radius: 7px;
+        }
+
+        .upload-delete-button {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 27px;
+            height: 27px;
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 50%;
+            background: #dc3545;
+            color: #fff;
+            font-size: 17px;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .upload-delete-button:hover {
+            background: #ff4d5b;
+            transform: scale(1.05);
+        }
+
+        .upload-file-name {
+            color: #8e9098;
+            font-size: 10px;
+            text-align: center;
+            padding: 6px 2px 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .upload-empty {
+            grid-column: 1 / -1;
+            border: 1px dashed #30343e;
+            border-radius: 10px;
+            padding: 18px;
+            color: #666d7b;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .resume-image-container {
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+            border-radius: 10px;
+            background: #141519;
+            border: 1px solid #282930;
+            padding: 8px;
+        }
+
+        .resume-preview {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 700px;
+            object-fit: contain;
+            border-radius: 7px;
+        }
+
+        .work-image-container {
+            width: 100%;
+            overflow: hidden;
+            border-radius: 10px;
+            background: #141519;
+        }
+
+        .work-image {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 420px;
+            object-fit: contain;
+        }
+
+        .post-image {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 600px;
+            object-fit: contain;
+            border-radius: 99px;
+            margin-top: 8px;
+        }
+
+        .post-editor-text {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        @media (max-width:600px) {
+            .upload-preview-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .upload-preview-card img {
+                height: 105px;
+            }
+
+            .upload-drop-zone {
+                min-height: 130px;
+            }
+        }
+
+        .floating-bell-btn {
+            position: fixed;
+            bottom: 75px;
+            right: 20px;
+            width: 52px;
+            height: 52px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            text-decoration: none;
+            z-index: 250;
+            transition: 0.2s ease;
+            cursor: pointer;
+            padding: 0;
+            border: none;
+            background: transparent;
+        }
+
+        .floating-bell-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .upload-drop-zone.drag-over {
+            border-color: #1684ed !important;
+            background: #101c2a !important;
+            color: #ffffff !important;
+            transform: translateY(-2px);
+        }
+
+        .paragraph-preview-card {
+            position: relative;
+            background: #0d1520;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 16px;
+            padding-top: 32px;
+            color: #e2e8f0;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+            grid-column: 1 / -1;
+            /* Spans full grid width */
+        }
+
+        .paragraph-preview-card p {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- MERGED HERO HEADER CARD WITH DETAILS BELOW COVER -->
+    <div class="reference-header" id="referenceHeader">
+
+        <!-- COVER IMAGE TOP AREA -->
+        <div class="cover-container" id="coverContainer">
+            <button class="header-back" type="button" onclick="history.back()" title="Go back">←</button>
+            <div class="header-image-actions">
+                <button class="header-image-btn" type="button" onclick="document.getElementById('profileImageInput').click()">🖼️ Profile</button>
+                <button class="header-image-btn" type="button" onclick="document.getElementById('backgroundImageInput').click()">🌄 Cover</button>
+                <button class="header-ellipse-btn" type="button" onclick="openWorksPage()" title="Open Work Status Page">⋮</button>
+            </div>
+            <input id="profileImageInput" type="file" accept="image/*" hidden onchange="updateProfileImage(event)">
+            <input id="backgroundImageInput" type="file" accept="image/*" hidden onchange="updateBackgroundImage(event)">
+        </div>
+
+        <!-- PROFILE DETAILS SECTION (BELOW COVER) -->
+        <div class="profile-body-section">
+            <div class="portrait-wrapper">
+                <img class="header-portrait" id="headerPortrait" src="profile.jpg" alt="NAME">
+                <button class="edit-button" onclick="editWorker()" title="Edit Profile" aria-label="Edit Profile">✎</button>
+            </div>
+
+            <div class="header-details">
+                <div class="name-row">
+                    <div class="worker-name" id="workerName">NAME</div>
+                    <span class="verified-icon" title="Verified">✓</span>
+                </div>
+
+                <div class="profession">
+                    <span class="profession-icon" id="professionIcon">⚡</span>
+                    <select class="job-description-select" id="jobDescriptionSelect" onchange="filterJobsByProfession(this.value)">
+                        <option value="Select">👤 SELECT</option>
+                        <option value="electrician">⚡ Electrician</option>
+                        <option value="water-pump-technician">💧 Water Pump Technician</option>
+                        <option value="plumber">🔧 Plumber</option>
+                        <option value="painter">🎨 Painter</option>
+                        <option value="ac-technician">❄️ AC Technician</option>
+                        <option value="carpenter">🪚 Carpenter</option>
+                        <option value="mason">🧱 Mason</option>
+                        <option value="welder">🔥 Welder</option>
+                        <option value="fabricator">⚙️ Fabricator</option>
+                        <option value="tile-worker">🧩 Tile Worker</option>
+                        <option value="flooring-worker">🏠 Flooring Worker</option>
+                        <option value="roofer">🏚️ Roofer</option>
+                        <option value="false-ceiling-worker">🏗️ False Ceiling Worker</option>
+                        <option value="interior-designer">🛋️ Interior Designer</option>
+                        <option value="architect">📐 Architect</option>
+                        <option value="civil-engineer">🏗️ Civil Engineer</option>
+
+                        <option value="cleaner">🧹 Cleaner</option>
+                        <option value="house-cleaner">🏠 House Cleaner</option>
+                        <option value="deep-cleaner">✨ Deep Cleaning Worker</option>
+                        <option value="kitchen-cleaner">🍳 Kitchen Cleaner</option>
+                        <option value="bathroom-cleaner">🚿 Bathroom Cleaner</option>
+                        <option value="water-tank-cleaner">🛢️ Water Tank Cleaner</option>
+                        <option value="car-cleaner">🚗 Car Cleaner</option>
+                        <option value="bike-cleaner">🏍️ Bike Cleaner</option>
+                        <option value="pest-control-technician">🐜 Pest Control Technician</option>
+                        <option value="gardener">🌱 Gardener</option>
+                        <option value="lawn-worker">🌿 Lawn Care Worker</option>
+                        <option value="tree-worker">🌳 Tree Worker</option>
+                        <option value="packer">📦 Packer</option>
+                        <option value="mover">🚚 Mover</option>
+
+                        <option value="driver">🚗 Driver</option>
+                        <option value="taxi-driver">🚕 Taxi Driver</option>
+                        <option value="auto-driver">🛺 Auto Driver</option>
+                        <option value="truck-driver">🚛 Truck Driver</option>
+                        <option value="delivery-driver">📦 Delivery Driver</option>
+                        <option value="courier-agent">📨 Courier Agent</option>
+                        <option value="transport-worker">🚚 Transport Worker</option>
+                        <option value="logistics-worker">📦 Logistics Worker</option>
+                        <option value="bike-delivery-worker">🏍️ Delivery Rider</option>
+                        <option value="mechanic">🔧 Mechanic</option>
+                        <option value="car-mechanic">🚗 Car Mechanic</option>
+                        <option value="bike-mechanic">🏍️ Bike Mechanic</option>
+                        <option value="tyre-technician">🛞 Tyre Technician</option>
+                        <option value="battery-technician">🔋 Battery Technician</option>
+                        <option value="towing-driver">🚨 Towing Driver</option>
+
+                        <option value="computer-technician">💻 Computer Technician</option>
+                        <option value="laptop-technician">💻 Laptop Technician</option>
+                        <option value="mobile-technician">📱 Mobile Technician</option>
+                        <option value="printer-technician">🖨️ Printer Technician</option>
+                        <option value="cctv-technician">📹 CCTV Technician</option>
+                        <option value="network-technician">🌐 Network Technician</option>
+                        <option value="wifi-technician">📶 Wi-Fi Technician</option>
+                        <option value="software-developer">💾 Software Developer</option>
+                        <option value="web-developer">🌐 Web Developer</option>
+                        <option value="app-developer">📱 App Developer</option>
+                        <option value="graphic-designer">🎨 Graphic Designer</option>
+                        <option value="video-editor">🎬 Video Editor</option>
+                        <option value="photographer">📸 Photographer</option>
+                        <option value="videographer">🎥 Videographer</option>
+                        <option value="digital-marketer">📢 Digital Marketer</option>
+                        <option value="social-media-manager">📱 Social Media Manager</option>
+                        <option value="content-writer">✍️ Content Writer</option>
+                        <option value="data-entry-operator">⌨️ Data Entry Operator</option>
+                        <option value="typist">⌨️ Typist</option>
+                        <option value="printer-operator">🖨️ Printing Operator</option>
+
+                        <option value="teacher">👨‍🏫 Teacher</option>
+                        <option value="tutor">📚 Tutor</option>
+                        <option value="maths-teacher">➗ Maths Teacher</option>
+                        <option value="science-teacher">🔬 Science Teacher</option>
+                        <option value="english-teacher">📖 English Teacher</option>
+                        <option value="computer-teacher">💻 Computer Teacher</option>
+                        <option value="spoken-english-trainer">🗣️ Spoken English Trainer</option>
+                        <option value="music-teacher">🎵 Music Teacher</option>
+                        <option value="dance-teacher">💃 Dance Teacher</option>
+                        <option value="art-teacher">🎨 Art Teacher</option>
+                        <option value="sports-coach">⚽ Sports Coach</option>
+
+                        <option value="doctor">🩺 Doctor</option>
+                        <option value="nurse">👩‍⚕️ Nurse</option>
+                        <option value="pharmacist">💊 Pharmacist</option>
+                        <option value="physiotherapist">🦵 Physiotherapist</option>
+                        <option value="lab-technician">🧪 Lab Technician</option>
+                        <option value="ambulance-driver">🚑 Ambulance Driver</option>
+                        <option value="caregiver">❤️ Caregiver</option>
+                        <option value="babysitter">👶 Babysitter</option>
+                        <option value="elder-caregiver">👴 Elder Caregiver</option>
+
+                        <option value="tailor">🧵 Tailor</option>
+                        <option value="fashion-designer">👗 Fashion Designer</option>
+                        <option value="beautician">💄 Beautician</option>
+                        <option value="hair-stylist">💇 Hair Stylist</option>
+                        <option value="makeup-artist">💋 Makeup Artist</option>
+                        <option value="mehendi-artist">🌿 Mehendi Artist</option>
+                        <option value="laundry-worker">👕 Laundry Worker</option>
+                        <option value="ironing-worker">👔 Ironing Worker</option>
+                        <option value="shoe-repairer">👞 Shoe Repairer</option>
+
+                        <option value="cook">👨‍🍳 Cook</option>
+                        <option value="chef">👨‍🍳 Chef</option>
+                        <option value="baker">🧁 Baker</option>
+                        <option value="caterer">🍽️ Caterer</option>
+                        <option value="waiter">🍴 Waiter</option>
+                        <option value="bartender">🥤 Beverage Server</option>
+
+                        <option value="personal-assistant">🧑‍💼 Personal Assistant</option>
+                        <option value="office-assistant">💼 Office Assistant</option>
+                        <option value="receptionist">📞 Receptionist</option>
+                        <option value="accountant">🧮 Accountant</option>
+                        <option value="bookkeeper">📒 Bookkeeper</option>
+                        <option value="business-consultant">📊 Business Consultant</option>
+                        <option value="sales-executive">💰 Sales Executive</option>
+                        <option value="marketing-executive">📣 Marketing Executive</option>
+                        <option value="hr-executive">👥 HR Executive</option>
+                        <option value="customer-support-executive">🎧 Customer Support Executive</option>
+
+                        <option value="real-estate-agent">🏠 Real Estate Agent</option>
+                        <option value="property-dealer">🏠 Property Dealer</option>
+                        <option value="land-dealer">🌾 Land Dealer</option>
+                        <option value="insurance-agent">🛡️ Insurance Agent</option>
+                        <option value="loan-consultant">💳 Loan Consultant</option>
+                        <option value="legal-advisor">⚖️ Legal Advisor</option>
+                        <option value="lawyer">👨‍⚖️ Lawyer</option>
+                        <option value="document-writer">📄 Document Writer</option>
+                        <option value="notary">📝 Notary</option>
+
+                        <option value="fitness-trainer">🏋️ Fitness Trainer</option>
+                        <option value="personal-trainer">💪 Personal Trainer</option>
+                        <option value="yoga-trainer">🧘 Yoga Trainer</option>
+                        <option value="sports-trainer">🏅 Sports Trainer</option>
+
+                        <option value="security-guard">🛡️ Security Guard</option>
+                        <option value="watchman">👮 Watchman</option>
+                        <option value="security-supervisor">🚨 Security Supervisor</option>
+                        <option value="bouncer">💪 Bouncer</option>
+
+                        <option value="farmer">🌾 Farmer</option>
+                        <option value="farm-worker">🚜 Farm Worker</option>
+                        <option value="tractor-driver">🚜 Tractor Driver</option>
+                        <option value="irrigation-worker">💦 Irrigation Worker</option>
+                        <option value="poultry-worker">🐔 Poultry Worker</option>
+                        <option value="dairy-worker">🐄 Dairy Worker</option>
+
+                        <option value="event-manager">🎪 Event Manager</option>
+                        <option value="event-decorator">🎈 Event Decorator</option>
+                        <option value="wedding-planner">💍 Wedding Planner</option>
+                        <option value="dj">🎧 DJ</option>
+                        <option value="sound-technician">🔊 Sound Technician</option>
+                        <option value="lighting-technician">💡 Lighting Technician</option>
+
+                        <option value="handyman">🛠️ Handyman</option>
+                        <option value="general-helper">🧑‍🔧 General Helper</option>
+                        <option value="laborer">👷 Labourer</option>
+                        <option value="repair-technician">🔧 Repair Technician</option>
+                        <option value="installation-technician">🔩 Installation Technician</option>
+                        <option value="maintenance-technician">⚙️ Maintenance Technician</option>
+                        <option value="emergency-worker">🚨 Emergency Worker</option>
+
+                        <option value="other-worker">➕ Other Worker</option>
+                    </select>
+                </div>
+
+                <div class="contact-row">
+                    <div class="contact-item"><span>📞</span><span id="workerPhone">+91 Phone Number</span></div>
+                </div>
+
+                <div class="location-row">
+                    <span>📍</span><span id="workerLocation">Address</span>
+                </div>
+                <div class="location-row">
+                    <span>🎓</span><span id="workerQualification">Qualification</span>
+                </div>
+                <div class="location-row">
+                    <span>🗓️</span><span id="workerExperience">Years Of Experience</span>
+                </div>
+
+
+                <div class="bottom-row">
+                    <div class="available">✓</div>
+                    <div class="rating">
+                        <div class="stars">★★★★★</div>
+                        <div class="rating-number"></div>
+                    </div>
+                    <div class="jobs">• ___ jobs done</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <section class="extra-section">
+        <div class="extra-section-header">
+            <div class="extra-section-title">👋 About Yourself</div>
+            <button class="section-edit" onclick="openSectionEditor('about')" title="Edit About">✎</button>
+        </div>
+        <div id="aboutContent" class="section-text"></div>
+    </section>
+    <section class="extra-section">
+        <div class="extra-section-header">
+            <div class="extra-section-title"> ✍🏻 Describe the work</div>
+            <button class="section-edit" onclick="openSectionEditor('workDescription')" title="Edit Work Description">✎</button>
+        </div>
+        <div id="workDescriptionContent" class="section-text"></div>
+    </section>
+
+    <!-- RESUME SECTION WITH DRAG & DROP -->
+    <section class="extra-section" id="resumeSection">
+        <div class="extra-section-header">
+            <div class="extra-section-title">📄 Resume</div>
+        </div>
+
+        <!-- Drag and Drop Zone -->
+        <div class="upload-drop-zone" id="resumeDropZone" onclick="document.getElementById('resumeFileInput').click()">
+            <div class="upload-drop-icon">📄</div>
+            <strong>Drag & Drop your Resume here</strong>
+            <small>or click to browse (PDF, PNG, JPG)</small>
+            <input type="file" id="resumeFileInput" accept="image/*,.pdf" hidden onchange="handleResumeSelect(this.files)">
+        </div>
+
+        <!-- Resume Preview Container -->
+        <div id="resumeContent" class="resume-image-container" style="margin-top: 12px; display: none;">
+            <!-- Dynamically rendered preview appears here -->
+        </div>
+    </section>
+
+    <!-- UPLOAD YOUR WORKS SECTION -->
+    <section class="extra-section" id="worksSection">
+        <div class="extra-section-header">
+            <div class="extra-section-title">🖼️Post & Upload Your Works</div>
+        </div>
+
+        <!-- Text Paragraph Creator -->
+        <div class="text-paragraph-builder" style="margin-bottom: 16px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+            <label style="display: block; color: #a1a1aa; font-size: 13px; margin-bottom: 6px;">Add Description / Paragraph</label>
+            <textarea id="paragraphInput" rows="3" placeholder="Write details about your work here..." style="width: 100%; padding: 10px; background: #090d16; border: 1px solid #1e293b; color: #fff; border-radius: 6px; resize: vertical; margin-bottom: 8px;"></textarea>
+            <button type="button" class="modal-btn" onclick="addParagraph()" style="width: auto; padding: 6px 16px;">+ Add Paragraph</button>
+        </div>
+
+        <!-- Image Drag and Drop Zone -->
+        <div class="upload-drop-zone" id="worksDropZone" onclick="document.getElementById('worksFileInput').click()">
+            <div class="upload-drop-icon">🖼️</div>
+            <strong>Drag & Drop your work photos here</strong>
+            <small>or click to browse multiple images</small>
+            <input type="file" id="worksFileInput" accept="image/*" multiple hidden onchange="handleWorksSelect(this.files)">
+        </div>
+
+        <!-- Unified Works Container (Images & Paragraphs) -->
+        <div id="worksContent" class="upload-preview-grid" style="margin-top: 16px;">
+            <!-- Dynamically rendered items appear here -->
+        </div>
+    </section>
+
+    <!-- =====================================================
+         SKILLS & SERVICES
+    ===================================================== -->
+
+    <div class="skills-card">
+
+        <div class="skills-header">
+
+            <div class="skills-title">
+                <span>🛠️</span>
+                <span>My Skills &amp; Services</span>
+            </div>
+
+            <button class="add-skill-button" onclick="openAddSkillModal()" title="Add Skill or Service">
+                ＋ Add
+            </button>
+
+        </div>
+
+        <div class="skills-list" id="skillsList"></div>
+
+    </div>
+
+    <section class="extra-section">
+        <div class="extra-section-header">
+            <div class="extra-section-title">🏆 Featured At</div>
+            <button class="section-edit" onclick="openSectionEditor('featured')" title="Edit Featured At">✎</button>
+        </div>
+        <div id="featuredContent" class="featured-list"></div>
+    </section>
+
+    <!-- =====================================================
+         MAIN STATUS CONTAINER (FULL-PAGE MODE WHEN OPENED)
+    ===================================================== -->
+
+    <div class="work-status-card" id="workStatusCard">
+
+        <div class="work-status-page-header">
+            <div class="work-status-page-title">
+                <span>🟢</span>
+                <span>Status</span>
+            </div>
+            <button class="work-status-close-btn" onclick="closeWorksPage()">← Back</button>
+        </div>
+
+        <div class="status-tab-header">
+
+            <button class="status-main-tab active" data-target="workTab" onclick="switchStatusTab('workTab')">
+                🟢 Work Status
+            </button>
+
+            <button class="status-main-tab" data-target="paymentTab" onclick="switchStatusTab('paymentTab')">
+                💳 Payment Status
+            </button>
+
+        </div>
+
+        <!-- WORK STATUS -->
+
+        <div class="tab-content-panel" id="workTab">
+
+            <div class="status-top-row">
+
+                <div class="status-title-group">
+                    <span class="green-dot" id="statusDot"></span>
+                    <span class="status-title">Duty Availability</span>
+                </div>
+
+                <label class="toggle-switch">
+                    <input type="checkbox" id="workStatusToggle" checked onchange="toggleWorkStatus(this)">
+                    <span class="toggle-slider"></span>
+                </label>
+
+            </div>
+
+            <div class="status-meta-row">
+                <div class="status-pill" id="statusBadge">• AVAILABLE FOR WORK</div>
+                <div class="status-subtext" id="statusSubtext">Receiving requests</div>
+            </div>
+
+            <div class="stats-grid">
+
+                <div class="stat-box">
+                    <div class="stat-label">TODAY</div>
+                    <div class="stat-value">₹ ____</div>
+                    <div class="stat-sub green">+ __ jobs</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">TODAY COMPLETION</div>
+                    <div class="stat-value">__</div>
+                    <div class="stat-sub gray">works per day</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">COMPLETED</div>
+                    <div class="stat-value">__</div>
+                    <div class="stat-sub gray">All time</div>
+                </div>
+
+            </div>
+
+            <button class="btn-dropdown-toggle" id="pastWorksBtn" onclick="toggleDropdown('pastWorksDropdown','pastWorksBtn')">
+                <span>📋 Past Activities</span>
+                <span class="arrow-icon">▼</span>
+            </button>
+
+            <div class="dropdown-container" id="pastWorksDropdown">
+                <div class="dropdown-title">
+                    <span>Past Completed Orders</span>
+                </div>
+
+                <div class="past-works-list">
+                    <div class="no-past-activities">
+                        <div class="no-past-title">📋 No Past Activities</div>
+                        <div class="no-past-text">📋 No completed works or activities have been added yet.</div>
+                        <div class="no-past-title">📋 No Reviews</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PAYMENT STATUS -->
+
+        <div class="tab-content-panel hidden" id="paymentTab">
+
+            <div class="payment-grid">
+
+                <div class="stat-box">
+                    <div class="stat-label">TODAY EARNED</div>
+                    <div class="stat-value" style="color:#4ade80;">₹ _____</div>
+                    <div class="stat-sub green">____ Jobs Paid Today</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">TOTAL EARNED</div>
+                    <div class="stat-value">₹ ____</div>
+                    <div class="stat-sub gray">Lifetime Earnings</div>
+                </div>
+
+            </div>
+
+            <div class="payout-info-box">
+                <div class="payout-details">
+                    <span class="payout-bank">Select Your Bank (A/C: _____)</span>
+                </div>
+                <span style="color:#4ade80;font-size:13px;font-weight:bold;">Connected ✓</span>
+            </div>
+
+            <button class="btn-withdraw" onclick="showStatus('Payout request for ₹2,450 initiated!')">
+                ⚡ Instant Payout to Bank
+            </button>
+
+            <button class="btn-dropdown-toggle" id="pastPaymentsBtn" onclick="toggleDropdown('pastPaymentsDropdown','pastPaymentsBtn')">
+                <span>💳 Past Payments Received Breakdown</span>
+                <span class="arrow-icon">▼</span>
+            </button>
+
+            <div class="dropdown-container" id="pastPaymentsDropdown">
+                <div class="dropdown-title">
+                    <span>Recent Received Payments</span>
+                    <span style="font-size:12px;color:#6b7280;">Sorted by date</span>
+                </div>
+
+                <div class="payment-history-list">
+
+                    <div class="no-payments-card">
+
+                        <h3> 💳 No Payments Yet</h3>
+                        <p>💳 Your payment history will appear here once you receive your first payment.</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         FLOATING HOME
+    ===================================================== -->
+
+    <button class="floating-home-btn" id="floatingHomeBtn" onclick="goHome()" title="Close dropdowns &amp; return to top">
+        🏠
+    </button>
+
+    <!-- =====================================================
+         DOCUMENTS
+    ===================================================== -->
+
+    <div class="documents-card">
+
+        <div class="documents-header">
+            <span class="documents-header-icon">📁</span>
+            <span>My Documents</span>
+        </div>
+
+        <div class="documents-grid">
+
+            <div class="doc-card">
+                <div>
+                    <div class="doc-icon-badge green">📄</div>
+                    <div class="doc-title">Official Enrollment Letter</div>
+                    <div class="doc-status verified">✓ Verified &amp; Signed</div>
+                </div>
+                <button class="btn-doc-view white" onclick="viewDocument('Official Enrollment Letter')">
+                    👁️ View Letter
+                </button>
+            </div>
+
+            <div class="doc-card">
+                <div>
+                    <div class="doc-icon-badge blue">🪪</div>
+                    <div class="doc-title">Worker ID Card</div>
+                    <div class="doc-status digital">🛡️ Digital ID •</div>
+                </div>
+                <button class="btn-doc-view dark" onclick="viewDocument('Worker ID Card')">
+                    👁️ View ID
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <section class="extra-section" id="socialSection">
+        <div class="extra-section-header">
+            <div class="extra-section-title">🌐 Social Media &amp; Links</div>
+            <button class="section-edit" onclick="openSectionEditor('social')" title="Edit Social Links">✎</button>
+        </div>
+        <div class="social-links" id="socialLinks"></div>
+    </section>
+
+    <!-- FLOATING BELL BUTTON -->
+    <button type="button" class="floating-bell-btn" title="Notifications" onclick="openJobsPage()">
+        <span>🔔</span>
+    </button>
+
+    <!-- =====================================================
+         AVAILABLE JOB REQUESTS (FULL-PAGE MODE WHEN OPENED)
+    ===================================================== -->
+
+    <div id="jobsPage" class="jobs-card-container">
+
+        <div class="jobs-container-header">
+            <div class="jobs-container-title">
+                <span>📋</span>
+                <span>Available Job Requests</span>
+            </div>
+            <button class="jobs-close-page-btn" onclick="closeJobsPage()">← Back</button>
+        </div>
+
+        <div class="job-tabs">
+            <button class="tab-btn active" data-tab="all" onclick="switchTab('all')">
+                All
+                <span class="tab-badge" id="countAll"></span>
+            </button>
+
+            <button class="tab-btn" data-tab="urgent" onclick="switchTab('urgent')">
+                🚨 Most Urgent
+                <span class="tab-badge" id="countUrgent"></span>
+            </button>
+
+            <button class="tab-btn" data-tab="normal" onclick="switchTab('normal')">
+                ⚡ Normal Requests
+                <span class="tab-badge" id="countNormal"></span>
+            </button>
+        </div>
+
+        <div class="jobs-list" id="jobsList"></div>
+
+        <!-- NO JOBS -->
+        <div class="no-jobs-message" id="noJobsMessage">
+            <div class="no-jobs-icon">🔍</div>
+            <div class="no-jobs-title">No Relevant Job Requests</div>
+            <div class="no-jobs-text">
+                There are currently no available requests matching your selected job description.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         BOTTOM MESSAGE BAR
+    ===================================================== -->
+
+    <div class="message-area">
+
+        <div class="message-inner">
+
+            <button class="user-button" onclick="openUserProfile()">👤</button>
+
+            <div class="message-box">
+                <input type="text" id="messageInput" class="message-input" placeholder="Message..." autocomplete="off">
+                <button class="send-button" onclick="sendMessage()">➤</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="message-status" id="messageStatus"></div>
+
+    <!-- =====================================================
+         EDIT PROFILE MODAL
+    ===================================================== -->
+
+    <div class="modal-overlay" id="profileEditModal" onclick="closeModalOutside(event,'profileEditModal')">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">✎ Edit Worker Profile</div>
+                <button class="modal-close" onclick="closeProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">NAME</label>
+                    <input type="text" id="editWorkerName" class="form-input" placeholder="Enter worker name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">PHONE NUMBER</label>
+                    <input type="tel" id="editWorkerPhone" class="form-input" placeholder="Enter phone number">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">LOCATION</label>
+                    <input type="text" id="editWorkerLocation" class="form-input" placeholder="Enter location">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">QUALIFIATION</label>
+                    <input type="text" id="editWorkerQualification" class="form-input" placeholder="Enter Qualification">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">WORK EXPERIENCE</label>
+                    <input type="text" id="editWorkerExperience" class="form-input" placeholder="Enter Experience">
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="closeProfileModal()">Cancel</button>
+                    <button class="modal-btn save" onclick="saveWorkerProfile()">✓ Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         ADD SKILL MODAL
+    ===================================================== -->
+
+    <div class="modal-overlay" id="addSkillModal" onclick="closeModalOutside(event,'addSkillModal')">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">＋ Add Skill / Service</div>
+                <button class="modal-close" onclick="closeAddSkillModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="skill-add-info">
+                    Add a new skill or service to your worker profile. You can delete it later using the ✕ button.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">SKILL / SERVICE</label>
+                    <input type="text" id="newSkillInput" class="form-input" placeholder="Example:">
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="closeAddSkillModal()">Cancel</button>
+                    <button class="modal-btn save" onclick="addSkill()">＋ Add Skill</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         SECTION EDITOR MODAL
+    ===================================================== -->
+
+    <div class="modal-overlay" id="sectionModal" onclick="closeSectionEditor(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title" id="sectionModalTitle">Edit Section</div>
+                <button class="modal-close" onclick="closeSectionEditor()">×</button>
+            </div>
+            <div class="modal-body" id="sectionModalBody"></div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeSectionEditor()">Cancel</button>
+                <button class="modal-btn save" onclick="saveSectionEditor()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================
+           WORKER PROFILE - FIXED SCRIPT CODE
+        ===================================================== */
+
+        "use strict";
+
+        const STORAGE_KEY = "hai_superhero_worker_profile";
+
+        const defaultProfile = {
+            name: "", phone: "", email: "", location: "", qualification: "", experience: "",
+            profession: "electrician", profileImage: "", backgroundImage: "", workAvailable: true,
+            skills: ["Add your skill", "Add the service", "Describe your skill", "Describe the service that you provides"],
+            sections: {
+                social: { links: [{label:"Location",url:"https://maps.google.com/"},{label:"App",url:"#"},{label:"Website",url:"https://example.com/"},{label:"YouTube",url:"https://youtube.com/"},{label:"Twitter",url:"https://twitter.com/"},{label:"Facebook",url:"https://facebook.com/"},{label:"LinkedIn",url:"https://linkedin.com/"},{label:"Instagram",url:"https://instagram.com/"},{label:"Telegram",url:"https://telegram.org/"},{label:"Justdial",url:"https://www.justdial.com/"},{label:"WhatsApp Channel",url:"https://www.whatsapp.com/"}] },
+                about: { text: "Write about yourself" }, resume: { images: [] }, featured: { items: ["Example:"] }, works: { items: [] }
+            }
+        };
+
+        let profileData = JSON.parse(JSON.stringify(defaultProfile));
+        let saveQueue = Promise.resolve();
+
+        function apiProfileToLocal(p) {
+            return {
+                ...defaultProfile, ...profileData,
+                name: p.name || "", phone: p.phone || "", email: p.email || "", location: p.location || "",
+                qualification: p.qualification || "", experience: p.experience || "", profession: p.profession || "electrician",
+                profileImage: p.profile_image_url || "", backgroundImage: p.background_image_url || "", workAvailable: p.work_available !== false,
+                skills: Array.isArray(p.skills) ? p.skills : [],
+                sections: {
+                    ...(profileData.sections || {}),
+                    about: { text: p.about_text || "" },
+                    workDescription: { text: p.work_description || "" },
+                    resume: { images: p.resume_url ? [p.resume_url] : [] },
+                    works: { items: Array.isArray(p.works) ? p.works : [] },
+                    featured: { items: Array.isArray(p.featured) ? p.featured : [] },
+                    social: { links: Array.isArray(p.social_links) ? p.social_links : [] }
+                }
+            };
+        }
+
+        function localToApi() {
+            const sec = profileData.sections || {};
+            return {
+                name: profileData.name || "", phone: profileData.phone || "", email: profileData.email || null,
+                location: profileData.location || "", qualification: profileData.qualification || "", experience: profileData.experience || "",
+                profession: profileData.profession || "electrician", profileImageUrl: profileData.profileImage || null,
+                backgroundImageUrl: profileData.backgroundImage || null, workAvailable: profileData.workAvailable !== false,
+                skills: Array.isArray(profileData.skills) ? profileData.skills : [], aboutText: sec.about?.text || "",
+                workDescription: sec.workDescription?.text || "", resumeUrl: sec.resume?.images?.[0] || null,
+                works: Array.isArray(sec.works?.items) ? sec.works.items : [], featured: Array.isArray(sec.featured?.items) ? sec.featured.items : [],
+                socialLinks: Array.isArray(sec.social?.links) ? sec.social.links : []
+            };
+        }
+
+        async function uploadProfileFile(file) {
+            const fd = new FormData(); fd.append("file", file);
+            const r = await fetch("/api/worker/profile/upload", { method: "POST", body: fd, credentials: "same-origin" });
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(data.error || "Upload failed");
+            return data.url;
+        }
+
+        async function migrateLegacyDataUrls() {
+            const sec = profileData.sections || {};
+            async function dataUrlToUrl(value, filename) {
+                if (!value || !String(value).startsWith("data:")) return value;
+                const res = await fetch(value); const blob = await res.blob();
+                return uploadProfileFile(new File([blob], filename, { type: blob.type || "application/octet-stream" }));
+            }
+            profileData.profileImage = await dataUrlToUrl(profileData.profileImage, "profile.jpg");
+            profileData.backgroundImage = await dataUrlToUrl(profileData.backgroundImage, "cover.jpg");
+            if (sec.resume?.images?.[0]) sec.resume.images[0] = await dataUrlToUrl(sec.resume.images[0], "resume.jpg");
+            if (Array.isArray(sec.works?.items)) {
+                for (const item of sec.works.items) if (item?.type === "image" && String(item.content || "").startsWith("data:")) item.content = await dataUrlToUrl(item.content, "work.jpg");
+            }
+        }
+
+        async function initData() {
+            let local = null;
+            try { const stored = localStorage.getItem(STORAGE_KEY); if (stored) local = JSON.parse(stored); } catch (e) { console.error("Error reading localStorage", e); }
+            try {
+                const r = await fetch("/api/worker/profile", { credentials: "same-origin", cache: "no-store" });
+                const data = await r.json().catch(() => ({}));
+                if (r.ok && data.profile) {
+                    profileData = apiProfileToLocal(data.profile);
+                } else if (local) {
+                    profileData = { ...defaultProfile, ...local };
+                    await migrateLegacyDataUrls();
+                    await saveData();
+                }
+            } catch (e) {
+                console.error("Worker profile database load failed", e);
+                if (local) profileData = { ...defaultProfile, ...local };
+            }
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profileData)); } catch {}
+            renderProfile();
+        }
+
+        function saveData() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profileData)); } catch (e) { console.error("Error saving local cache", e); }
+            const payload = localToApi();
+            saveQueue = saveQueue.then(async () => {
+                const r = await fetch("/api/worker/profile", { method: "PATCH", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify(payload) });
+                const data = await r.json().catch(() => ({}));
+                if (!r.ok) throw new Error(data.error || "Could not save worker profile");
+                if (data.profile) { profileData = apiProfileToLocal(data.profile); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profileData)); } catch {} }
+            }).catch(e => console.error("Worker profile database save failed", e));
+            return saveQueue;
+        }
+
+        let currentTab = "all";
+        let activeSectionEdit = null;
+
+        const sampleJobs = [];
+
+        function renderProfile() {
+            document.getElementById("workerName").textContent = profileData.name || "NAME";
+            document.getElementById("workerPhone").textContent = profileData.phone || "+91 Phone Number";
+            document.getElementById("workerLocation").textContent = profileData.location || "Address";
+            const qualificationEl = document.getElementById("workerQualification");
+            if (qualificationEl) qualificationEl.textContent = profileData.qualification || "Qualification";
+            const experienceEl = document.getElementById("workerExperience");
+            if (experienceEl) experienceEl.textContent = profileData.experience || "Years Of Experience";
+
+            const selectEl = document.getElementById("jobDescriptionSelect");
+            if (selectEl) {
+                selectEl.value = profileData.profession || "electrician";
+                updateProfessionIcon(profileData.profession);
+            }
+
+            if (profileData.profileImage) {
+                document.getElementById("headerPortrait").src = profileData.profileImage;
+            }
+            if (profileData.backgroundImage) {
+                document.getElementById("coverContainer").style.backgroundImage = `url('${profileData.backgroundImage}')`;
+            }
+
+            const toggleEl = document.getElementById("workStatusToggle");
+            if (toggleEl) {
+                toggleEl.checked = profileData.workAvailable;
+                updateStatusUI(profileData.workAvailable);
+            }
+
+            renderSkills();
+            renderExtraSections();
+            renderJobs();
+        }
+
+        function openWorksPage() {
+            const card = document.getElementById("workStatusCard");
+            if (card) {
+                card.classList.add("page-mode");
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function closeWorksPage() {
+            const card = document.getElementById("workStatusCard");
+            if (card) card.classList.remove("page-mode");
+        }
+
+        function switchStatusTab(targetId) {
+            const tabs = document.querySelectorAll(".status-main-tab");
+            tabs.forEach(tab => {
+                if (tab.getAttribute("data-target") === targetId) {
+                    tab.classList.add("active");
+                } else {
+                    tab.classList.remove("active");
+                }
+            });
+
+            document.getElementById("workTab").classList.toggle("hidden", targetId !== "workTab");
+            document.getElementById("paymentTab").classList.toggle("hidden", targetId !== "paymentTab");
+        }
+
+        function toggleWorkStatus(checkbox) {
+            profileData.workAvailable = checkbox.checked;
+            updateStatusUI(checkbox.checked);
+            saveData();
+        }
+
+        function updateStatusUI(isAvailable) {
+            const dot = document.getElementById("statusDot");
+            const badge = document.getElementById("statusBadge");
+            const subtext = document.getElementById("statusSubtext");
+
+            if (isAvailable) {
+                if (dot) dot.classList.remove("offline");
+                if (badge) {
+                    badge.classList.remove("offline");
+                    badge.textContent = "• AVAILABLE FOR WORK";
+                }
+                if (subtext) subtext.textContent = "Receiving requests";
+            } else {
+                if (dot) dot.classList.add("offline");
+                if (badge) {
+                    badge.classList.add("offline");
+                    badge.textContent = "• OFFLINE";
+                }
+                if (subtext) subtext.textContent = "Paused requests";
+            }
+        }
+
+        function toggleDropdown(dropdownId, btnId) {
+            const container = document.getElementById(dropdownId);
+            const btn = document.getElementById(btnId);
+            if (container && btn) {
+                const isOpen = container.classList.contains("open");
+                container.classList.toggle("open", !isOpen);
+                btn.classList.toggle("active", !isOpen);
+            }
+        }
+
+        function openJobsPage() {
+            const container = document.getElementById("jobsPage");
+            if (container) {
+                container.classList.add("page-mode");
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function closeJobsPage() {
+            const container = document.getElementById("jobsPage");
+            if (container) container.classList.remove("page-mode");
+        }
+
+        function filterJobsByProfession(value) {
+            profileData.profession = value;
+            updateProfessionIcon(value);
+            saveData();
+            renderJobs();
+        }
+
+        function updateProfessionIcon(value) {
+            const iconEl = document.getElementById("professionIcon");
+            const selectEl = document.getElementById("jobDescriptionSelect");
+            if (!iconEl || !selectEl) return;
+
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
+            if (selectedOption) {
+                const text = selectedOption.textContent.trim();
+                const icon = text.split(" ")[0] || "👤";
+                iconEl.textContent = icon;
+            }
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll(".job-tabs .tab-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.getAttribute("data-tab") === tabName);
+            });
+            renderJobs();
+        }
+
+        function renderJobs() {
+            const listEl = document.getElementById("jobsList");
+            const noJobsEl = document.getElementById("noJobsMessage");
+            if (!listEl) return;
+
+            listEl.innerHTML = "";
+            const currentProf = profileData.profession || "electrician";
+            const filteredJobs = sampleJobs.filter(j => j.profession === currentProf);
+
+            const allCount = filteredJobs.length;
+            const urgentCount = filteredJobs.filter(j => j.isUrgent).length;
+            const normalCount = filteredJobs.filter(j => !j.isUrgent).length;
+
+            document.getElementById("countAll").textContent = allCount;
+            document.getElementById("countUrgent").textContent = urgentCount;
+            document.getElementById("countNormal").textContent = normalCount;
+
+            let displayJobs = filteredJobs;
+            if (currentTab === "urgent") {
+                displayJobs = filteredJobs.filter(j => j.isUrgent);
+            } else if (currentTab === "normal") {
+                displayJobs = filteredJobs.filter(j => !j.isUrgent);
+            }
+
+            if (displayJobs.length === 0) {
+                if (noJobsEl) noJobsEl.classList.add("show");
+            } else {
+                if (noJobsEl) noJobsEl.classList.remove("show");
+
+                displayJobs.forEach(job => {
+                    const card = document.createElement("div");
+                    card.className = "job-item";
+                    card.innerHTML = `
+                        <div class="job-header">
+                            <div class="job-title-group">
+                                <span class="client-name">${job.client}</span>
+                                ${job.isUrgent ? '<span class="urgent-badge">URGENT</span>' : ''}
+                                <span class="time-ago">${job.timeAgo}</span>
+                            </div>
+                            <div class="job-top-right">
+                                <span class="order-id">${job.id}</span>
+                                <select class="transport-select">
+                                    <option value="bike">🏍️ Bike</option>
+                                    <option value="auto">🛺 Auto</option>
+                                    <option value="bus">🚌 Bus</option>
+                                    <option value="walk">🚶 Walk</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="job-service">${job.service}</div>
+                        <div class="job-meta-row">
+                            <span class="location-pill">📍 ${job.location}</span>
+                            <span class="price-pill">${job.price}</span>
+                        </div>
+                        <div class="job-actions">
+                            <button class="btn-accept" onclick="acceptJob('${job.id}')">✓ Accept</button>
+                            <button class="btn-decline" onclick="declineJob('${job.id}')">✕ Decline</button>
+                        </div>
+                    `;
+                    listEl.appendChild(card);
+                });
+            }
+        }
+
+        function acceptJob(id) {
+            showStatus(`Job ${id} accepted successfully!`);
+        }
+
+        function declineJob(id) {
+            showStatus(`Job ${id} declined.`);
+        }
+
+        function renderSkills() {
+            const container = document.getElementById("skillsList");
+            if (!container) return;
+            container.innerHTML = "";
+
+            if (!profileData.skills || profileData.skills.length === 0) {
+                container.innerHTML = '<span class="empty-state">No skills added yet.</span>';
+                return;
+            }
+
+            profileData.skills.forEach((skill, index) => {
+                const pill = document.createElement("div");
+                pill.className = "skill-pill";
+                pill.innerHTML = `
+                    <span>${skill}</span>
+                    <button class="delete-skill" onclick="removeSkill(${index})" title="Remove skill">✕</button>
+                `;
+                container.appendChild(pill);
+            });
+        }
+
+        function openAddSkillModal() {
+            document.getElementById("newSkillInput").value = "";
+            document.getElementById("addSkillModal").classList.add("show");
+        }
+
+        function closeAddSkillModal() {
+            document.getElementById("addSkillModal").classList.remove("show");
+        }
+
+        function addSkill() {
+            const input = document.getElementById("newSkillInput");
+            const val = input.value.trim();
+            if (val) {
+                if (!profileData.skills) profileData.skills = [];
+                profileData.skills.push(val);
+                saveData();
+                renderSkills();
+                closeAddSkillModal();
+            }
+        }
+
+        function removeSkill(index) {
+            if (profileData.skills && profileData.skills[index] !== undefined) {
+                profileData.skills.splice(index, 1);
+                saveData();
+                renderSkills();
+            }
+        }
+
+        function editWorker() {
+            document.getElementById("editWorkerName").value = profileData.name || "";
+            document.getElementById("editWorkerPhone").value = profileData.phone || "";
+            document.getElementById("editWorkerLocation").value = profileData.location || "";
+            document.getElementById("editWorkerQualification").value = profileData.qualification || "";
+            document.getElementById("editWorkerExperience").value = profileData.experience || "";
+            document.getElementById("profileEditModal").classList.add("show");
+        }
+
+        function closeProfileModal() {
+            document.getElementById("profileEditModal").classList.remove("show");
+        }
+
+        function saveWorkerProfile() {
+            profileData.name = document.getElementById("editWorkerName").value.trim() || "NAME";
+            profileData.phone = document.getElementById("editWorkerPhone").value.trim() || "+91 Phone Number";
+            profileData.location = document.getElementById("editWorkerLocation").value.trim() || "Address";
+            profileData.qualification = document.getElementById("editWorkerQualification").value.trim();
+            profileData.experience = document.getElementById("editWorkerExperience").value.trim();
+
+            void saveData();
+            renderProfile();
+            closeProfileModal();
+            showStatus("Profile details updated!");
+        }
+
+        function renderExtraSections() {
+            const sec = profileData.sections || {};
+
+            // About
+            const aboutEl = document.getElementById("aboutContent");
+            if (aboutEl) aboutEl.textContent = sec.about?.text || "No about information added.";
+            const workDescriptionEl = document.getElementById("workDescriptionContent");
+            if (workDescriptionEl) workDescriptionEl.textContent = sec.workDescription?.text || "No work description added.";
+
+            // Resume
+            const resumeEl = document.getElementById("resumeContent");
+            if (resumeEl) {
+                const imgs = sec.resume?.images || [];
+                if (imgs.length > 0) {
+                    resumeEl.style.display = "block";
+                    resumeEl.innerHTML = `<img class="resume-preview" src="${imgs[0]}" alt="Resume">`;
+                } else {
+                    resumeEl.style.display = "none";
+                    resumeEl.innerHTML = "";
+                }
+            }
+
+            // Featured
+            const featEl = document.getElementById("featuredContent");
+            if (featEl) {
+                const items = sec.featured?.items || [];
+                featEl.innerHTML = items.length ?
+                    items.map(i => `<div class="featured-chip">${i}</div>`).join("") :
+                    '<span class="empty-state">No featured badges.</span>';
+            }
+
+            // Works (Unified Images & Paragraphs Handling)
+            const worksEl = document.getElementById("worksContent");
+            if (worksEl) {
+                const items = sec.works?.items || [];
+                if (items.length > 0) {
+                    worksEl.innerHTML = items.map((item, index) => {
+                        if (item.type === "image") {
+                            return `
+                                <div class="upload-preview-card">
+                                    <button class="upload-delete-button" onclick="deleteWorkItem(${index})" title="Delete">×</button>
+                                    <img src="${item.content}" alt="Work photo">
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div class="paragraph-preview-card">
+                                    <button class="upload-delete-button" onclick="deleteWorkItem(${index})" title="Delete">×</button>
+                                    <p>${item.content}</p>
+                                </div>
+                            `;
+                        }
+                    }).join("");
+                } else {
+                    worksEl.innerHTML = '<div class="upload-empty">No work samples or descriptions uploaded yet.</div>';
+                }
+            }
+
+            // Social Links
+            const socialEl = document.getElementById("socialLinks");
+            if (socialEl) {
+                const links = sec.social?.links || [];
+                socialEl.innerHTML = links.length ?
+                    links.map(l => `<a class="social-link" href="${l.url}" target="_blank" rel="noopener">🔗 ${l.label}</a>`).join("") :
+                    '<span class="empty-state">No social links added.</span>';
+            }
+        }
+
+        function openSectionEditor(type) {
+            activeSectionEdit = type;
+            const modal = document.getElementById("sectionModal");
+            const titleEl = document.getElementById("sectionModalTitle");
+            const bodyEl = document.getElementById("sectionModalBody");
+            const sec = profileData.sections[type] || {};
+
+            bodyEl.innerHTML = "";
+
+            if (type === "about") {
+                titleEl.textContent = "✎ Edit About";
+                bodyEl.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">ABOUT YOU</label>
+                        <textarea id="editAboutText" class="form-input post-editor-text">${sec.text || ""}</textarea>
+                    </div>
+                `;
+            } else if (type === "workDescription") {
+                titleEl.textContent = "✍🏻 Edit Work Description";
+                bodyEl.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">DESCRIBE THE WORK</label>
+                        <textarea id="editWorkDescriptionText" class="form-input post-editor-text">${sec.text || ""}</textarea>
+                    </div>
+                `;
+            } else if (type === "resume") {
+                titleEl.textContent = "📄 Edit Resume";
+                bodyEl.innerHTML = `
+                    <div class="upload-section-info">
+                        <strong>Upload Resume Image</strong>
+                        <span>Select an image file to update your resume preview.</span>
+                    </div>
+                    <div class="form-group">
+                        <input type="file" id="modalResumeInput" accept="image/*" class="file-input">
+                    </div>
+                `;
+            } else if (type === "featured") {
+                titleEl.textContent = "🏆 Edit Featured At";
+                const itemsStr = (sec.items || []).join(", ");
+                bodyEl.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">FEATURED BADGES (Comma separated)</label>
+                        <input type="text" id="editFeaturedInput" class="form-input" value="${itemsStr}" placeholder="e.g. Example 1, Example 2">
+                    </div>
+                `;
+            } else if (type === "social") {
+                titleEl.textContent = "🌐 Edit Social Links";
+                const links = sec.links || [];
+                bodyEl.innerHTML = `
+                    <div class="upload-section-info">
+                        <strong>Social Media Links</strong>
+                        <span>Manage your external links below.</span>
+                    </div>
+                    <div id="socialLinksEditorList">
+                        ${links.map((l, idx) => `
+                            <div style="display:flex;gap:6px;margin-bottom:8px;" data-social-index="${idx}">
+                                <input type="text" class="form-input" value="${l.label}" placeholder="Label" style="flex:1;">
+                                <input type="text" class="form-input" value="${l.url}" placeholder="URL" style="flex:2;">
+                                <button type="button" class="upload-delete-button" style="position:static;" onclick="this.parentElement.remove()">×</button>
+                            </div>
+                        `).join("")}
+                    </div>
+                    <button type="button" class="modal-btn" onclick="addSocialLinkRow()" style="margin-top:8px;width:auto;padding:6px 12px;">+ Add Link</button>
+                `;
+            } else {
+                titleEl.textContent = "Edit Section";
+                bodyEl.innerHTML = `<p>No editor configured for this section.</p>`;
+            }
+
+            modal.classList.add("show");
+        }
+
+        function closeSectionEditor() {
+            document.getElementById("sectionModal").classList.remove("show");
+            activeSectionEdit = null;
+        }
+
+        function closeSectionEditorOutside(event) {
+            if (event.target.id === "sectionModal") {
+                closeSectionEditor();
+            }
+        }
+
+        function saveSectionEditor() {
+            if (!activeSectionEdit) return;
+
+            if (activeSectionEdit === "about") {
+                const text = document.getElementById("editAboutText").value;
+                if (!profileData.sections.about) profileData.sections.about = {};
+                profileData.sections.about.text = text;
+            } else if (activeSectionEdit === "workDescription") {
+                const text = document.getElementById("editWorkDescriptionText").value;
+                if (!profileData.sections.workDescription) profileData.sections.workDescription = {};
+                profileData.sections.workDescription.text = text;
+            } else if (activeSectionEdit === "resume") {
+                const fileInput = document.getElementById("modalResumeInput");
+                if (fileInput && fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (!profileData.sections.resume) profileData.sections.resume = {
+                            images: []
+                        };
+                        profileData.sections.resume.images = [e.target.result];
+                        saveData();
+                        renderExtraSections();
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                }
+            } else if (activeSectionEdit === "featured") {
+                const val = document.getElementById("editFeaturedInput").value;
+                const items = val.split(",").map(i => i.trim()).filter(Boolean);
+                if (!profileData.sections.featured) profileData.sections.featured = {};
+                profileData.sections.featured.items = items;
+            } else if (activeSectionEdit === "social") {
+                const rows = document.querySelectorAll("#socialLinksEditorList > div");
+                const newLinks = [];
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll("input");
+                    const label = inputs[0].value.trim();
+                    const url = inputs[1].value.trim();
+                    if (label || url) {
+                        newLinks.push({
+                            label,
+                            url
+                        });
+                    }
+                });
+                if (!profileData.sections.social) profileData.sections.social = {};
+                profileData.sections.social.links = newLinks;
+            }
+
+            saveData();
+            renderExtraSections();
+            closeSectionEditor();
+            showStatus("Section updated successfully!");
+        }
+
+        function addSocialLinkRow() {
+            const list = document.getElementById("socialLinksEditorList");
+            if (!list) return;
+            const div = document.createElement("div");
+            div.style.cssText = "display:flex;gap:6px;margin-bottom:8px;";
+            div.innerHTML = `
+                <input type="text" class="form-input" placeholder="Label" style="flex:1;">
+                <input type="text" class="form-input" placeholder="URL" style="flex:2;">
+                <button type="button" class="upload-delete-button" style="position:static;" onclick="this.parentElement.remove()">×</button>
+            `;
+            list.appendChild(div);
+        }
+
+        async function handleResumeSelect(files) {
+            if (!files || !files[0]) return;
+            try {
+                const url = await uploadProfileFile(files[0]);
+                if (!profileData.sections.resume) profileData.sections.resume = { images: [] };
+                profileData.sections.resume.images = [url];
+                await saveData(); renderExtraSections(); showStatus("Resume uploaded successfully!");
+            } catch (e) { showStatus(e instanceof Error ? e.message : "Resume upload failed"); }
+        }
+
+        async function handleWorksSelect(files) {
+            if (!files || files.length === 0) return;
+            if (!profileData.sections.works) profileData.sections.works = { items: [] };
+            try {
+                for (const file of Array.from(files)) {
+                    const url = await uploadProfileFile(file);
+                    profileData.sections.works.items.push({ type: "image", content: url });
+                }
+                await saveData(); renderExtraSections(); showStatus("Work photos added!");
+            } catch (e) { showStatus(e instanceof Error ? e.message : "Work upload failed"); }
+        }
+
+        function addParagraph() {
+            const input = document.getElementById("paragraphInput");
+            const text = input ? input.value.trim() : "";
+            if (!text) return;
+
+            if (!profileData.sections.works) profileData.sections.works = {
+                items: []
+            };
+            profileData.sections.works.items.push({
+                type: "paragraph",
+                content: text
+            });
+            input.value = "";
+            saveData();
+            renderExtraSections();
+            showStatus("Paragraph added successfully!");
+        }
+
+        function deleteWorkItem(index) {
+            if (profileData.sections.works && profileData.sections.works.items) {
+                profileData.sections.works.items.splice(index, 1);
+                saveData();
+                renderExtraSections();
+                showStatus("Item deleted.");
+            }
+        }
+
+        async function updateProfileImage(event) {
+            if (!event.target.files || !event.target.files[0]) return;
+            try { profileData.profileImage = await uploadProfileFile(event.target.files[0]); await saveData(); renderProfile(); showStatus("Profile picture updated!"); }
+            catch (e) { showStatus(e instanceof Error ? e.message : "Profile upload failed"); }
+        }
+
+        async function updateBackgroundImage(event) {
+            if (!event.target.files || !event.target.files[0]) return;
+            try { profileData.backgroundImage = await uploadProfileFile(event.target.files[0]); await saveData(); renderProfile(); showStatus("Cover image updated!"); }
+            catch (e) { showStatus(e instanceof Error ? e.message : "Cover upload failed"); }
+        }
+
+        function viewDocument(docName) {
+            showStatus(`Opening ${docName}...`);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const val = input.value.trim();
+            if (val) {
+                showStatus("Message sent!");
+                input.value = "";
+            }
+        }
+
+        function openUserProfile() {
+            showStatus("Opening user profile options...");
+        }
+
+        function goHome() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            closeWorksPage();
+            closeJobsPage();
+        }
+
+        function showStatus(text) {
+            const statusEl = document.getElementById("messageStatus");
+            if (!statusEl) return;
+            statusEl.textContent = text;
+            statusEl.classList.add("show");
+            setTimeout(() => {
+                statusEl.classList.remove("show");
+            }, 3000);
+        }
+
+        function closeModalOutside(event, modalId) {
+            if (event.target.id === modalId) {
+                document.getElementById(modalId).classList.remove("show");
+            }
+        }
+
+        void initData();
+    </script>
+</body>
+
+</html>

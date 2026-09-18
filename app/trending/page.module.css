@@ -1,0 +1,310 @@
+﻿/* /trending/page.module.css â€” Faithful port of the original trending page. */
+
+.wrap {
+  width: 100%;
+  min-height: 100vh;
+  height: 100vh;
+  background: linear-gradient(135deg, #07111f, #101827, #172033);
+  color: white;
+  padding-bottom: 50px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom scrollbar styling for the trending page */
+.wrap::-webkit-scrollbar {
+  width: 10px;
+}
+.wrap::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+.wrap::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00a7bd, #006d91);
+  border-radius: 5px;
+}
+.wrap::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00e5ff, #00a7bd);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(10px);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2px solid rgba(0, 188, 212, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+.header h1 {
+  font-size: 30px;
+  color: #00e5ff;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin: 0;
+}
+.back {
+  position: absolute;
+  left: 15px;
+  background: white;
+  color: #00a7bd;
+  border: none;
+  border-radius: 30px;
+  padding: 9px 18px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.back:hover { background: #00d9d9; color: white; }
+
+.categorySection { width: 95%; max-width: 1000px; margin: 25px auto 10px; }
+.categoryCarousel { display: flex; align-items: center; gap: 10px; }
+.categoryArrow {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: #263548;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+.categoryArrow:hover { background: #00bcd4; transform: scale(1.05); }
+
+.categoryWindow { flex: 1; overflow: hidden; border-radius: 18px; }
+.categoryTrack { display: flex; transition: transform 0.5s ease; }
+.categoryItem {
+  min-width: 100%;
+  padding: 15px 20px;
+  background: #1e293b;
+  border: 2px solid rgba(0, 229, 255, 0.25);
+  border-radius: 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+.categoryItem:hover { border-color: #00e5ff; background: #263548; }
+.categoryItem.active {
+  background: linear-gradient(135deg, #00a7bd, #006d91);
+  border-color: #00e5ff;
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.25);
+}
+.categoryItem h2 { font-size: 21px; margin: 0; }
+
+.categoryDots { display: flex; justify-content: center; gap: 7px; margin-top: 10px; }
+.categoryDot {
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 50%;
+  background: #596779;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.categoryDot.active { width: 24px; border-radius: 10px; background: #00e5ff; }
+
+.categoryDescription { width: 95%; max-width: 1000px; margin: 20px auto 0; text-align: center; }
+.categoryDescription h2 { font-size: 25px; color: #ffffff; margin: 0 0 6px; }
+.categoryDescription p { color: #8b95a1; font-size: 14px; margin: 0; }
+
+.carousel {
+  width: 95%;
+  max-width: 1000px;
+  margin: 20px auto 30px;
+  overflow: hidden;
+  border-radius: 20px;
+  position: relative;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.55);
+}
+.carouselTrack { display: flex; transition: transform 0.6s ease; }
+.slide {
+  width: 100%;
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+.slide img {
+  display: block;
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.carouselButtons {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 15px;
+  pointer-events: none;
+}
+.carouselButtons button {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  color: #111827;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  pointer-events: auto;
+}
+.carouselButtons button:hover { background: #00e5ff; color: white; }
+
+.carouselDots {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+@media (max-width: 480px) {
+  .header { padding: 16px 10px; }
+  .header h1 { font-size: 20px; }
+  .back { padding: 7px 12px; font-size: 12px; }
+  .categoryArrow { width: 36px; height: 36px; }
+  .categoryItem { padding: 12px 10px; }
+  .categoryItem h2 { font-size: 16px; }
+  .carousel { width: 96%; }
+  .slide img { height: 230px; }
+  .popularQueriesSection h2 { font-size: 24px; }
+  .query { min-height: 48px; }
+  .queryStar { min-width: 60px; font-size: 22px; }
+  .queryText { font-size: 17px; }
+}
+
+/* Small phone + WhatsApp icon row, similar in style to the chat page's
+   welcome row. Compact, inline, with the phone number shown between. */
+  gap: 8px;
+  z-index: 5;
+}
+.carouselDot {
+  width: 9px;
+  height: 9px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+.carouselDot.active { width: 25px; border-radius: 10px; background: #00e5ff; }
+
+.popularQueriesSection {
+  width: 95%;
+  max-width: 1000px;
+  margin: -10px auto 25px;
+  color: white;
+}
+.popularQueriesSection h2 {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 0 0 12px 8px;
+  color: #ffffff;
+  text-align: left;
+}
+.query {
+  width: 100%;
+  min-height: 50px;
+  margin: 7px 0;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, #f5f5f5 0%, #f5f5f5 14%, #079db5 14%, #079db5 100%);
+  border: 2px solid #00e5ff;
+  border-radius: 25px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 0;
+  text-align: left;
+}
+.queryStar {
+  width: 14%;
+  min-width: 65px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e32626;
+  font-size: 25px;
+  flex-shrink: 0;
+}
+.queryText {
+  flex: 1;
+  padding: 8px 14px;
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.query:hover {
+  transform: scale(1.015);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+}
+.query:active { transform: scale(0.98); }
+
+.projectsButtonContainer { width: 100%; display: flex; justify-content: center; align-items: center; margin: 10px 0 105px; padding: 0 10px; }
+.projectsButton {
+  width: min(90%, 420px);
+  padding: 14px 20px;
+  border: 2px solid #00eaff;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #009db5, #007f99);
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(0, 234, 255, 0.45);
+  transition: 0.2s ease;
+}
+.projectsButton:hover { transform: scale(1.03); }
+.projectsButton:active { transform: scale(0.97); }
+
+@media (max-width: 768px) {
+  .header h1 { font-size: 23px; }
+  .slide img { height: 280px; }
+  .caption h3 { font-size: 20px; }
+  .categoryItem h2 { font-size: 18px; }
+  .popularQueriesSection { width: 96%; }
+  .popularQueriesSection h2 { font-size: 25px; margin-left: 5px; }
+  .query { min-height: 48px; border-radius: 24px; }
+  .queryStar { min-width: 55px; font-size: 23px; }
+  .queryText { font-size: 18px; }
+}
+@media (max-width: 480px) {
+  .header { padding: 16px 10px; }
+  .header h1 { font-size: 20px; }
+  .back { padding: 7px 12px; font-size: 12px; }
+  .categoryArrow { width: 36px; height: 36px; }
+  .categoryItem { padding: 12px 10px; }
+  .categoryItem h2 { font-size: 16px; }
+  .carousel { width: 96%; }
+  .slide img { height: 230px; }
+  .popularQueriesSection h2 { font-size: 24px; }
+  .query { min-height: 48px; }
+  .queryStar { min-width: 60px; font-size: 22px; }
+  .queryText { font-size: 17px; }
+}
+
+.slide:hover img { transform: scale(1.04); }
+.caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 50px 25px 20px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+  pointer-events: none;
+}
+.caption h3 { font-size: 25px; margin: 0 0 5px; }
+.caption p { color: #d1d5db; font-size: 14px; margin: 0; }

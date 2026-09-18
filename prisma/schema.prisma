@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model WorkerProfile {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String?  @map("user_id") @db.Uuid
+  sessionId           String?  @map("session_id") @db.Uuid
+  email               String?
+  name                String   @default("")
+  phone               String   @default("")
+  location            String   @default("")
+  qualification       String   @default("")
+  experience          String   @default("")
+  profession          String   @default("electrician")
+  profileImageUrl     String?  @map("profile_image_url")
+  backgroundImageUrl  String?  @map("background_image_url")
+  workAvailable       Boolean  @default(true) @map("work_available")
+  skills              Json     @default("[]")
+  aboutText           String   @default("") @map("about_text")
+  workDescription     String   @default("") @map("work_description")
+  resumeUrl           String?  @map("resume_url")
+  works               Json     @default("[]")
+  featured            Json     @default("[]")
+  socialLinks         Json     @default("[]") @map("social_links")
+  rating              Decimal  @default(0) @db.Decimal(3, 2)
+  jobsDone            Int      @default(0) @map("jobs_done")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("worker_profiles")
+}
+
+model BusinessProfile {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  slug            String   @unique
+  name            String
+  tagline         String?
+  description     String?
+  ownerName       String?  @map("owner_name")
+  ownerBio        String?  @map("owner_bio")
+  phone           String?
+  email           String?
+  website         String?
+  address         String?
+  city            String?
+  state           String?
+  postalCode      String?  @map("postal_code")
+  country         String?
+  bannerImageUrl  String?  @map("banner_image_url")
+  logoImageUrl    String?  @map("logo_image_url")
+  category        String?
+  status          String   @default("draft")
+  workingHours   Json     @default("{}") @map("working_hours")
+  ratingAverage   Decimal  @default(0) @db.Decimal(3, 2) @map("rating_average")
+  reviewCount     Int      @default(0) @map("review_count")
+  publishedAt     DateTime? @map("published_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("business_profiles")
+}
