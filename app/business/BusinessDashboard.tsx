@@ -240,10 +240,137 @@ export default function BusinessDashboard() {
           <section className={styles.infoCard}><Title icon="fa-circle-info" text="About Business" edit={() => openProfileModal("about")} /><p className={styles.description}>{profile?.description || ""}</p></section>
           <section className={styles.infoCard}><Title icon="fa-user-tie" text="About Business Owner" edit={() => openProfileModal("owner")} /><p className={styles.description}>{profile?.owner_bio || ""}</p>{profile?.owner_name && <p className={styles.ownerName}>{profile.owner_name}</p>}</section>
           <section className={styles.infoCard}><Title icon="fa-clock" text="Working Hours" edit={() => openProfileModal("hours")} /><p className={styles.description}><b>Monday – Saturday:</b> {profile?.working_hours?.["Monday-Saturday"] || "8:00 AM – 9:00 PM"}<br /><b>Sunday:</b> {profile?.working_hours?.Sunday || "9:00 AM – 2:00 PM"}</p></section>
-          <section className={styles.infoCard}><Title icon="fa-utensils" text="LISTINGS IN" edit={() => openProfileModal("listings")} /><div className={styles.linkGrid}>{data.listings.filter(x => x.active).map((x) => <a key={x.id} href={x.description || "#"} target="_blank" rel="noreferrer" className={`${styles.linkBox} ${styles.linkWeb}`}><i className="fa-solid fa-store" />{x.title}</a>)}</div>{!data.listings.length && <p className={styles.muted}>Add platforms where customers can find you.</p>}</section>
+          <section className={styles.infoCard}><Title icon="fa-utensils" text="LISTINGS IN" edit={() => openProfileModal("listings")} /><div className={styles.linkGrid}>{data.listings.filter(x => x.active).map((x) => <a key={x.id} href={x.description || "#"} target="_blank" rel="noreferrer" className={`${styles.linkBox} ${styles.linkWeb}`}><i className="fa-solid fa-store" />{x.title}</a>)}</div>{!data.listings.length && <p className={styles.muted}></p>}</section>
           <section className={styles.infoCard}><Title icon="fa-truck-fast" text="DELIVERY PLACES AVAILABLE" edit={() => openProfileModal("delivery")} /><div className={styles.tags}>{data.delivery_areas.filter(x => x.active).map((x) => <span key={x.id}><i className="fa-solid fa-location-dot" />{x.area}</span>)}</div></section>
-          <section className={styles.infoCard}><Title icon="fa-link" text="SOCIAL MEDIA" edit={() => openProfileModal("social")} /><div className={styles.linkGrid}>{data.social_links.filter(x => x.active).map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" className={`${styles.linkBox} ${socialClass(x.platform)}`}><i className={socialIcon(x.platform)} />{x.label || x.platform}</a>)}</div></section>
-          <section className={styles.infoCard}><Title icon="fa-star" text="REVIEWS & RATINGS" edit={() => openProfileModal("reviews")} /><div className={styles.ratingRow}><strong>{avgRating ? avgRating.toFixed(1) : "—"}</strong><div><div className={styles.stars}>{stars(avgRating)}</div><small>Based on {profile?.review_count ?? data.reviews.length} verified reviews</small></div></div>{data.reviews.map((review) => <div key={review.id} className={styles.review}><div><b>{review.reviewer_name}</b><small>{formatDate(review.created_at)}</small></div><div className={styles.stars}>{stars(review.rating)}</div><p>{review.body}</p></div>)}</section>
+          
+          <section className={styles.infoCard}>
+    <Title
+        icon="fa-link"
+        text="SOCIAL MEDIA"
+        edit={() => openSocialModal()}
+    />
+
+    <div className={styles.linkGrid}>
+        <a
+            href="https://maps.google.com"
+            target="_blank"
+            rel="noreferrer"
+            className={`${styles.linkBox} ${styles.bgMaps}`}
+        >
+            <i className="fa-solid fa-location-dot" />
+            Maps
+        </a>
+
+        <a
+            href="mailto:info@example.com"
+            className={`${styles.linkBox} ${styles.bgMail}`}
+        >
+            <i className="fa-solid fa-envelope" />
+            Email
+        </a>
+
+        <a
+            href="https://example.com"
+            target="_blank"
+            rel="noreferrer"
+            className={`${styles.linkBox} ${styles.bgWeb}`}
+        >
+            <i className="fa-solid fa-globe" />
+            Website
+        </a>
+
+        <a
+            href="#"
+            className={`${styles.linkBox} ${styles.bgApp}`}
+        >
+            <i className="fa-solid fa-mobile-screen" />
+            Mobile App
+        </a>
+
+        <a
+            href="tel:+919876543210"
+            className={`${styles.linkBox} ${styles.bgCall}`}
+        >
+            <i className="fa-solid fa-phone" />
+            Call Us
+        </a>
+
+        <a
+            href="https://youtube.com"
+            target="_blank"
+            rel="noreferrer"
+            className={`${styles.linkBox} ${styles.bgYt}`}
+        >
+            <i className="fa-brands fa-youtube" />
+            YouTube
+        </a>
+
+        <a
+            href="https://twitter.com"
+            target="_blank"
+            rel="noreferrer"
+            className={`${styles.linkBox} ${styles.bgTwitter}`}
+        >
+            <i className="fa-brands fa-x-twitter" />
+            Twitter/X
+        </a>
+
+        <a
+            href="https://linkedin.com"
+            target="_blank"
+            rel="noreferrer"
+            className={`${styles.linkBox} ${styles.bgLinkedin}`}
+        >
+            <i className="fa-brands fa-linkedin-in" />
+            LinkedIn
+        </a>
+
+        <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noreferrer"
+            className={`${styles.linkBox} ${styles.bgInsta}`}
+        >
+            <i className="fa-brands fa-instagram" />
+            Instagram
+        </a>
+
+        <a
+            href="https://t.me"
+            target="_blank"
+            rel="noreferrer"
+            className={`${styles.linkBox} ${styles.bgTelegram}`}
+        >
+            <i className="fa-brands fa-telegram" />
+            Telegram
+        </a>
+
+        <a
+            href="https://whatsapp.com/channel"
+            target="_blank"
+            rel="noreferrer"
+            className={`${styles.linkBox} ${styles.bgWaChannel}`}
+        >
+            <i className="fa-brands fa-whatsapp" />
+            WA Channel
+        </a>
+
+        <a
+            href="https://facebook.com"
+            target="_blank"
+            rel="noreferrer"
+            className={`${styles.linkBox} ${styles.bgFacebook}`}
+        >
+            <i className="fa-brands fa-facebook-f" />
+            Facebook
+        </a>
+    </div>
+</section>
+
+
+
+
+          <section className={styles.infoCard}><Title icon="fa-star" text="REVIEWS & RATINGS" edit={() => openProfileModal("reviews")} /><div className={styles.ratingRow}><strong>{avgRating ? avgRating.toFixed(1) : "—"}</strong><div><div className={styles.stars}>{stars(avgRating)}</div><small>Based on verified reviews</small></div></div>{data.reviews.map((review) => <div key={review.id} className={styles.review}><div><b>{review.reviewer_name}</b><small>{formatDate(review.created_at)}</small></div><div className={styles.stars}>{stars(review.rating)}</div><p>{review.body}</p></div>)}</section>
         </> : <section className={styles.infoCard}><Title icon="fa-users-gear" text="Existing Jobs" edit={() => { setEditingStaff(null); openProfileModal("staff"); }} /><div>{data.staff_roles.filter(x => x.active).map((role) => <div className={styles.staffRow} key={role.id}><div className={styles.avatar}>{role.role_name.charAt(0).toUpperCase()}</div><div className={styles.staffInfo}><b>{role.role_name}</b><span>{role.description || ""}</span></div><div className={styles.staffActions}><span className={styles.count}><i className="fa-solid fa-users" />{role.staff_count}</span><button onClick={() => { openProfileModal("staff", role); }}><i className="fa-solid fa-pen" /></button><button onClick={async () => { if (window.confirm("Remove this staff role?")) { await deleteBusinessResource("staff", role.id); await refresh(); } }}><i className="fa-solid fa-trash" /></button></div></div>)}</div></section>}
       </div>
       <footer className={styles.footer}><button className={activeProfileTab === "home" ? styles.footerActive : styles.footerButton} onClick={() => setActiveProfileTab("home")}><i className="fa-solid fa-house" aria-hidden="true" /><span>Home</span></button><button className={activeProfileTab === "staff" ? styles.footerActive : styles.footerButton} onClick={() => setActiveProfileTab("staff")}><i className="fa-solid fa-id-badge" aria-hidden="true" /><span>Staff</span></button><button className={styles.footerButton} onClick={() => setProfileOpen(false)}><i className="fa-solid fa-border-all" aria-hidden="true" /><span>Info</span></button></footer>
