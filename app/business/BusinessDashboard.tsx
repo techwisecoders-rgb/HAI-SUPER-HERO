@@ -247,7 +247,7 @@ export default function BusinessDashboard() {
     <Title
         icon="fa-link"
         text="SOCIAL MEDIA"
-        edit={() => openSocialModal()}
+      edit={() => openProfileModal("social")}
     />
 
     <div className={styles.linkGrid}>
