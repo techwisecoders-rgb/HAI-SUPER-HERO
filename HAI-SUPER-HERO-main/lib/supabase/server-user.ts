@@ -1,0 +1,35 @@
+// Per-request Supabase client bound to the current user's cookies.
+// Use this in server components and route handlers when you need RLS to apply
+// on behalf of a logged-in admin (so JWT is forwarded to Postgres).
+
+import { cookies } from "next/headers";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+
+export function getServerSupabase() {
+  const cookieStore = cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch {
+            // ignore in Server Components
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: "", ...options });
+          } catch {
+            // ignore in Server Components
+          }
+        },
+      },
+    },
+  );
+}

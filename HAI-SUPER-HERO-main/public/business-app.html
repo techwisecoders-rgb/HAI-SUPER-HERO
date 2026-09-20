@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Business Hub & Profile App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0f0f12; color: #f0f0f5; padding-top: 60px; padding-bottom: 70px; min-height: 100vh; }
+        button, input, textarea { font-family: inherit; }
+        button { -webkit-tap-highlight-color: transparent; }
+        .app-header { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #18181c; border-bottom: 1px solid #2a2a35; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; gap: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 100; }
+        .btn-profile-icon { background: #000; color: #fff; border: 1px solid #333; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: .2s; }
+        .btn-profile-icon:hover { background: #1a1a1a; border-color: #555; }
+        .search-box-wrapper { flex: 1; display: flex; align-items: center; background: #24242c; border: 1px solid #333340; border-radius: 20px; padding: 6px 12px; }
+        .search-box-wrapper i { color: #8888a0; margin-right: 8px; }
+        .search-box-wrapper input { border: none; background: transparent; outline: none; width: 100%; font-size: .9rem; color: #fff; }
+        .search-box-wrapper input::placeholder { color: #777788; }
+        .btn-add-action { background: #000; color: #fff; border: 1px solid #333; width: 38px; height: 38px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: .2s; }
+        .btn-add-action:hover { background: #1a1a1a; border-color: #555; transform: scale(1.05); }
+        .floating-message-btn { position: fixed; bottom: 75px; left: 20px; width: 52px; height: 52px; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; text-decoration: none; z-index: 250; transition: .2s; cursor: pointer; padding: 0; }
+        .floating-message-btn:hover { transform: scale(1.08); }
+        .floating-bell-btn { position: fixed; bottom: 75px; right: 20px; width: 52px; height: 52px; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; text-decoration: none; z-index: 250; transition: .2s; cursor: pointer; padding: 0; }
+        .floating-bell-btn:hover { transform: scale(1.08); }
+        .main-container { max-width: 800px; margin: 16px auto; padding: 0 16px; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+        .item-card { background: #1e1e24; border-radius: 10px; padding: 12px; border: 1px solid #2e2e38; box-shadow: 0 4px 12px rgba(0,0,0,.3); display: flex; flex-direction: column; position: relative; cursor: pointer; transition: .15s; overflow: hidden; }
+        .item-card:hover { transform: translateY(-2px); border-color: #3f3f50; box-shadow: 0 6px 16px rgba(0,0,0,.5); }
+        .item-card-img { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+        .item-title { font-weight: bold; font-size: 1rem; color: #fff; }
+        .item-sub { font-size: .85rem; color: #25d366; margin-top: 4px; font-weight: 600; }
+        .card-edit-btn { position: absolute; top: 18px; right: 18px; background: rgba(0,0,0,.75); color: #fff; border: 1px solid rgba(255,255,255,.3); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: .85rem; cursor: pointer; transition: .2s; z-index: 5; }
+        .card-edit-btn:hover { background: #1a73e8; border-color: #1a73e8; transform: scale(1.1); }
+        .btn-card-action { margin-top: 12px; padding: 8px; background: #1a73e8; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: .8rem; width: 100%; transition: .2s; }
+        .btn-card-action:hover { background: #1557b0; }
+        .full-page-overlay { position: fixed; inset: 0; width: 100vw; height: 100vh; background: #0f0f12; z-index: 200; overflow-y: auto; display: none; }
+        .full-page-overlay.open { display: block; }
+        .profile-img-container { width: 100%; height: 180px; overflow: hidden; position: relative; background: #1e1e24; }
+        .profile-img-container img { width: 100%; height: 100%; object-fit: cover; opacity: .85; }
+        .profile-banner-edit-btn { position: absolute; bottom: 12px; right: 16px; background: rgba(0,0,0,.75); color: #fff; border: 1px solid rgba(255,255,255,.4); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: .95rem; cursor: pointer; backdrop-filter: blur(4px); transition: .2s; z-index: 10; }
+        .profile-banner-edit-btn:hover { background: #1a73e8; transform: scale(1.1); }
+        .profile-header-banner, .detail-header-banner { background: linear-gradient(135deg, #181824, #0a0a10); color: #fff; padding: 20px; position: relative; border-bottom: 1px solid #2e2e3a; }
+        .profile-header-edit-btn { position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,.6); color: #fff; border: 1px solid rgba(255,255,255,.3); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: .85rem; cursor: pointer; backdrop-filter: blur(4px); transition: .2s; }
+        .profile-header-edit-btn:hover { background: #1a73e8; transform: scale(1.1); }
+        .profile-title, .detail-title { font-size: 1.5rem; font-weight: bold; padding-right: 50px; }
+        .profile-tagline, .detail-subtitle { font-size: .95rem; color: #a0a0b0; margin-top: 4px; padding-right: 50px; }
+        .btn-close-overlay { position: fixed; top: 16px; right: 16px; background: rgba(0,0,0,.75); color: #fff; border: 2px solid rgba(255,255,255,.8); width: 40px; height: 40px; border-radius: 50%; font-size: 1.1rem; font-weight: bold; cursor: pointer; z-index: 300; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(0,0,0,.6); transition: .15s; }
+        .btn-close-overlay:hover { background: #e53935; transform: scale(1.1); }
+        .profile-content-body, .detail-content-body { max-width: 800px; margin: 0 auto; padding: 20px 16px 80px; }
+        .info-card { background: #1e1e24; border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #2e2e38; }
+        .info-card-title { font-size: .95rem; font-weight: bold; color: #d0d0e0; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2e2e38; padding-bottom: 10px; gap: 10px; }
+        .section-title-left { display: flex; align-items: center; gap: 8px; }
+        .section-edit-btn { width: 32px; height: 32px; border-radius: 7px; border: 1px solid #333340; background: #24242c; color: #4da6ff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: .2s; }
+        .section-edit-btn:hover { background: #1a73e8; color: #fff; border-color: #1a73e8; transform: scale(1.05); }
+        .profile-description-text { font-size: .95rem; line-height: 1.6; color: #b0b0c0; white-space: pre-line; }
+        .delivery-tags-container { display: flex; flex-wrap: wrap; gap: 8px; }
+        .delivery-tag { background: #18283a; color: #4da6ff; border: 1px solid #224466; border-radius: 20px; padding: 6px 14px; font-size: .85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+        .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+        .link-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 6px; border-radius: 8px; text-decoration: none; color: #fff; font-size: .75rem; font-weight: 600; text-align: center; gap: 6px; transition: .2s; }
+        .link-box:hover { opacity: .88; transform: translateY(-2px); }
+        .link-box i { font-size: 1.3rem; }
+        .bg-swiggy { background: #e06d10; } .bg-zomato { background: #c82333; } .bg-maps { background: #c53727; }
+        .bg-mail { background: #b8251b; } .bg-web { background: #1a73e8; } .bg-app { background: #5e35b1; }
+        .bg-call { background: #2e7d32; } .bg-yt { background: #cc0000; } .bg-twitter { background: #22222a; border: 1px solid #3a3a4a; }
+        .bg-linkedin { background: #0077b5; } .bg-insta { background: #c13584; } .bg-telegram { background: #0088cc; }
+        .bg-wa-channel { background: #128c7e; } .bg-facebook { background: #1877f2; }
+        .review-score-box { display: flex; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid #2e2e38; margin-bottom: 12px; }
+        .big-rating { font-size: 2.2rem; font-weight: bold; color: #fff; } .rating-stars { color: #ffca28; font-size: .9rem; }
+        .review-item { padding: 10px 0; border-bottom: 1px solid #2e2e38; }
+        .review-item:last-child { border-bottom: none; }
+        .reviewer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .reviewer-name { font-weight: 600; font-size: .88rem; color: #fff; } .review-date { font-size: .75rem; color: #777788; }
+        .review-comment { font-size: .85rem; color: #a0a0b0; line-height: 1.4; }
+        .staff-role-card { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #2e2e38; flex-wrap: nowrap; }
+        .staff-avatar { width: 42px; height: 42px; border-radius: 50%; background: #1a73e8; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; text-transform: uppercase; }
+        .staff-info { flex: 1; min-width: 0; } .staff-name { font-weight: 600; font-size: .95rem; color: #fff; margin-bottom: 2px; }
+        .staff-role-title { font-size: .8rem; color: #a0a0b0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .staff-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: nowrap; margin-left: auto; }
+        .staff-count-badge { background: #24242c; color: #4da6ff; font-size: .75rem; font-weight: 700; padding: 5px 10px; border-radius: 20px; border: 1px solid #333340; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; width: auto; }
+        .btn-icon-action { width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 7px; cursor: pointer; background: #000; color: #fff; border: 1px solid #333; transition: .2s; }
+        .btn-icon-action:hover { background: #1a1a1a; border-color: #555; }
+        .btn-edit-section { background: #24242c; color: #4da6ff; border: 1px solid #333340; border-radius: 6px; padding: 7px 10px; font-size: .78rem; font-weight: 600; cursor: pointer; transition: .2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-edit-section:hover { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+        .modal-overlay { position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; z-index: 220; opacity: 0; visibility: hidden; transition: .2s; }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal-card { background: #1e1e24; border-radius: 12px; padding: 22px; width: 90%; max-width: 520px; border: 1px solid #2e2e38; box-shadow: 0 4px 20px rgba(0,0,0,.5); max-height: 80vh; overflow-y: auto; }
+        .modal-title { font-size: 1.25rem; font-weight: bold; color: #fff; margin-bottom: 14px; }
+        .modal-description { font-size: .85rem; color: #8888a0; margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: .8rem; color: #a0a0b0; margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; background: #24242c; border: 1px solid #333340; border-radius: 8px; color: #fff; font-size: .9rem; outline: none; transition: .2s; }
+        .form-group input:focus { border-color: #1a73e8; }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+        .btn-modal { padding: 10px 18px; border: none; border-radius: 8px; font-size: .85rem; font-weight: 600; cursor: pointer; transition: .2s; }
+        .btn-cancel { background: #24242c; color: #a0a0b0; border: 1px solid #333340; }
+        .btn-submit { background: #1a73e8; color: #fff; }
+        .dynamic-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+        .dynamic-list-row { display: flex; gap: 8px; align-items: center; }
+        .dynamic-list-row input { flex: 1; }
+        .dynamic-list-row button { width: 34px; height: 34px; border-radius: 6px; }
+        .add-list-btn { background: #24242c; color: #4da6ff; border: 1px solid #333340; border-radius: 8px; padding: 10px 14px; font-size: .85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: .2s; margin-bottom: 16px; }
+        .social-editor-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .social-editor-row input { flex: 1; }
+        .order-received-box { background: #1e1e24; border: 1px solid #2e2e38; border-radius: 10px; padding: 16px; }
+        .order-info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
+        .order-id { font-size: .9rem; color: #fff; font-weight: 600; }
+        .order-status { font-size: .75rem; color: #ffca28; background: #2a2a30; padding: 3px 10px; border-radius: 20px; }
+        .order-details-text { font-size: .85rem; color: #a0a0b0; line-height: 1.6; margin-bottom: 14px; }
+        .order-details-text strong { color: #c0c0d0; }
+        .order-actions-row { display: flex; gap: 10px; margin: 14px 0; }
+        .btn-accept, .btn-decline { color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-size: .8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-accept { background: #2e7d32; } .btn-decline { background: #c62828; }
+        .delivery-boy-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid #2e2e38; }
+        .delivery-boy-label { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: #a0a0b0; margin-bottom: 8px; cursor: pointer; }
+        .delivery-select { width: 100%; padding: 8px 10px; background: #24242c; border: 1px solid #333340; border-radius: 8px; color: #fff; font-size: .85rem; }
+        .btn-connect-nearer { margin-top: 10px; padding: 8px 12px; background: #1a73e8; color: #fff; border: none; border-radius: 6px; font-size: .8rem; font-weight: 600; cursor: pointer; display: none; gap: 6px; }
+        .btn-connect-nearer.visible { display: flex; }
+        .order-result-msg { margin-top: 12px; padding: 10px 12px; border-radius: 8px; font-size: .88rem; font-weight: 600; display: none; text-align: center; }
+        .order-result-msg.success { background: #1b3a1f; color: #81c784; border: 1px solid #2e7d32; display: block; }
+        .order-result-msg.declined { background: #3a1a1a; color: #ef9a9a; border: 1px solid #c62828; display: block; }
+        .users-page-overlay { position: fixed; inset: 0; width: 100vw; height: 100vh; background: #0d0d0d; z-index: 280; overflow: hidden; display: none; }
+        .users-page-overlay.open { display: flex; justify-content: center; }
+        .users-page { width: 100%; max-width: 420px; height: 100%; display: flex; flex-direction: column; background: #0d0d0d; border-left: 1px solid #262626; border-right: 1px solid #262626; }
+        .users-header { height: 65px; flex-shrink: 0; display: flex; align-items: center; padding: 0 16px; gap: 12px; border-bottom: 1px solid #262626; background: #0d0d0d; }
+        .users-title { font-size: 20px; font-weight: 700; white-space: nowrap; color: #fff; }
+        .users-search-bar { flex: 1; min-width: 0; display: flex; align-items: center; background: #1f1f1f; border-radius: 22px; padding: 9px 14px; gap: 8px; }
+        .users-search-bar input { width: 100%; border: none; outline: none; background: transparent; color: #fff; font-size: 14px; }
+        .users-search-bar input::placeholder { color: #888; }
+        .users-header-icon { width: 38px; height: 38px; flex-shrink: 0; border: none; border-radius: 50%; background: #1f1f1f; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+        .users-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+        .user-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; border: none; background: transparent; text-align: left; font-family: inherit; }
+        .user-item:hover { background: #181818; }
+        .user-avatar { width: 52px; height: 52px; flex-shrink: 0; border-radius: 50%; object-fit: cover; background: #2a2a2a; }
+        .user-details { flex: 1; min-width: 0; }
+        .user-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+        .user-name { min-width: 0; color: #fff; font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-message { color: #a0a0a0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .no-users { display: none; text-align: center; padding: 40px 20px; color: #a0a0a0; font-size: 14px; }
+        .btn-close-users { position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,.75); color: #fff; border: 2px solid rgba(255,255,255,.8); width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; font-weight: bold; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+        .app-footer { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #18181c; border-top: 1px solid #2a2a35; display: flex; align-items: center; justify-content: space-around; box-shadow: 0 -2px 10px rgba(0,0,0,0.5); z-index: 100; }
+        .footer-btn { flex: 1; background: transparent; border: none; color: #8888a0; font-size: .75rem; padding: 8px 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+        .footer-btn.active { color: #1a73e8; } .footer-btn i { font-size: 1.1rem; }
+        @media (max-width: 600px) {
+            .app-header { padding: 0 10px; gap: 8px; } .main-container { padding: 0 10px; }
+            .content-grid { grid-template-columns: 1fr; }
+            .profile-content-body, .detail-content-body { padding: 20px 10px 80px; }
+            .profile-title { font-size: 1.3rem; } .links-grid { grid-template-columns: repeat(3, 1fr); }
+            .modal-card { padding: 16px; max-height: 92vh; }
+            .staff-role-card { align-items: center !important; gap: 10px !important; flex-wrap: nowrap !important; }
+            .staff-avatar { width: 38px !important; height: 38px !important; font-size: 1rem !important; }
+            .staff-actions { flex-direction: row !important; flex-wrap: nowrap !important; justify-content: flex-end !important; gap: 6px !important; margin-left: auto !important; }
+            .staff-count-badge { width: auto !important; padding: 5px 8px !important; font-size: .7rem !important; }
+            .btn-icon-action { width: 30px !important; height: 30px !important; font-size: .75rem !important; }
+        }
+        @media (max-width: 380px) { .footer-btn { font-size: .65rem; } }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <button class="btn-profile-icon" onclick="openProfilePage()" title="Open Profile">
+            <i class="fa-solid fa-house"></i>
+        </button>
+        <div class="search-box-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-input" placeholder="Search..." onkeyup="filterItems()">
+        </div>
+        <button class="btn-add-action" onclick="handleTopAddButtonClick()" title="Add New">
+            &#x2795;
+        </button>
+    </header>
+    <p type="button" class="floating-message-btn" title="Open Messages" onclick="openChat()">
+        <i class="fa-solid fa-comment-dots"></i>
+    </p>
+    <p type="button" class="floating-bell-btn" title="Notifications" onclick="openUsersPage()">
+        <span>&#128276;</span>
+    </p>
+    <main class="main-container">
+        <section id="view-all" class="view-section active">
+            <div class="content-grid" id="all-list">
+                <div class="item-card" data-title="water pump product" onclick="openItemDetails(this,'ITEM 1 (1 HP)','Subtitle: Product &#8371;COST','High quality 1 HP copper winding heavy duty water pump suitable for domestic household usage.','Contact via WhatsApp','https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=500&q=80')">
+                    <button class="card-edit-btn" onclick="openEditCardModal(event,this)"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=500&q=80" class="item-card-img" alt="Water Pump">
+                    <div class="item-title">ITEM NO.1</div>
+                    <div class="item-sub">Subtitle: Product &#8371;COST</div>
+                </div>
+            </div>
+        </section>
+        <section id="view-services" class="view-section">
+            <div class="content-grid" id="services-list">
+                <div class="item-card" data-title="electrical fitting maintenance" onclick="openItemDetails(this,'SERVICE 1','Type: Electrical Maintenance','Complete house wiring, socket replacement, fan installation, and general electrical diagnostics by expert technicians.','Book Service','https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=500&q=80')">
+                    <button class="card-edit-btn" onclick="openEditCardModal(event,this)"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=500&q=80" class="item-card-img" alt="Electrical Fitting">
+                    <div class="item-title">SERVICE NO.1</div>
+                    <div class="item-sub">Type of service</div>
+                </div>
+            </div>
+        </section>
+        <section id="view-vacancies" class="view-section">
+            <div class="content-grid" id="vacancies-list">
+                <div class="item-card" data-title="store helper helper" onclick="openItemDetails(this,'STORE HELPER','Salary: &#8371;12,000 / month','Eligibility: 10th Pass\n\nFull-time store helper needed for shop inventory management and local deliveries.','Apply Now','https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=500&q=80')">
+                    <button class="card-edit-btn" onclick="openEditCardModal(event,this)"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=500&q=80" class="item-card-img" alt="Store Helper">
+                    <div class="item-title">POST NO.1</div>
+                    <div class="item-sub">Salary: &#8371; / month</div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal-card">
+            <div class="modal-title" id="modal-title-text">Add New Entry</div>
+            <div id="dynamic-form-fields"></div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeAddModal()">Cancel</button>
+                <button class="btn-modal btn-submit" id="modal-submit-btn" onclick="submitNewItem()">Save Entry</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="about-modal">
+        <div class="modal-card">
+            <div class="modal-title">Edit About Business</div>
+            <div class="modal-description">Update the main description customers see about your business.</div>
+            <div class="form-group"><label>Business Description</label><textarea id="about-business-input" rows="7" placeholder="Describe your business..."></textarea></div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal('about-modal')">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveAboutBusiness()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="owner-modal">
+        <div class="modal-card">
+            <div class="modal-title">Edit Business Owner</div>
+            <div class="modal-description">Add information about the entrepreneur or business owner.</div>
+            <div class="form-group"><label>Owner Information</label><textarea id="owner-input" rows="6" placeholder="About the business owner..."></textarea></div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal('owner-modal')">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveOwner()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="hours-modal">
+        <div class="modal-card">
+            <div class="modal-title">Edit Working Hours</div>
+            <div class="modal-description">Set your business opening and closing schedule.</div>
+            <div class="form-group"><label>Monday - Saturday</label><input type="text" id="hours-weekday" placeholder="e.g. 8:00 AM - 9:00 PM"></div>
+            <div class="form-group"><label>Sunday</label><input type="text" id="hours-sunday" placeholder="e.g. 9:00 AM - 2:00 PM"></div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal('hours-modal')">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveWorkingHours()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="listings-modal">
+        <div class="modal-card">
+            <div class="modal-title">Add / Drop Listings</div>
+            <div class="modal-description">Add new platforms or drop existing platforms where your business is listed.</div>
+            <div id="listings-editor" class="dynamic-list"></div>
+            <button class="add-list-btn" onclick="addListingField()">
+                <i class="fa-solid fa-plus"></i> Add Listing
+            </button>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal('listings-modal')">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveListings()">Save Listings</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="delivery-modal">
+        <div class="modal-card">
+            <div class="modal-title">Edit Delivery Places</div>
+            <div class="modal-description">Add the areas, cities, or locations where your business provides delivery.</div>
+            <div id="delivery-editor" class="dynamic-list"></div>
+            <button class="add-list-btn" onclick="addDeliveryField()">
+                <i class="fa-solid fa-plus"></i> Add Delivery Area
+            </button>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal('delivery-modal')">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveDeliveryPlaces()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="social-modal">
+        <div class="modal-card">
+            <div class="modal-title">Edit Social Media</div>
+            <div class="modal-description">Update your business social and contact links.</div>
+            <div id="social-editor">
+                <div class="social-editor-row"><input id="social-maps" type="text" placeholder="Maps URL"><input id="social-email" type="text" placeholder="Email address"></div>
+                <div class="social-editor-row"><input id="social-website" type="text" placeholder="Website URL"><input id="social-app" type="text" placeholder="Mobile App URL"></div>
+                <div class="social-editor-row"><input id="social-phone" type="text" placeholder="Phone number"><input id="social-youtube" type="text" placeholder="YouTube URL"></div>
+                <div class="social-editor-row"><input id="social-twitter" type="text" placeholder="Twitter/X URL"><input id="social-linkedin" type="text" placeholder="LinkedIn URL"></div>
+                <div class="social-editor-row"><input id="social-instagram" type="text" placeholder="Instagram URL"><input id="social-telegram" type="text" placeholder="Telegram URL"></div>
+                <div class="social-editor-row"><input id="social-whatsapp" type="text" placeholder="WhatsApp Channel URL"><input id="social-facebook" type="text" placeholder="Facebook URL"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal('social-modal')">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveSocialLinks()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="reviews-modal">
+        <div class="modal-card">
+            <div class="modal-title">Edit Reviews & Ratings</div>
+            <div class="form-group"><label>Overall Rating</label><input type="number" id="review-rating" min="0" max="5" step="0.1" placeholder="4.8"></div>
+            <div class="form-group"><label>Number of Verified Reviews</label><input type="number" id="review-count" min="0" placeholder="124"></div>
+            <div class="form-group"><label>Customer Reviews</label><div id="review-editor-container"></div><button class="add-list-btn" onclick="addReviewEditor()"><i class="fa-solid fa-plus"></i> Add Review</button></div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal('reviews-modal')">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveReviews()">Save Reviews</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="profile-header-modal">
+        <div class="modal-card">
+            <div class="modal-title">Edit Business Header</div>
+            <div class="form-group"><label>Business Name</label><input type="text" id="header-business-name"></div>
+            <div class="form-group"><label>Tagline</label><input type="text" id="header-business-tagline"></div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal('profile-header-modal')">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveProfileHeader()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="edit-banner-modal">
+        <div class="modal-card">
+            <div class="modal-title">Update Profile Banner Image</div>
+            <div class="form-group"><label>Select New Image</label><input type="file" id="edit-banner-file" accept="image/*" onchange="handleBannerImageUpload(event)"></div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal('edit-banner-modal')">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveBannerImage()">Update Image</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="staff-role-modal">
+        <div class="modal-card">
+            <div class="modal-title" id="staff-modal-title">Add Staff Job Role</div>
+            <div class="form-group"><label>Role Name</label><input type="text" id="staff-role-name" placeholder="e.g. Senior Electrician"></div>
+            <div class="form-group"><label>Job Description</label><input type="text" id="staff-role-desc" placeholder="e.g. Wiring & Diagnostics"></div>
+            <div class="form-group"><label>Number of Employees</label><input type="number" id="staff-role-count" placeholder="e.g. 2" min="1"></div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeStaffRoleModal()">Cancel</button>
+                <button class="btn-modal btn-submit" onclick="saveStaffRole()">Save Role</button>
+            </div>
+        </div>
+    </div>
+    <div class="full-page-overlay" id="item-detail-page">
+        <button class="btn-close-overlay" onclick="closeItemDetails()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="detail-header-banner">
+            <div class="detail-title" id="detail-item-title">Item Title</div>
+            <div class="detail-subtitle" id="detail-item-sub">Subtitle / Type / Salary</div>
+        </div>
+        <div class="detail-content-body">
+            <div id="detail-img-container" style="display:none;margin-bottom:16px;">
+                <img id="detail-item-img" src="" alt="Uploaded image" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;">
+            </div>
+            <div class="info-card">
+                <div class="info-card-title">
+                    <span class="section-title-left"><i class="fa-solid fa-circle-info"></i>Information & Description</span>
+                </div>
+                <p id="detail-item-desc" style="font-size:.95rem;line-height:1.6;color:#a0a0b0;white-space:pre-line;">Detailed information will appear here.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card-title">
+                    <span class="section-title-left"><i class="fa-solid fa-handshake"></i>Direct Actions</span>
+                </div>
+                <button class="btn-card-action" style="padding:12px;font-size:1rem;margin-bottom:10px;background:#25d366;color:#000;" onclick="alert('Redirecting to WhatsApp...')">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span id="detail-action-text">Contact / Inquire</span>
+                </button>
+                <button class="btn-card-action" style="padding:12px;font-size:1rem;background:#1a73e8;" onclick="window.location.href='tel:+919876543210'">
+                    <i class="fa-solid fa-phone"></i>
+                    Call Business Now
+                </button>
+            </div>
+        </div>
+        <p onclick="openChat()">🦸‍♂️</p>
+        <p type="button" class="floating-bell-btn" title="Notifications" onclick="openUsersPage()">
+            <span>&#128276;</span>
+        </p>
+    </div>
+    <div class="users-page-overlay" id="users-page">
+        <button type="button" class="btn-close-users" onclick="closeUsersPage()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <header class="users-header">
+            <div class="users-title">Users</div>
+            <div class="users-search-bar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a0a0a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="users-search-input" placeholder="SEARCH USERS!" autocomplete="off" oninput="searchUsers()">
+            </div>
+            <button type="button" class="users-header-icon" onclick="refreshUsers()" title="Refresh">
+                &#x21bb;
+            </button>
+        </header>
+        <section class="users-list" id="users-list"></section>
+        <div class="no-users" id="no-users">No users found.</div>
+        <p type="button" class="floating-message-btn" title="Open Messages" onclick="openChat()">
+            <i class="fa-solid fa-comment-dots"></i>
+        </p>
+        <p type="button" class="floating-bell-btn" title="Notifications" onclick="openUsersPage()">
+            <span>&#128276;</span>
+        </p>
+    </div>
+    <div class="full-page-overlay" id="profile-page">
+        <div class="profile-img-container">
+            <img id="display-profile-banner-img" src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80" alt="Business Header Image">
+            <button class="profile-banner-edit-btn" onclick="openEditBannerModal()">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+        </div>
+        <div class="profile-header-banner">
+            <button class="profile-header-edit-btn" onclick="openProfileHeaderModal()">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <div class="profile-title" id="display-prof-name">BUSINESS NAME</div>
+            <div class="profile-tagline" id="display-prof-tagline">"BUSINESS TAGLINE"</div>
+        </div>
+        <div class="profile-content-body">
+            <div id="profile-tab-home" class="profile-tab-section active">
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <span class="section-title-left"><i class="fa-solid fa-box-open"></i>Order Received</span>
+                    </div>
+                    <div class="order-received-box" id="order-received-box">
+                        <div class="order-info-row">
+                            <span class="order-id"><i class="fa-solid fa-receipt"></i>Order #ORD-2847</span>
+                            <span class="order-status">Pending</span>
+                        </div>
+                        <div class="order-details-text">
+                            <strong style="color:#fff;">Customer:</strong> NAME<br>
+                            <strong style="color:#fff;">Items:</strong> ITEM NAME &#215; 1<br>
+                            <strong style="color:#fff;">Amount:</strong> COST<br>
+                            <strong style="color:#fff;">Delivery Address:</strong> LOCATION
+                        </div>
+                        <div class="order-actions-row" id="order-action-buttons">
+                            <button class="btn-accept" onclick="handleOrderAccept()">
+                                <i class="fa-solid fa-check"></i>Accept
+                            </button>
+                            <button class="btn-decline" onclick="handleOrderDecline()">
+                                <i class="fa-solid fa-xmark"></i>Decline
+                            </button>
+                        </div>
+                        <div class="delivery-boy-section" id="delivery-boy-section">
+                            <label class="delivery-boy-label" for="delivery-boy-select">
+                                <i class="fa-solid fa-motorcycle"></i>Delivery Boy Available?
+                            </label>
+                            <select id="delivery-boy-select" class="delivery-select" onchange="handleDeliveryBoyChange()">
+                                <option value="">-- Select Availability --</option>
+                                <option value="yes">Yes - Delivery Boy Available</option>
+                                <option value="no">No - Delivery Boy Not Available</option>
+                            </select>
+                            <button type="button" class="btn-connect-nearer" id="btn-connect-nearer" onclick="connectNearerDeliveryBoy()">
+                                <i class="fa-solid fa-location-crosshairs"></i>Connect with Nearer Delivery Boy
+                            </button>
+                        </div>
+                        <div class="order-result-msg" id="order-result-msg"></div>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <span class="section-title-left"><i class="fa-solid fa-circle-info"></i>About Business</span>
+                        <button class="section-edit-btn" onclick="openAboutModal()">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    <p class="profile-description-text" id="display-prof-about">Write here about your business</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <span class="section-title-left"><i class="fa-solid fa-user-tie"></i>About Business Owner</span>
+                        <button class="section-edit-btn" onclick="openOwnerModal()">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    <p class="profile-description-text" id="display-prof-owner">Write about the business owner</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <span class="section-title-left"><i class="fa-solid fa-clock"></i>Working Hours</span>
+                        <button class="section-edit-btn" onclick="openHoursModal()">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    <p id="display-prof-hours" style="font-size:.9rem;line-height:1.5;color:#a0a0b0;">
+                        <b style="color:#fff;">Monday - Saturday:</b> 8:00 AM - 9:00 PM<br>
+                        <b style="color:#fff;">Sunday:</b> 9:00 AM - 2:00 PM
+                    </p>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <span class="section-title-left"><i class="fa-solid fa-utensils"></i>LISTINGS IN</span>
+                        <div style="display:flex; gap:8px;">
+                            <button class="section-edit-btn" onclick="openListingsModal()">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                            <button class="section-edit-btn" onclick="openListingsModal()">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="links-grid" id="listings-display">
+                        <a href="https://www.swiggy.com" target="_blank" class="link-box bg-swiggy">
+                            <i class="fa-solid fa-bag-shopping"></i>Swiggy
+                        </a>
+                        <a href="https://www.zomato.com" target="_blank" class="link-box bg-zomato">
+                            <i class="fa-solid fa-burger"></i>Zomato
+                        </a>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <span class="section-title-left"><i class="fa-solid fa-truck-fast"></i>DELIVERY PLACES AVAILABLE</span>
+                        <button class="section-edit-btn" onclick="openDeliveryModal()">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    <div class="delivery-tags-container" id="delivery-display">
+                        <span class="delivery-tag"><i class="fa-solid fa-location-dot"></i>LOCATION 1</span>
+                        <span class="delivery-tag"><i class="fa-solid fa-location-dot"></i>LOCATION 2</span>
+                        <span class="delivery-tag"><i class="fa-solid fa-location-dot"></i>LOCATION 3</span>
+                    </div>
+                </div>
+            </div>
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <span class="section-title-left"><i class="fa-solid fa-link"></i>SOCIAL MEDIA</span>
+                        <button class="section-edit-btn" onclick="openSocialModal()">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    <div class="links-grid" id="social-display">
+                        <a href="https://maps.google.com" target="_blank" class="link-box bg-maps">
+                            <i class="fa-solid fa-location-dot"></i>Maps
+                        </a>
+                        <a href="mailto:info@example.com" class="link-box bg-mail">
+                            <i class="fa-solid fa-envelope"></i>Email
+                        </a>
+                        <a href="https://example.com" target="_blank" class="link-box bg-web">
+                            <i class="fa-solid fa-globe"></i>Website
+                        </a>
+                        <a href="#" class="link-box bg-app">
+                            <i class="fa-solid fa-mobile-screen"></i>Mobile App
+                        </a>
+                        <a href="tel:+919876543210" class="link-box bg-call">
+                            <i class="fa-solid fa-phone"></i>Call Us
+                        </a>
+                        <a href="https://youtube.com" target="_blank" class="link-box bg-yt">
+                            <i class="fa-brands fa-youtube"></i>YouTube
+                        </a>
+                        <a href="https://twitter.com" target="_blank" class="link-box bg-twitter">
+                            <i class="fa-brands fa-x-twitter"></i>Twitter/X
+                        </a>
+                        <a href="https://linkedin.com" target="_blank" class="link-box bg-linkedin">
+                            <i class="fa-brands fa-linkedin-in"></i>LinkedIn
+                        </a>
+                        <a href="https://instagram.com" target="_blank" class="link-box bg-insta">
+                            <i class="fa-brands fa-instagram"></i>Instagram
+                        </a>
+                        <a href="https://t.me" target="_blank" class="link-box bg-telegram">
+                            <i class="fa-brands fa-telegram"></i>Telegram
+                        </a>
+                        <a href="https://whatsapp.com/channel" target="_blank" class="link-box bg-wa-channel">
+                            <i class="fa-brands fa-whatsapp"></i>WA Channel
+                        </a>
+                        <a href="https://facebook.com" target="_blank" class="link-box bg-facebook">
+                            <i class="fa-brands fa-facebook-f"></i>Facebook
+                        </a>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <span class="section-title-left"><i class="fa-solid fa-star"></i>REVIEWS & RATINGS</span>
+                        <button class="section-edit-btn" onclick="openReviewsModal()">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    <div class="review-score-box">
+                        <div class="big-rating" id="display-rating">4.8</div>
+                        <div>
+                            <div class="rating-stars" id="display-rating-stars">
+                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                            </div>
+                            <div style="font-size:.78rem;color:#8888a0;margin-top:2px;" id="display-review-count">Based on 124 verified reviews</div>
+                        </div>
+                    </div>
+                    <div id="reviews-display">
+                        <div class="review-item">
+                            <div class="reviewer-header">
+                                <span class="reviewer-name">REVIEWER 1</span>
+                                <span class="review-date">Few days ago</span>
+                            </div>
+                            <div class="rating-stars" style="font-size:.75rem;margin-bottom:4px;">
+                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                            </div>
+                            <p class="review-comment">REVIEW 1</p>
+                        </div>
+                        <div class="review-item">
+                            <div class="reviewer-header">
+                                <span class="reviewer-name">REVIEWER 2</span>
+                                <span class="review-date">Few weeks ago</span>
+                            </div>
+                            <div class="rating-stars" style="font-size:.75rem;margin-bottom:4px;">
+                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                            </div>
+                            <p class="review-comment">REVIEW 2</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="profile-tab-info" class="profile-tab-section">
+                <div class="info-card">
+                    <div class="info-card-title" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
+                        <span class="section-title-left"><i class="fa-solid fa-border-all"></i>All Items</span>
+                    </div>
+                </div>
+                <div class="content-grid" id="profile-all-list"></div>
+            </div>
+            <div id="profile-tab-staff" class="profile-tab-section">
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <span class="section-title-left"><i class="fa-solid fa-users-gear"></i>Existing Jobs</span>
+                        <button class="btn-edit-section" onclick="openAddStaffRoleModal()">
+                            <i class="fa-solid fa-plus"></i>Add Roles
+                        </button>
+                    </div>
+                    <div id="staff-roles-container">
+                        <div class="staff-role-card">
+                            <div class="staff-avatar">M</div>
+                            <div class="staff-info">
+                                <div class="staff-name">STAFF 1</div>
+                                <div class="staff-role-title">Operation 1</div>
+                            </div>
+                            <div class="staff-actions">
+                                <span class="staff-count-badge"><i class="fa-solid fa-user"></i>1</span>
+                                <button class="btn-icon-action" onclick="openEditStaffRoleModal(this)"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn-icon-action" onclick="deleteStaffRole(this)" style="color:#ef5350;"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="staff-role-card">
+                            <div class="staff-avatar">E</div>
+                            <div class="staff-info">
+                                <div class="staff-name">STAFF NO.2</div>
+                                <div class="staff-role-title">OPPERATION NO.2</div>
+                            </div>
+                            <div class="staff-actions">
+                                <span class="staff-count-badge"><i class="fa-solid fa-users"></i>3</span>
+                                <button class="btn-icon-action" onclick="openEditStaffRoleModal(this)"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn-icon-action" onclick="deleteStaffRole(this)" style="color:#ef5350;"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="staff-role-card">
+                            <div class="staff-avatar">D</div>
+                            <div class="staff-info">
+                                <div class="staff-name">Delivery Persons</div>
+                                <div class="staff-role-title">On Door Delivery</div>
+                            </div>
+                            <div class="staff-actions">
+                                <span class="staff-count-badge"><i class="fa-solid fa-users"></i>10</span>
+                                <button class="btn-icon-action" onclick="openEditStaffRoleModal(this)"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn-icon-action" onclick="deleteStaffRole(this)" style="color:#ef5350;"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p type="button" class="floating-message-btn" title="Open Messages" onclick="openChat()">
+            <i class="fa-solid fa-comment-dots"></i>
+        </p>
+        <p type="button" class="floating-bell-btn" title="Notifications" onclick="openUsersPage()">
+            <span>&#128276;</span>
+        </p>
+        <footer class="app-footer">
+            <button class="footer-btn active" id="btn-profile-home" onclick="switchProfileTab('profile-tab-home',this)">
+                <i class="fa-solid fa-house"></i><span>Home</span>
+            </button>
+            <button class="footer-btn" id="btn-profile-staff" onclick="switchProfileTab('profile-tab-staff',this)">
+                <i class="fa-solid fa-id-badge"></i><span>Staff</span>
+            </button>
+            <button class="footer-btn" id="btn-profile-info" onclick="closeProfilePage()">
+                <i class="fa-solid fa-border-all"></i><span>Info</span>
+            </button>
+        </footer>
+    </div>
+    <footer class="app-footer">
+        <button class="footer-btn active" id="btn-tab-all" onclick="switchTab('view-all',this)">
+            <i class="fa-solid fa-border-all"></i><span>All Items</span>
+        </button>
+        <button class="footer-btn" id="btn-tab-services" onclick="switchTab('view-services',this)">
+            <i class="fa-solid fa-gears"></i><span>Services</span>
+        </button>
+        <button class="footer-btn" id="btn-tab-vacancies" onclick="switchTab('view-vacancies',this)">
+            <i class="fa-solid fa-user-plus"></i><span>Vacancies</span>
+        </button>
+    </footer>
