@@ -3,11 +3,55 @@
 .shell {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: 100dvh;
   max-height: 100dvh;
   background: #1e2932;
   overflow: hidden;
   position: relative;
+  padding: 24px 16px;
+}
+
+.brand {
+  width: min(100%, 420px);
+  margin-bottom: 18px;
+}
+
+.brandTitle {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.brandSub {
+  color: #8b95a1;
+  font-size: 13px;
+  margin: 0;
+}
+
+.card {
+  width: min(100%, 420px);
+  max-height: calc(100dvh - 170px);
+  overflow-y: auto;
+  padding: 24px;
+  background: #0e1822;
+  border: 1px solid #263746;
+  border-radius: 12px;
+  box-shadow: 0 0 28px rgba(0, 229, 255, 0.12);
+}
+
+.footer {
+  width: min(100%, 420px);
+  margin-top: 14px;
+  color: #c0d1de;
+  font-size: 13px;
+}
+
+.footerLink {
+  color: #00d4e8;
+  cursor: pointer;
 }
 
 .top { flex: 0 0 auto; flex-shrink: 0; background: #1e2932; z-index: 20; position: relative; }
