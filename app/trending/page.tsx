@@ -1,220 +1,569 @@
 "use client";
 
-// Trending Works page (faithful port of the original).
-// Notes:
-//   - Categories are rendered in visual order: Technical, Educational,
-//     Business, Personal, Creative, Home, Transport. The original code's
-//     onclick indices were intentionally scrambled; we use the natural index.
-//   - Tapping a category image drops a "I am looking for X..." message into
-//     the chat (matches the original `openChatFromTrending` behavior).
-//   - Tapping a popular query drops the query into the chat (matches the
-//     original `openChatFromPopularQuery` behavior).
-
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CATEGORIES, POPULAR_QUERIES } from "@/content";
-import type { Category, PopularQuery } from "@/types";
 import styles from "./page.module.css";
 
-const CAROUSEL_MS = 4000;
+interface ChatStep {
+  type: "user" | "superhero" | "badge";
+  text?: string;
+  html?: React.ReactNode;
+}
 
-export default function TrendingPage() {
-  const router = useRouter();
-  const [cats, setCats] = useState<Category[]>(CATEGORIES);
-  const [queries, setQueries] = useState<PopularQuery[]>(POPULAR_QUERIES);
-  const [active, setActive] = useState(0);
-  const [slide, setSlide] = useState(0);
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const carouselTrackRef = useRef<HTMLDivElement | null>(null);
+const popularQueries = [
+  "I need an electrician for my home",
+  "I need a plumber for a broken tap",
+];
 
-  // Pull from API (DB). If it fails, fall back to seed content.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [a, b] = await Promise.all([
-          fetch("/api/categories").then((r) => (r.ok ? r.json() : null)),
-          fetch("/api/popular").then((r) => (r.ok ? r.json() : null)),
-        ]);
-        if (!cancelled) {
-          if (a?.categories?.length) setCats(a.categories);
-          if (b?.popular?.length) setQueries(b.popular);
-        }
-      } catch { /* keep seed */ }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  // Reset slide when category changes.
-  useEffect(() => { setSlide(0); }, [active]);
-
-  // Auto-rotate the image carousel every 4s, only while this page is mounted.
-  useEffect(() => {
-    const len = cats[active]?.items?.length ?? 0;
-    if (len < 2) return;
-    const id = setInterval(() => {
-      setSlide((s) => (s + 1) % len);
-    }, CAROUSEL_MS);
-    return () => clearInterval(id);
-  }, [active, cats]);
-
-  // Apply translateX to both tracks whenever active/slide change.
-  useEffect(() => {
-    if (trackRef.current) {
-      trackRef.current.style.transform = `translateX(-${active * 100}%)`;
-    }
-  }, [active]);
-  useEffect(() => {
-    if (carouselTrackRef.current) {
-      carouselTrackRef.current.style.transform = `translateX(-${slide * 100}%)`;
-    }
-  }, [slide, active, cats]);
-
-  // Cookie-aware: ensure a server-minted session exists, then send the
-  // prefill message and navigate to /chat. We never generate a UUID on
-  // the client — the server is the single source of truth so the cookie
-  // and the DB row always agree.
-  const openChatWith = async (text: string) => {
-    const { SESSION_COOKIE } = await import("@/lib/cookies");
-    const Cookies = (await import("js-cookie")).default;
-    let sid = Cookies.get(SESSION_COOKIE);
-    if (!sid || !/^[0-9a-f-]{36}$/i.test(sid)) {
-      // Ask the server to mint one and write the cookie via Set-Cookie.
-      try {
-        const r = await fetch("/api/session", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ action: "bootstrap" }),
-        });
-        if (r.ok) {
-          const data = (await r.json()) as { sessionId?: string };
-          if (data.sessionId) {
-            Cookies.set(SESSION_COOKIE, data.sessionId, {
-              expires: 365,
-              sameSite: "lax",
-              path: "/",
-            });
-            sid = data.sessionId;
-          }
-        }
-      } catch { /* fall through */ }
-    }
-    if (sid) {
-      await fetch("/api/messages", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ text }),
-      }).catch(() => {});
-    }
-    router.push("/chat");
-  };
-
-  const current = cats[active];
-  const currentItems = current?.items ?? [];
-
-  return (
-    <main className={styles.wrap}>
-      <header className={styles.header}>
-        <button type="button" className={styles.back} onClick={() => router.push("/chat")}>←</button>
-        <h1>Trending Works</h1>
-      </header>
-
-      <section className={styles.categorySection}>
-        <div className={styles.categoryCarousel}>
-          <button
-            type="button"
-            className={styles.categoryArrow}
-            onClick={() => setActive((a) => (a - 1 + cats.length) % cats.length)}
-            aria-label="Previous category"
-          >❮</button>
-          <div className={styles.categoryWindow}>
-            <div className={styles.categoryTrack} ref={trackRef}>
-              {cats.map((c, i) => (
-                <div
-                  key={c.id}
-                  className={`${styles.categoryItem} ${i === active ? styles.active : ""}`}
-                  onClick={() => setActive(i)}
-                >
-                  <h2>{c.name}</h2>
-                </div>
-              ))}
+const electricianSteps: ChatStep[] = [
+  { type: "user", text: "I need a electrician" },
+  {
+    type: "superhero",
+    html: (
+      <>
+        <strong>Boss! ⚡🦸‍♂️</strong>
+        <br />
+        As I'm your superhero, I’m transforming myself into an{" "}
+        <strong>“Electrician”</strong> for you.
+      </>
+    ),
+  },
+  {
+    type: "superhero",
+    html: (
+      <>
+        Could you please describe me the in-detail problem that are you facing?
+        <div className={styles.problemSection}>
+          <div className={styles.problemButtons}>
+            <div className={styles.problemBtn}>
+              <span>💡</span> Light Problem
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🔌</span> Switch / Socket
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🌀</span> Fan Problem
+            </div>
+            <div className={styles.problemBtn}>
+              <span>⚡</span> Power / Wiring
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🛡️</span> MCB / Fuse
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🏠</span> Appliance Electrical
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🏗️</span> Installation / New Work
+            </div>
+            <div className={styles.problemBtn}>
+              <span>❓</span> Other Problem
             </div>
           </div>
-          <button
-            type="button"
-            className={styles.categoryArrow}
-            onClick={() => setActive((a) => (a + 1) % cats.length)}
-            aria-label="Next category"
-          >❯</button>
         </div>
-        <div className={styles.categoryDots}>
-          {cats.map((c, i) => (
-            <button
-              key={c.id}
-              type="button"
-              aria-label={`Go to ${c.name}`}
-              className={`${styles.categoryDot} ${i === active ? styles.active : ""}`}
-              onClick={() => setActive(i)}
-            />
-          ))}
+      </>
+    ),
+  },
+  { type: "badge", text: "📌 Pinned the selected option" },
+  {
+    type: "superhero",
+    html: (
+      <>
+        ⚠️ <strong>Is there any immediate danger?</strong>
+        <br />
+        Please select if you notice any of the following:
+        <div className={styles.dangerButtons}>
+          <div className={styles.dangerBtn}>💥 Sparks</div>
+          <div className={styles.dangerBtn}>🔥 Burning Smell</div>
+          <div className={styles.dangerBtn}>⚡ Exposed Wires</div>
+          <div className={styles.dangerBtn}>⚠️ Electric Shock</div>
+          <div className={styles.dangerBtn}>🔌 Power Tripping</div>
         </div>
-      </section>
+      </>
+    ),
+  },
+  { type: "user", text: "But, I am unable to describe the exact problem" },
+  {
+    type: "superhero",
+    text: "Boss, Could you please share a photo of the issue? That will help us analyze the problem and find a quick solution for you.",
+  },
+  {
+    type: "user",
+    html: (
+      <>
+        📷 Photo uploaded:
+        <br />
+        <img
+          src="https://tse4.mm.bing.net/th/id/OIP.dnXuRsvGbi2hzQPV9DFeYQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
+          alt="Uploaded Issue Photo"
+          className={styles.chatImgAttachment}
+        />
+      </>
+    ),
+  },
+  {
+    type: "superhero",
+    text: "Thank you Boss! I have received the photo. Analyzing the issue now...",
+  },
+  {
+    type: "superhero",
+    text: "I understand the problem boss! But I want to check indetail issues that are surrounded.",
+  },
+  { type: "superhero", text: "Pin your location" },
+  { type: "badge", text: "📌 Pinned the location" },
+  {
+    type: "superhero",
+    text: "Boss! 🕐 What time would you like the electrician to visit your place?",
+  },
+  { type: "user", text: "Today 6:00 Pm" },
+  {
+    type: "superhero",
+    text: "Got it, Boss! ⚡ Electrician is scheduled to arrive today at 6:00 PM. See you then!",
+  },
+  {
+    type: "superhero",
+    html: (
+      <>
+        ⚡ <strong>Electrician will be there on time.</strong>
+        <br />
+        <em>A small submission: Transport Charges will be seperate</em>
+      </>
+    ),
+  },
+  { type: "badge", text: "📌 Electrician reached the location" },
+  {
+    type: "user",
+    text: "The electrician arrived and fixed everything perfectly! Our work is successfully completed and the electrical issue is completely cleared now. Thanks!",
+  },
+  { type: "superhero", text: "That's the power of SuperHero! 🔥⚡" },
+  {
+    type: "superhero",
+    text: "Once I step in, I will surely make tasks completed with my superpower!",
+  },
+  {
+    type: "superhero",
+    html: (
+      <>
+        💳 <strong>Payment Details</strong>
+        <br />
+        Here is the invoice breakdown for your electrical service:
+        <div className={styles.invoiceCard}>
+          <div className={styles.invoiceRow}>
+            <span>Inspection & Diagnostics:</span>
+            <span>₹___</span>
+          </div>
+          <div className={styles.invoiceRow}>
+            <span>Electrical Repair Charge:</span>
+            <span>₹___</span>
+          </div>
+          <div className={styles.invoiceTotal}>
+            <span>Total Amount Due:</span>
+            <span>₹___</span>
+          </div>
+        </div>
+        <br />
+        Payment Options:
+        <div className={styles.paymentOptions}>
+          <div className={styles.payBtn}>
+            <span>🟣</span> Pay through PhonePe
+          </div>
+          <div className={styles.payBtn}>
+            <span>🔵</span> Pay through Google Pay (GPay)
+          </div>
+          <div className={styles.payBtn}>
+            <span>🔷</span> Pay through Paytm
+          </div>
+        </div>
+      </>
+    ),
+  },
+  { type: "user", text: "Pay through PhonePe" },
+  { type: "superhero", text: "✅ Payment Successfully Received!" },
+  {
+    type: "superhero",
+    text: "Thank you for believing in me, My Boss! 🦸‍♂️⚡ Have a great day ahead!",
+  },
+];
 
-      <div className={styles.categoryDescription}>
-        <h2>{current?.name}</h2>
-      </div>
+const plumberSteps: ChatStep[] = [
+  { type: "user", text: "I need a plumber" },
+  {
+    type: "superhero",
+    html: (
+      <>
+        <strong>Boss! 🚰🦸‍♂️</strong>
+        <br />
+        As I'm your superhero, I’m transforming myself into a{" "}
+        <strong>“Plumber”</strong> for you.
+      </>
+    ),
+  },
+  {
+    type: "superhero",
+    html: (
+      <>
+        Could you please describe me the in-detail problem that are you facing?
+        <div className={styles.problemSection}>
+          <div className={styles.problemButtons}>
+            <div className={styles.problemBtn}>
+              <span>🚰</span> Tap / Faucet Leakage
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🚽</span> Toilet / Flush Problem
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🚿</span> Shower / Bathroom Leak
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🧹</span> Blocked Drain / Pipe
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🛠️</span> Pipe Burst / Major Leak
+            </div>
+            <div className={styles.problemBtn}>
+              <span>♨️</span> Water Heater / Tank
+            </div>
+            <div className={styles.problemBtn}>
+              <span>🏗️</span> Installation / Fitting
+            </div>
+            <div className={styles.problemBtn}>
+              <span>❓</span> Other Plumbing Problem
+            </div>
+          </div>
+        </div>
+      </>
+    ),
+  },
+  { type: "badge", text: "📌 Pinned the selected option" },
+  {
+    type: "superhero",
+    html: (
+      <>
+        ⚠️ <strong>Is there any immediate danger?</strong>
+        <br />
+        Please select if you notice any of the following:
+        <div className={styles.dangerButtons}>
+          <div className={styles.dangerBtn}>🌊 Severe Water Flooding</div>
+          <div className={styles.dangerBtn}>💥 Pipe Burst / Gushing Water</div>
+          <div className={styles.dangerBtn}>☣️ Sewage Overflow</div>
+          <div className={styles.dangerBtn}>⚡ Water Near Electrical Socket</div>
+          <div className={styles.dangerBtn}>🚫 Complete Water Blockage</div>
+        </div>
+      </>
+    ),
+  },
+  { type: "user", text: "But, I am unable to describe the exact problem" },
+  {
+    type: "superhero",
+    text: "Boss, Could you please share a photo of the issue? That will help us analyze the problem and find a quick solution for you.",
+  },
+  {
+    type: "user",
+    html: (
+      <>
+        📷 Photo uploaded:
+        <br />
+        <img
+          src="https://tse4.mm.bing.net/th/id/OIP.dnXuRsvGbi2hzQPV9DFeYQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
+          alt="Uploaded Issue Photo"
+          className={styles.chatImgAttachment}
+        />
+      </>
+    ),
+  },
+  {
+    type: "superhero",
+    text: "Thank you Boss! 📸 I have received the photo. Analyzing the issue now...",
+  },
+  {
+    type: "superhero",
+    text: "I understand the problem boss! But I want to check indetail issues that are surrounded.",
+  },
+  { type: "superhero", text: "Pin your location" },
+  { type: "badge", text: "📌 Pinned the location" },
+  {
+    type: "superhero",
+    text: "Boss! 🕐 What time would you like the plumber to visit your place?",
+  },
+  { type: "user", text: "today 6:00 Pm" },
+  {
+    type: "superhero",
+    text: "Got it, Boss! 💧 Plumber is scheduled to arrive today at 6:00 PM. See you then!",
+  },
+  {
+    type: "superhero",
+    html: (
+      <>
+        💧 <strong>Plumber will be there on time.</strong>
+        <br />
+        <em>A small submission: Transport charges will be seperately collected.</em>
+      </>
+    ),
+  },
+  { type: "badge", text: "📌 Plumber reached the location" },
+  {
+    type: "user",
+    text: "The plumber arrived and fixed everything perfectly! Our work is successfully completed and the plumbing issue is completely cleared now. Thanks!",
+  },
+  { type: "superhero", text: "That's the power of SuperHero! 🔥🚰" },
+  {
+    type: "superhero",
+    text: "Once I step in, I will surely make tasks completed with my superpower!",
+  },
+  {
+    type: "superhero",
+    html: (
+      <>
+        💳 <strong>Payment Details</strong>
+        <br />
+        Here is the invoice breakdown for your plumbing service:
+        <div className={styles.invoiceCard}>
+          <div className={styles.invoiceRow}>
+            <span>Inspection & Diagnostics:</span>
+            <span>₹</span>
+          </div>
+          <div className={styles.invoiceRow}>
+            <span>Plumbing Repair Charge:</span>
+            <span>₹</span>
+          </div>
+          <div className={styles.invoiceTotal}>
+            <span>Total Amount Due:</span>
+            <span>₹</span>
+          </div>
+        </div>
+        <br />
+        Payment Options:
+        <div className={styles.paymentOptions}>
+          <div className={styles.payBtn}>
+            <span>🟣</span> Pay through PhonePe
+          </div>
+          <div className={styles.payBtn}>
+            <span>🔵</span> Pay through Google Pay (GPay)
+          </div>
+          <div className={styles.payBtn}>
+            <span>🔷</span> Pay through Paytm
+          </div>
+        </div>
+      </>
+    ),
+  },
+  { type: "user", text: "Pay through PhonePe" },
+  { type: "superhero", text: "✅ Payment Successfully Received!" },
+  {
+    type: "superhero",
+    text: "Thank you for believing in me, My Boss! 🦸‍♂️🚰 Have a great day ahead!",
+  },
+];
 
-      <div className={styles.carousel}>
-        <div className={styles.carouselTrack} ref={carouselTrackRef}>
-          {currentItems.map((it) => (
-            <div
-              key={it.id}
-              className={styles.slide}
-              onClick={() => openChatWith(`I am looking for ${it.caption}. So Could you please let me get the details`)}
-            >
-              <img src={it.image_url} alt={it.caption} loading="lazy" />
-              <div className={styles.caption}>
-                <h3>{it.caption}</h3>
+export default function TrendingWorksPage() {
+  const router = useRouter();
+  const [activeView, setActiveView] = useState<"main" | "electrician" | "plumber">("main");
+  const [messages, setMessages] = useState<ChatStep[]>([]);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [typingType, setTypingType] = useState<"user" | "superhero">("superhero");
+
+  const activeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const chatAreaRef = useRef<HTMLDivElement | null>(null);
+
+  const clearTimer = () => {
+    if (activeTimeoutRef.current) {
+      clearTimeout(activeTimeoutRef.current);
+      activeTimeoutRef.current = null;
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (chatAreaRef.current) {
+      chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]);
+
+  const runDemoSequence = (steps: ChatStep[], index = 0) => {
+    if (index >= steps.length) {
+      setIsTyping(false);
+      return;
+    }
+
+    const step = steps[index];
+
+    if (step.type === "badge") {
+      setIsTyping(false);
+      setMessages((prev) => [...prev, step]);
+
+      activeTimeoutRef.current = setTimeout(() => {
+        runDemoSequence(steps, index + 1);
+      }, 1200);
+      return;
+    }
+
+    setTypingType(step.type);
+    setIsTyping(true);
+
+    activeTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      setMessages((prev) => [...prev, step]);
+
+      activeTimeoutRef.current = setTimeout(() => {
+        runDemoSequence(steps, index + 1);
+      }, 1200);
+    }, 1200);
+  };
+
+  const switchView = (view: "main" | "electrician" | "plumber") => {
+    clearTimer();
+    setMessages([]);
+    setIsTyping(false);
+    setActiveView(view);
+
+    if (view === "electrician") {
+      runDemoSequence(electricianSteps, 0);
+    } else if (view === "plumber") {
+      runDemoSequence(plumberSteps, 0);
+    }
+  };
+
+  const handleQueryClick = (text: string) => {
+    if (text === "I need an electrician for my home") {
+      switchView("electrician");
+    } else if (text === "I need a plumber for a broken tap") {
+      switchView("plumber");
+    } else {
+      try {
+        sessionStorage.setItem("haiSuperHeroPrefill", text);
+      } catch (e) {
+        console.error("Session storage unavailable");
+      }
+      router.push("/chat");
+    }
+  };
+
+  return (
+    <div>
+      {/* ==========================================
+           VIEW 1: MAIN LANDING PAGE
+      =========================================== */}
+      {activeView === "main" && (
+        <main className={styles.wrap}>
+          <header className={styles.header}>
+            <h1>Trending Works</h1>
+          </header>
+
+          <section className={styles.scrollContainer}>
+            <div className={styles.scrollTopRoll} />
+            <div className={styles.scrollBody}>
+              <div className={styles.scrollSparkles} />
+              <div className={styles.notesContent}>
+                <p>
+                  Just Convey me here / Describe me the type of work you want me to do, I will be
+                  fullfill your orders. Simply type your requirement in your own words — whether it is a
+                  small household task, a service request, a professional service, a technical requirement,
+                  a question, or something that needs a skilled person, just describe it naturally. You
+                  don't need to know complicated procedures, understand technical terminologyies or search
+                  through different applications, websites, directories, advertisements, and service platforms,
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-        <div className={styles.carouselButtons}>
-          <button type="button" onClick={() => setSlide((s) => (s - 1 + currentItems.length) % Math.max(currentItems.length, 1))} aria-label="Previous slide">❮</button>
-          <button type="button" onClick={() => setSlide((s) => (s + 1) % Math.max(currentItems.length, 1))} aria-label="Next slide">❯</button>
-        </div>
-        <div className={styles.carouselDots}>
-          {currentItems.map((it, i) => (
-            <button
-              key={it.id}
-              type="button"
-              aria-label={`Go to slide ${i + 1}`}
-              className={`${styles.carouselDot} ${i === slide ? styles.active : ""}`}
-              onClick={(e) => { e.stopPropagation(); setSlide(i); }}
-            />
-          ))}
-        </div>
-      </div>
+            <div className={styles.scrollBottomRoll} />
+          </section>
 
-      <section className={styles.popularQueriesSection}>
-        <h2>Popular Queries:</h2>
-        {queries.map((q: PopularQuery) => (
-          <button
-            key={q.id}
-            type="button"
-            className={styles.query}
-            onClick={() => openChatWith(q.text)}
-          >
-            <span className={styles.queryStar}>★</span>
-            <span className={styles.queryText}>{q.text}</span>
-          </button>
-        ))}
-      </section>
+          <section className={styles.popularQueriesSection}>
+            <h2>Popular Queries:</h2>
+            <div>
+              {popularQueries.map((query, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className={styles.query}
+                  onClick={() => handleQueryClick(query)}
+                >
+                  <span className={styles.queryStar}>★</span>
+                  <span className={styles.queryText}>{query}</span>
+                </button>
+              ))}
+            </div>
+          </section>
 
-      <div className={styles.projectsButtonContainer}>
-        <Link href="/projects" className={styles.projectsButton}>OUR RECENT PROJECTS</Link>
-      </div>
-    </main>
+          <div className={styles.projectsButtonContainer}>
+            <a className={styles.projectsButton}>OUR RECENT PROJECTS</a>
+          </div>
+        </main>
+      )}
+
+      {/* ==========================================
+           VIEW 2 & 3: CHAT DEMO (ELECTRICIAN / PLUMBER)
+      =========================================== */}
+      {(activeView === "electrician" || activeView === "plumber") && (
+        <div className={styles.chatViewWrapper}>
+          <div className={styles.chatContainer}>
+            <main className={styles.chatArea} ref={chatAreaRef}>
+              {messages.map((item, idx) => {
+                if (item.type === "badge") {
+                  return (
+                    <div key={idx} className={styles.systemPinnedBadge}>
+                      {item.text}
+                    </div>
+                  );
+                }
+
+                const isUser = item.type === "user";
+                const senderName = isUser ? "You" : "⚡hAI SuperHero";
+                const messageClass = isUser
+                  ? `${styles.message} ${styles.messageUser}`
+                  : `${styles.message} ${styles.messageSuperhero}`;
+
+                return (
+                  <div key={idx} className={messageClass}>
+                    <div className={styles.sender}>{senderName}</div>
+                    <div className={styles.bubble}>
+                      {item.html ? item.html : item.text}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {isTyping && (
+                <div
+                  className={`${styles.message} ${
+                    typingType === "user" ? styles.messageUser : styles.messageSuperhero
+                  }`}
+                >
+                  <div className={styles.sender}>
+                    {typingType === "user" ? "You" : "⚡hAI SuperHero"}
+                  </div>
+                  <div className={styles.typingIndicator}>
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                </div>
+              )}
+            </main>
+
+            <footer className={styles.chatFooter}>
+              <button
+                type="button"
+                className={styles.footerBackBtn}
+                onClick={() => switchView("main")}
+              >
+                ←
+              </button>
+              <input
+                type="text"
+                placeholder="Message here... Describe the work"
+                disabled
+              />
+              <button type="button" className={styles.sendBtn} disabled>
+                Send
+              </button>
+              🔄
+            </footer>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
