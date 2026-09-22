@@ -137,7 +137,7 @@ export async function markSessionReadAction(sessionId: string) {
 
 const SendBody = z.object({
   sessionId: z.string().uuid(),
-  text: z.string().trim().min(1).max(2000),
+  text: z.string().max(2000).refine((text) => text.trim().length > 0, "message is required"),
 });
 
 export async function sendAdminMessageAction(input: z.infer<typeof SendBody>) {
