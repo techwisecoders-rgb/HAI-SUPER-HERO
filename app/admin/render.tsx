@@ -192,6 +192,8 @@ export function AdminView(props: {
                     borderRadius: "1.1rem",
                     lineHeight: 1.4,
                     fontSize: "0.95rem",
+                    whiteSpace: "pre-wrap",
+                    overflowWrap: "anywhere",
                     background:
                       m.sender_type === "admin"
                         ? "linear-gradient(135deg, #7a5cff, #ff6b9d)"
@@ -216,7 +218,7 @@ export function AdminView(props: {
             the admin always has a visible "send" area. It's disabled
             until a session is selected and the draft is non-empty. */}
         <div className={styles.composer}>
-          <input
+          <textarea
             className={styles.composerInput}
             placeholder={
               activeId
