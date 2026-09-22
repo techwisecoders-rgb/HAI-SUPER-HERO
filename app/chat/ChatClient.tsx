@@ -394,7 +394,7 @@ function ChatInner() {
             ✨
           </button>
 
-          <Link href="/chat" className={styles.popularSearches} aria-label="Open popular searches">
+          <Link href="/popular" className={styles.popularSearches} aria-label="Open popular searches">
             <h2>Universal Services Platform</h2>
             <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
