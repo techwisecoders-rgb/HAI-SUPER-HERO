@@ -176,7 +176,7 @@ export default function AdminHomePage() {
 
   const send = async () => {
     if (!activeId || !draft.trim() || sending) return;
-    const text = draft.trim();
+    const text = draft;
     setSending(true);
     // Optimistic append: show the message immediately so the admin
     // gets instant feedback, even if the realtime echo is slow or
