@@ -1088,7 +1088,7 @@ export default function TrendingPage() {
               <div className="scrollSparkles" />
               <div className="notesContent">
                 <p>
-                  Just Convey me here / Describe me the type of work you want me to do, I will be fullfill your orders. Simply type your requirement in your own words — whether it is a small household task, a service request, a professional service, a technical requirement, a question, or something that needs a skilled person, just describe it naturally. You don't need to know complicated procedures, understand technical terminologyies or search through different applications, websites, directories, advertisements, and service platforms,
+                  Just Convey me here / Describe me the type of work you want me to do, I will be fullfill your orders. Simply type your requirement in your own words — whether it is a small household task, a service request, a professional service, a technical requirement, a question, or something that needs a skilled person, just describe it naturally. You don&apos;t need to know complicated procedures, understand technical terminologyies or search through different applications, websites, directories, advertisements, and service platforms,
                 </p>
               </div>
             </div>

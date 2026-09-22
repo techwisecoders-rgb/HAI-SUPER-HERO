@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PROJECTS, FOUNDERS, CONTACT } from "@/content";
@@ -67,7 +68,7 @@ export default function ProjectsPage() {
         >
           {projects.map((p) => (
             <a key={p.id} href={p.url} target="_blank" rel="noreferrer noopener" className={styles.slide}>
-              <img src={p.image_url} alt={p.title} loading="lazy" />
+              <Image src={p.image_url} alt={p.title} width={1400} height={500} loading="lazy" />
               <div className={styles.overlay}>
                 <h2>{p.title}</h2>
                 {p.description && <p>{p.description}</p>}

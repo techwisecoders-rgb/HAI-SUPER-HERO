@@ -6,6 +6,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FOUNDERS, CONTACT } from "@/content";
@@ -52,10 +53,12 @@ export default function AboutPage() {
       </header>
 
       <section className={styles.heroImageWrap}>
-        <img
+        <Image
           src={HERO_IMAGE_URL}
           alt={HERO_IMAGE_ALT}
           className={styles.heroImage}
+          width={1400}
+          height={380}
           loading="lazy"
         />
       </section>

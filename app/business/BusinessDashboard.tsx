@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type {
   BusinessDashboardData,
@@ -219,7 +220,7 @@ export default function BusinessDashboard() {
       <div className={styles.grid}>
         {visibleEntries.map((entry) => <article key={entry.id} className={styles.itemCard} onClick={() => setDetail(entry)}>
           <button className={styles.editCard} onClick={(e) => { e.stopPropagation(); openEntry(entry); }}><i className="fa-solid fa-pen-to-square" /></button>
-          <img src={entry.image_url || FALLBACK_IMAGE} alt={entry.title} />
+          <Image src={entry.image_url || FALLBACK_IMAGE} alt={entry.title} width={400} height={300} />
           <strong>{entry.title}</strong>
           <span>{entry.entry_type === "item" ? (money(entry.price) || "Product") : entry.entry_type === "service" ? "Type of service" : (money(entry.price) || "Vacancy")}</span>
         </article>)}
@@ -232,7 +233,7 @@ export default function BusinessDashboard() {
 
     {profileOpen && <div className={styles.overlay}>
       <button className={styles.closeOverlay} onClick={() => setProfileOpen(false)}><i className="fa-solid fa-xmark" /></button>
-      <div className={styles.profileBanner}><img src={profile?.banner_image_url || FALLBACK_BANNER} alt="Business banner" /><button aria-label="Edit Business Banner" onClick={() => openProfileModal("banner")}><i className="fa-solid fa-pen-to-square" /></button></div>
+      <div className={styles.profileBanner}><Image src={profile?.banner_image_url || FALLBACK_BANNER} alt="Business banner" width={1200} height={300} /><button aria-label="Edit Business Banner" onClick={() => openProfileModal("banner")}><i className="fa-solid fa-pen-to-square" /></button></div>
       <div className={styles.profileHeader}><button aria-label="Edit Business Header" onClick={() => openProfileModal("header")}><i className="fa-solid fa-pen-to-square" /></button><h1>{profile?.name || "BUSINESS NAME"}</h1><p>{profile?.tagline || '"BUSINESS TAGLINE"'}</p></div>
       <div className={styles.profileBody}>
         {activeProfileTab === "home" ? <>
@@ -376,7 +377,7 @@ export default function BusinessDashboard() {
       <footer className={styles.footer}><button className={activeProfileTab === "home" ? styles.footerActive : styles.footerButton} onClick={() => setActiveProfileTab("home")}><i className="fa-solid fa-house" aria-hidden="true" /><span>Home</span></button><button className={activeProfileTab === "staff" ? styles.footerActive : styles.footerButton} onClick={() => setActiveProfileTab("staff")}><i className="fa-solid fa-id-badge" aria-hidden="true" /><span>Staff</span></button><button className={styles.footerButton} onClick={() => setProfileOpen(false)}><i className="fa-solid fa-border-all" aria-hidden="true" /><span>Info</span></button></footer>
     </div>}
 
-    {detail && <div className={styles.overlay}><button className={styles.closeOverlay} onClick={() => setDetail(null)}><i className="fa-solid fa-xmark" /></button><div className={styles.detailHeader}><h1>{detail.title}</h1><p>{detail.entry_type}</p></div><div className={styles.profileBody}>{detail.image_url && <img className={styles.detailImage} src={detail.image_url} alt={detail.title} />}<section className={styles.infoCard}><Title icon="fa-circle-info" text="Information & Description" /><p className={styles.description}>{detail.description || "No details specified."}</p></section><section className={styles.infoCard}><Title icon="fa-handshake" text="Direct Actions" /><a className={`${styles.actionButton} ${styles.whatsapp}`} href={`https://wa.me/${profile?.phone?.replace(/\D/g, "") || ""}`} target="_blank" rel="noreferrer"><i className="fa-brands fa-whatsapp" />Contact / Inquire</a>{profile?.phone && <a className={`${styles.actionButton} ${styles.call}`} href={`tel:${profile.phone}`}><i className="fa-solid fa-phone" />Call Business Now</a>}</section></div></div>}
+    {detail && <div className={styles.overlay}><button className={styles.closeOverlay} onClick={() => setDetail(null)}><i className="fa-solid fa-xmark" /></button><div className={styles.detailHeader}><h1>{detail.title}</h1><p>{detail.entry_type}</p></div><div className={styles.profileBody}>{detail.image_url && <Image className={styles.detailImage} src={detail.image_url} alt={detail.title} width={800} height={600} />}<section className={styles.infoCard}><Title icon="fa-circle-info" text="Information & Description" /><p className={styles.description}>{detail.description || "No details specified."}</p></section><section className={styles.infoCard}><Title icon="fa-handshake" text="Direct Actions" /><a className={`${styles.actionButton} ${styles.whatsapp}`} href={`https://wa.me/${profile?.phone?.replace(/\D/g, "") || ""}`} target="_blank" rel="noreferrer"><i className="fa-brands fa-whatsapp" />Contact / Inquire</a>{profile?.phone && <a className={`${styles.actionButton} ${styles.call}`} href={`tel:${profile.phone}`}><i className="fa-solid fa-phone" />Call Business Now</a>}</section></div></div>}
 
     {usersOpen && <div className={styles.usersOverlay}><div className={styles.usersPage}><button className={styles.closeUsers} onClick={() => setUsersOpen(false)}><i className="fa-solid fa-xmark" /></button><header className={styles.usersHeader}><div className={styles.usersSearch}><i className="fa-solid fa-magnifying-glass" /><input value={usersSearch} onChange={(e) => setUsersSearch(e.target.value.toLowerCase())} placeholder="SEARCH USERS..." /></div><button onClick={() => setUsersSearch("")}><i className="fa-solid fa-rotate-right" /></button></header><div className={styles.usersList}><p role="status">User-request notifications are not connected yet. Open Messages to view your conversations.</p></div></div></div>}
 

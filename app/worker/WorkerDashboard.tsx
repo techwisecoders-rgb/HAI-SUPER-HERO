@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { professions } from "./professions";
@@ -103,7 +104,7 @@ export default function WorkerDashboard() {
       </div>
       <div className={cx("profile-body-section")}>
         <div className={cx("portrait-wrapper")}>
-          {safeLink(profile.profile_image_url || "") ? <img className={cx("header-portrait")} src={profile.profile_image_url!} alt={profile.name || "Worker portrait"} /> : <div className={cx("header-portrait")} role="img" aria-label="No profile photo">👤</div>}
+          {safeLink(profile.profile_image_url || "") ? <Image className={cx("header-portrait")} src={profile.profile_image_url!} alt={profile.name || "Worker portrait"} width={160} height={160} /> : <div className={cx("header-portrait")} role="img" aria-label="No profile photo">👤</div>}
           <button className={cx("edit-button")} type="button" onClick={() => openEditor("profile")} disabled={disabled} aria-label="Edit profile">✎</button>
         </div>
         <div className={cx("header-details")}>
@@ -128,7 +129,7 @@ export default function WorkerDashboard() {
       <UploadZone label="Upload your resume (PDF or image)" pdf disabled={disabled} upload={files => upload(files, "resumeUrl")} />
       {safeLink(profile.resume_url || "") && <div className={cx("resume-image-container")}>
         <a href={profile.resume_url!} target="_blank" rel="noreferrer">Open / download resume</a>
-        {!/\.pdf(?:[?#]|$)/i.test(profile.resume_url!) && <img className={cx("resume-preview")} src={profile.resume_url!} alt="Resume" />}
+        {!/\.pdf(?:[?#]|$)/i.test(profile.resume_url!) && <Image className={cx("resume-preview")} src={profile.resume_url!} alt="Resume" width={800} height={1100} />}
         <button type="button" disabled={disabled} onClick={() => void perform(() => patch({ resumeUrl: null }))}>❌ Remove resume</button>
       </div>}
     </Section>
@@ -142,7 +143,7 @@ export default function WorkerDashboard() {
       <div className={cx("upload-preview-grid")}>
         {profile.works.map((item, index) => <div key={index} className={cx(item.type === "image" ? "upload-preview-card" : "paragraph-preview-card")}>
           <button type="button" className={cx("upload-delete-button")} aria-label={`Delete work ${index + 1}`} disabled={disabled} onClick={() => void perform(() => patch({ works: profile.works.filter((_, i) => i !== index) }))}>×</button>
-          {item.type === "image" && safeLink(item.content) ? <img src={item.content} alt={`Work sample ${index + 1}`} /> : <p>{item.type === "image" ? "Image unavailable" : item.content}</p>}
+          {item.type === "image" && safeLink(item.content) ? <Image src={item.content} alt={`Work sample ${index + 1}`} width={800} height={600} /> : <p>{item.type === "image" ? "Image unavailable" : item.content}</p>}
         </div>)}
         {!profile.works.length && <p className={cx("upload-empty")}>Upload all your previous works till to date</p>}
       </div>
