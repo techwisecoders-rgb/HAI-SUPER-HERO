@@ -308,6 +308,7 @@ export default function TrendingPage() {
       <div id="mainView" className="view-section active">
         <main className="wrap">
           <header className="header">
+            <button type="button" className="back" onClick={() => router.push("/chat")}>←</button>
             <h1>Trending Works</h1>
           </header>
 
@@ -381,6 +382,8 @@ export default function TrendingPage() {
         .wrap { width: 100%; min-height: 100vh; background: linear-gradient(135deg, #07111f, #101827, #172033); color: white; padding-bottom: 50px; }
         .header { position: sticky; top: 0; z-index: 100; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(10px); padding: 16px 20px; display: flex; align-items: center; justify-content: center; border-bottom: 2px solid rgba(0, 188, 212, 0.5); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); }
         .header h1 { font-size: 24px; color: #00e5ff; font-weight: 800; letter-spacing: 1px; margin: 0; text-align: center; }
+        .back { position: absolute; left: 15px; background: white; color: #00a7bd; border: none; border-radius: 30px; padding: 8px 16px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s ease; }
+        .back:hover { background: #00d9d9; color: white; }
         @keyframes floatScroll { 0%, 100% { transform: translateY(0px) rotate(-0.3deg); filter: drop-shadow(0 0 18px rgba(0, 229, 255, 0.6)); } 50% { transform: translateY(-9px) rotate(0.3deg); filter: drop-shadow(0 0 32px rgba(0, 229, 255, 0.9)); } }
         @keyframes sparkleGlow { 0%, 100% { opacity: .35; transform: scale(0.98); } 50% { opacity: 0.95; transform: scale(1.02); } }
         .scrollContainer { position: relative; width: 95%; max-width: 980px; margin: 30px auto 35px; animation: floatScroll 5s ease-in-out infinite; }
