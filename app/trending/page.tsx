@@ -264,7 +264,7 @@ export default function TrendingPage() {
 
   return (
     <>
-      <style jsx>{`
+      <style jsx global>{`
         * {
           box-sizing: border-box;
           margin: 0;
