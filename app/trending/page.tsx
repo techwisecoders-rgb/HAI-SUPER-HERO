@@ -1101,7 +1101,10 @@ export default function TrendingPage() {
           </section>
 
           <div className="projectsButtonContainer">
-            <a className="projectsButton">OUR RECENT PROJECTS</a>
+            <a href="/projects" class="projectsButton">
+                    OUR RECENT PROJECTS
+                </a>
+         
           </div>
         </main>
       </div>
@@ -1112,9 +1115,20 @@ export default function TrendingPage() {
             <main className="chat-area" id="chatAreaElectrician" />
 
             <footer className="chat-footer">
-              <input type="text" placeholder="Message here... Describe the work" disabled />
-              <button className="send-btn" disabled>Send</button>
-              🔄
+            <Link href="/trending" className={styles.popularSearches} aria-label="Open popular searches">
+            🔙
+          </Link>
+              <button type="button" className={styles.messageBar} onClick={openChat}>
+          <span className={styles.messagePlaceholder}>Message here... Describe the work</span>
+          <span className={styles.messageIcon} aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </span>
+        </button>
+              
+              
             </footer>
           </div>
         </div>
