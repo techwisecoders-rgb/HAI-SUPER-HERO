@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import styles from "./page.module.css";
+import styles from "./portalMenu.module.css";
+
 
 export default function TrendingPage() {
   const activeTimeoutRef = useRef<number | null>(null);
