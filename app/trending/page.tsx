@@ -1102,11 +1102,10 @@ export default function TrendingPage() {
           </section>
 
           <div className="projectsButtonContainer">
-            <a href="/projects" class="projectsButton">
-                    OUR RECENT PROJECTS
-                </a>
-         
-          </div>
+  <Link href="/projects" className="projectsButton">
+    OUR RECENT PROJECTS
+  </Link>
+</div>
         </main>
       </div>
 
