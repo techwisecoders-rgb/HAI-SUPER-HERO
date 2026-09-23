@@ -64,9 +64,9 @@ export default function TrendingPage() {
 
     const openChatWith = (text: string) => {
       if (text === "I need an electrician for my home") {
-        window.location.assign("/electrician?new=1&service=electrician");
+        showView("electricianView");
       } else if (text === "I need a plumber for a broken tap") {
-        window.location.assign("/plumber?new=1&service=plumber");
+        showView("plumberView");
       } else {
         try {
           sessionStorage.setItem("haiSuperHeroPrefill", text);
