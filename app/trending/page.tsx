@@ -1,17 +1,562 @@
+
 "use client";
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 
+type DemoStep = {
+  type: string;
+  text?: string;
+  html?: string;
+};
 
 export default function TrendingPage() {
   const activeTimeoutRef = useRef<number | null>(null);
 
+  /*
+   * Opens the normal Chat page when the user presses
+   * the "Message here..." button.
+   */
+  const openChat = () => {
+    try {
+      sessionStorage.setItem("haiSuperHeroPrefill", "");
+    } catch {
+      // Ignore when sessionStorage is unavailable
+    }
+
+    window.location.href = "/chat";
+  };
+
   useEffect(() => {
+    const electricianSteps: DemoStep[] = [
+      {
+        type: "user",
+        text: "I need a electrician",
+      },
+      {
+        type: "superhero",
+        html: `
+          <strong>Boss! ⚡🦸‍♂️</strong><br>
+          As I'm your superhero, I’m transforming myself into an
+          <strong>“Electrician”</strong> for you.
+        `,
+      },
+      {
+        type: "superhero",
+        html: `
+          Could you please describe me the in-detail problem that are you facing?
+
+          <div class="problem-section">
+            <div class="problem-buttons">
+              <div class="problem-btn"><span>💡</span> Light Problem</div>
+              <div class="problem-btn"><span>🔌</span> Switch / Socket</div>
+              <div class="problem-btn"><span>🌀</span> Fan Problem</div>
+              <div class="problem-btn"><span>⚡</span> Power / Wiring</div>
+              <div class="problem-btn"><span>🛡️</span> MCB / Fuse</div>
+              <div class="problem-btn"><span>🏠</span> Appliance Electrical</div>
+              <div class="problem-btn"><span>🏗️</span> Installation / New Work</div>
+              <div class="problem-btn"><span>❓</span> Other Problem</div>
+            </div>
+          </div>
+        `,
+      },
+      {
+        type: "badge",
+        text: "📌 Pinned the selected option",
+      },
+      {
+        type: "superhero",
+        html: `
+          ⚠️ <strong>Is there any immediate danger?</strong><br>
+          Please select if you notice any of the following:
+
+          <div class="danger-buttons">
+            <div class="danger-btn">💥 Sparks</div>
+            <div class="danger-btn">🔥 Burning Smell</div>
+            <div class="danger-btn">⚡ Exposed Wires</div>
+            <div class="danger-btn">⚠️ Electric Shock</div>
+            <div class="danger-btn">🔌 Power Tripping</div>
+          </div>
+        `,
+      },
+      {
+        type: "user",
+        text: "But, I am unable to describe the exact problem",
+      },
+      {
+        type: "superhero",
+        text: "Boss, Could you please share a photo of the issue? That will help us analyze the problem and find a quick solution for you.",
+      },
+      {
+        type: "user",
+        html: `
+          📷 Photo uploaded:<br>
+          <img
+            src="https://tse4.mm.bing.net/th/id/OIP.dnXuRsvGbi2hzQPV9DFeYQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
+            alt="Uploaded Issue Photo"
+            class="chat-img-attachment"
+          />
+        `,
+      },
+      {
+        type: "superhero",
+        text: "Thank you Boss! I have received the photo. Analyzing the issue now...",
+      },
+      {
+        type: "superhero",
+        text: "I understand the problem boss! But I want to check indetail issues that are surrounded.",
+      },
+      {
+        type: "superhero",
+        text: "Pin your location",
+      },
+      {
+        type: "badge",
+        text: "📌 Pinned the location",
+      },
+      {
+        type: "superhero",
+        text: "Boss! 🕐 What time would you like the electrician to visit your place?",
+      },
+      {
+        type: "user",
+        text: "Today 6:00 Pm",
+      },
+      {
+        type: "superhero",
+        text: "Got it, Boss! ⚡ Electrician is scheduled to arrive today at 6:00 PM. See you then!",
+      },
+      {
+        type: "superhero",
+        html: `
+          ⚡ <strong>Electrician will be there on time.</strong><br>
+          <em>A small submission: Transport Charges will be separate.</em>
+        `,
+      },
+      {
+        type: "badge",
+        text: "📌 Electrician reached the location",
+      },
+      {
+        type: "user",
+        text: "The electrician arrived and fixed everything perfectly! Our work is successfully completed and the electrical issue is completely cleared now. Thanks!",
+      },
+      {
+        type: "superhero",
+        text: "That's the power of SuperHero! 🔥⚡",
+      },
+      {
+        type: "superhero",
+        text: "Once I step in, I will surely make tasks completed with my superpower!",
+      },
+      {
+        type: "superhero",
+        html: `
+          💳 <strong>Payment Details</strong><br>
+          Here is the invoice breakdown for your electrical service:
+
+          <div class="invoice-card">
+            <div class="invoice-row">
+              <span>Inspection & Diagnostics:</span>
+              <span>₹___</span>
+            </div>
+
+            <div class="invoice-row">
+              <span>Electrical Repair Charge:</span>
+              <span>₹___</span>
+            </div>
+
+            <div class="invoice-total">
+              <span>Total Amount Due:</span>
+              <span>₹___</span>
+            </div>
+          </div>
+
+          <br>
+          Payment Options:
+
+          <div class="payment-options">
+            <div class="pay-btn">
+              <span>🟣</span> Pay through PhonePe
+            </div>
+
+            <div class="pay-btn">
+              <span>🔵</span> Pay through Google Pay (GPay)
+            </div>
+
+            <div class="pay-btn">
+              <span>🔷</span> Pay through Paytm
+            </div>
+          </div>
+        `,
+      },
+      {
+        type: "user",
+        text: "Pay through PhonePe",
+      },
+      {
+        type: "superhero",
+        text: "✅ Payment Successfully Received!",
+      },
+      {
+        type: "superhero",
+        text: "Thank you for believing in me, My Boss! 🦸‍♂️⚡ Have a great day ahead!",
+      },
+    ];
+
+    const plumberSteps: DemoStep[] = [
+      {
+        type: "user",
+        text: "I need a plumber",
+      },
+      {
+        type: "superhero",
+        html: `
+          <strong>Boss! 🚰🦸‍♂️</strong><br>
+          As I'm your superhero, I’m transforming myself into a
+          <strong>“Plumber”</strong> for you.
+        `,
+      },
+      {
+        type: "superhero",
+        html: `
+          Could you please describe me the in-detail problem that are you facing?
+
+          <div class="problem-section">
+            <div class="problem-buttons">
+              <div class="problem-btn"><span>🚰</span> Tap / Faucet Leakage</div>
+              <div class="problem-btn"><span>🚽</span> Toilet / Flush Problem</div>
+              <div class="problem-btn"><span>🚿</span> Shower / Bathroom Leak</div>
+              <div class="problem-btn"><span>🧹</span> Blocked Drain / Pipe</div>
+              <div class="problem-btn"><span>🛠️</span> Pipe Burst / Major Leak</div>
+              <div class="problem-btn"><span>♨️</span> Water Heater / Tank</div>
+              <div class="problem-btn"><span>🏗️</span> Installation / Fitting</div>
+              <div class="problem-btn"><span>❓</span> Other Plumbing Problem</div>
+            </div>
+          </div>
+        `,
+      },
+      {
+        type: "badge",
+        text: "📌 Pinned the selected option",
+      },
+      {
+        type: "superhero",
+        html: `
+          ⚠️ <strong>Is there any immediate danger?</strong><br>
+          Please select if you notice any of the following:
+
+          <div class="danger-buttons">
+            <div class="danger-btn">🌊 Severe Water Flooding</div>
+            <div class="danger-btn">💥 Pipe Burst / Gushing Water</div>
+            <div class="danger-btn">☣️ Sewage Overflow</div>
+            <div class="danger-btn">⚡ Water Near Electrical Socket</div>
+            <div class="danger-btn">🚫 Complete Water Blockage</div>
+          </div>
+        `,
+      },
+      {
+        type: "user",
+        text: "But, I am unable to describe the exact problem",
+      },
+      {
+        type: "superhero",
+        text: "Boss, Could you please share a photo of the issue? That will help us analyze the problem and find a quick solution for you.",
+      },
+      {
+        type: "user",
+        html: `
+          📷 Photo uploaded:<br>
+          <img
+            src="https://tse4.mm.bing.net/th/id/OIP.dnXuRsvGbi2hzQPV9DFeYQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
+            alt="Uploaded Issue Photo"
+            class="chat-img-attachment"
+          />
+        `,
+      },
+      {
+        type: "superhero",
+        text: "Thank you Boss! 📸 I have received the photo. Analyzing the issue now...",
+      },
+      {
+        type: "superhero",
+        text: "I understand the problem boss! But I want to check indetail issues that are surrounded.",
+      },
+      {
+        type: "superhero",
+        text: "Pin your location",
+      },
+      {
+        type: "badge",
+        text: "📌 Pinned the location",
+      },
+      {
+        type: "superhero",
+        text: "Boss! 🕐 What time would you like the plumber to visit your place?",
+      },
+      {
+        type: "user",
+        text: "Today 6:00 Pm",
+      },
+      {
+        type: "superhero",
+        text: "Got it, Boss! 💧 Plumber is scheduled to arrive today at 6:00 PM. See you then!",
+      },
+      {
+        type: "superhero",
+        html: `
+          💧 <strong>Plumber will be there on time.</strong><br>
+          <em>A small submission: Transport charges will be separately collected.</em>
+        `,
+      },
+      {
+        type: "badge",
+        text: "📌 Plumber reached the location",
+      },
+      {
+        type: "user",
+        text: "The plumber arrived and fixed everything perfectly! Our work is successfully completed and the plumbing issue is completely cleared now. Thanks!",
+      },
+      {
+        type: "superhero",
+        text: "That's the power of SuperHero! 🔥🚰",
+      },
+      {
+        type: "superhero",
+        text: "Once I step in, I will surely make tasks completed with my superpower!",
+      },
+      {
+        type: "superhero",
+        html: `
+          💳 <strong>Payment Details</strong><br>
+          Here is the invoice breakdown for your plumbing service:
+
+          <div class="invoice-card">
+            <div class="invoice-row">
+              <span>Inspection & Diagnostics:</span>
+              <span>₹</span>
+            </div>
+
+            <div class="invoice-row">
+              <span>Plumbing Repair Charge:</span>
+              <span>₹</span>
+            </div>
+
+            <div class="invoice-total">
+              <span>Total Amount Due:</span>
+              <span>₹</span>
+            </div>
+          </div>
+
+          <br>
+          Payment Options:
+
+          <div class="payment-options">
+            <div class="pay-btn">
+              <span>🟣</span> Pay through PhonePe
+            </div>
+
+            <div class="pay-btn">
+              <span>🔵</span> Pay through Google Pay (GPay)
+            </div>
+
+            <div class="pay-btn">
+              <span>🔷</span> Pay through Paytm
+            </div>
+          </div>
+        `,
+      },
+      {
+        type: "user",
+        text: "Pay through PhonePe",
+      },
+      {
+        type: "superhero",
+        text: "✅ Payment Successfully Received!",
+      },
+      {
+        type: "superhero",
+        text: "Thank you for believing in me, My Boss! 🦸‍♂️🚰 Have a great day ahead!",
+      },
+    ];
+
+    const scrollToBottom = (container: HTMLElement) => {
+      container.scrollTop = container.scrollHeight;
+    };
+
+    const createTypingBubble = (type: string) => {
+      const msgDiv = document.createElement("div");
+
+      msgDiv.className = `message ${type}`;
+
+      const senderName =
+        type === "user" ? "You" : "⚡hAI SuperHero";
+
+      msgDiv.innerHTML = `
+        <div class="sender">${senderName}</div>
+
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      `;
+
+      return msgDiv;
+    };
+
+    const runSequentialDemo = (
+      steps: DemoStep[],
+      container: HTMLElement,
+      index = 0
+    ) => {
+      if (index >= steps.length) {
+        return;
+      }
+
+      const step = steps[index];
+
+      /*
+       * System badge
+       */
+      if (step.type === "badge") {
+        const badgeDiv = document.createElement("div");
+
+        badgeDiv.className = "system-pinned-badge";
+        badgeDiv.textContent = step.text || "";
+
+        container.appendChild(badgeDiv);
+        scrollToBottom(container);
+
+        activeTimeoutRef.current = window.setTimeout(() => {
+          runSequentialDemo(steps, container, index + 1);
+        }, 1200);
+
+        return;
+      }
+
+      /*
+       * Typing animation
+       */
+      const typingMessageElement =
+        createTypingBubble(step.type);
+
+      container.appendChild(typingMessageElement);
+      scrollToBottom(container);
+
+      activeTimeoutRef.current = window.setTimeout(() => {
+        const senderName =
+          step.type === "user"
+            ? "You"
+            : "⚡hAI SuperHero";
+
+        const content =
+          step.html || step.text || "";
+
+        typingMessageElement.innerHTML = `
+          <div class="sender">${senderName}</div>
+          <div class="bubble">${content}</div>
+        `;
+
+        scrollToBottom(container);
+
+        activeTimeoutRef.current = window.setTimeout(() => {
+          runSequentialDemo(
+            steps,
+            container,
+            index + 1
+          );
+        }, 1200);
+      }, 1200);
+    };
+
+    const showView = (viewId: string) => {
+      if (activeTimeoutRef.current !== null) {
+        window.clearTimeout(activeTimeoutRef.current);
+        activeTimeoutRef.current = null;
+      }
+
+      document
+        .querySelectorAll(".view-section")
+        .forEach((view) => {
+          view.classList.remove("active");
+        });
+
+      const target =
+        document.getElementById(viewId);
+
+      if (target) {
+        target.classList.add("active");
+      }
+
+      if (viewId === "electricianView") {
+        const container =
+          document.getElementById(
+            "chatAreaElectrician"
+          );
+
+        if (container instanceof HTMLElement) {
+          container.innerHTML = "";
+
+          runSequentialDemo(
+            electricianSteps,
+            container
+          );
+        }
+      }
+
+      if (viewId === "plumberView") {
+        const container =
+          document.getElementById(
+            "chatAreaPlumber"
+          );
+
+        if (container instanceof HTMLElement) {
+          container.innerHTML = "";
+
+          runSequentialDemo(
+            plumberSteps,
+            container
+          );
+        }
+      }
+    };
+
+    const openChatWith = (text: string) => {
+      if (
+        text ===
+        "I need an electrician for my home"
+      ) {
+        showView("electricianView");
+      } else if (
+        text ===
+        "I need a plumber for a broken tap"
+      ) {
+        showView("plumberView");
+      } else {
+        try {
+          sessionStorage.setItem(
+            "haiSuperHeroPrefill",
+            text
+          );
+        } catch {
+          // Ignore when sessionStorage is unavailable
+        }
+
+        window.location.href = "/chat";
+      }
+    };
+
     const renderPopularQueries = () => {
-      const container = document.getElementById("popularQueries");
-      if (!container) return;
+      const container =
+        document.getElementById(
+          "popularQueries"
+        );
+
+      if (!container) {
+        return;
+      }
 
       const popularQueries = [
         "I need an electrician for my home",
@@ -21,246 +566,40 @@ export default function TrendingPage() {
       container.innerHTML = "";
 
       popularQueries.forEach((query) => {
-        const button = document.createElement("button");
+        const button =
+          document.createElement("button");
+
         button.type = "button";
         button.className = "query";
+
         button.innerHTML = `
           <span class="queryStar">★</span>
           <span class="queryText">${query}</span>
         `;
+
         button.onclick = () => {
           openChatWith(query);
         };
+
         container.appendChild(button);
       });
     };
 
-    const showView = (viewId: string) => {
-      if (activeTimeoutRef.current) {
-        clearTimeout(activeTimeoutRef.current);
-        activeTimeoutRef.current = null;
-      }
+    /*
+     * Initialize Trending Works page
+     */
+    renderPopularQueries();
 
-      document.querySelectorAll(".view-section").forEach((view) => {
-        view.classList.remove("active");
-      });
-
-      const target = document.getElementById(viewId);
-      if (target) {
-        target.classList.add("active");
-      }
-
-      if (viewId === "electricianView") {
-        const container = document.getElementById("chatAreaElectrician");
-        if (container) {
-          container.innerHTML = "";
-          runSequentialDemo(electricianSteps, container);
-        }
-      } else if (viewId === "plumberView") {
-        const container = document.getElementById("chatAreaPlumber");
-        if (container) {
-          container.innerHTML = "";
-          runSequentialDemo(plumberSteps, container);
-        }
-      }
-    };
-
-    const openChatWith = (text: string) => {
-      if (text === "I need an electrician for my home") {
-        showView("electricianView");
-      } else if (text === "I need a plumber for a broken tap") {
-        showView("plumberView");
-      } else {
-        try {
-          sessionStorage.setItem("haiSuperHeroPrefill", text);
-        } catch {
-          // ignore when unavailable
-        }
-        window.location.href = "/chat";
-      }
-    };
-
-    const electricianSteps = [
-      { type: "user", text: "I need a electrician" },
-      { type: "superhero", html: `<strong>Boss! ⚡🦸‍♂️</strong><br>As I'm your superhero, I’m transforming myself into an <strong>“Electrician”</strong> for you.` },
-      { type: "superhero", html: `Could you please describe me the in-detail problem that are you facing?
-        <div class="problem-section">
-          <div class="problem-buttons">
-            <div class="problem-btn"><span>💡</span> Light Problem</div>
-            <div class="problem-btn"><span>🔌</span> Switch / Socket</div>
-            <div class="problem-btn"><span>🌀</span> Fan Problem</div>
-            <div class="problem-btn"><span>⚡</span> Power / Wiring</div>
-            <div class="problem-btn"><span>🛡️</span> MCB / Fuse</div>
-            <div class="problem-btn"><span>🏠</span> Appliance Electrical</div>
-            <div class="problem-btn"><span>🏗️</span> Installation / New Work</div>
-            <div class="problem-btn"><span>❓</span> Other Problem</div>
-          </div>
-        </div>` },
-      { type: "badge", text: "📌 Pinned the selected option" },
-      { type: "superhero", html: `⚠️ <strong>Is there any immediate danger?</strong><br>Please select if you notice any of the following:
-        <div class="danger-buttons">
-          <div class="danger-btn">💥 Sparks</div>
-          <div class="danger-btn">🔥 Burning Smell</div>
-          <div class="danger-btn">⚡ Exposed Wires</div>
-          <div class="danger-btn">⚠️ Electric Shock</div>
-          <div class="danger-btn">🔌 Power Tripping</div>
-        </div>` },
-      { type: "user", text: "But, I am unable to describe the exact problem" },
-      { type: "superhero", text: "Boss, Could you please share a photo of the issue? That will help us analyze the problem and find a quick solution for you." },
-      { type: "user", html: `📷 Photo uploaded:<br><img src="https://tse4.mm.bing.net/th/id/OIP.dnXuRsvGbi2hzQPV9DFeYQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Uploaded Issue Photo" class="chat-img-attachment" />` },
-      { type: "superhero", text: "Thank you Boss! I have received the photo. Analyzing the issue now..." },
-      { type: "superhero", text: "I understand the problem boss! But I want to check indetail issues that are surrounded." },
-      { type: "superhero", text: "Pin your location" },
-      { type: "badge", text: "📌 Pinned the location" },
-      { type: "superhero", text: "Boss! 🕐 What time would you like the electrician to visit your place?" },
-      { type: "user", text: "Today 6:00 Pm" },
-      { type: "superhero", text: "Got it, Boss! ⚡ Electrician is scheduled to arrive today at 6:00 PM. See you then!" },
-      { type: "superhero", html: `⚡ <strong>Electrician will be there on time.</strong><br><em>A small submission: Transport Charges will be seperate</em>` },
-      { type: "badge", text: "📌 Electrician reached the location" },
-      { type: "user", text: "The electrician arrived and fixed everything perfectly! Our work is successfully completed and the electrical issue is completely cleared now. Thanks!" },
-      { type: "superhero", text: "That's the power of SuperHero! 🔥⚡" },
-      { type: "superhero", text: "Once I step in, I will surely make tasks completed with my superpower!" },
-      { type: "superhero", html: `💳 <strong>Payment Details</strong><br>Here is the invoice breakdown for your electrical service:
-        <div class="invoice-card">
-          <div class="invoice-row"><span>Inspection & Diagnostics:</span><span>₹___</span></div>
-          <div class="invoice-row"><span>Electrical Repair Charge:</span><span>₹___</span></div>
-          <div class="invoice-total"><span>Total Amount Due:</span><span>₹___</span></div>
-        </div>
-        <br>Payment Options:
-        <div class="payment-options">
-          <div class="pay-btn"><span>🟣</span> Pay through PhonePe</div>
-          <div class="pay-btn"><span>🔵</span> Pay through Google Pay (GPay)</div>
-          <div class="pay-btn"><span>🔷</span> Pay through Paytm</div>
-        </div>` },
-      { type: "user", text: "Pay through PhonePe" },
-      { type: "superhero", text: "✅ Payment Successfully Received!" },
-      { type: "superhero", text: "Thank you for believing in me, My Boss! 🦸‍♂️⚡ Have a great day ahead!" },
-    ];
-
-    const plumberSteps = [
-      { type: "user", text: "I need a plumber" },
-      { type: "superhero", html: `<strong>Boss! 🚰🦸‍♂️</strong><br>As I'm your superhero, I’m transforming myself into a <strong>“Plumber”</strong> for you.` },
-      { type: "superhero", html: `Could you please describe me the in-detail problem that are you facing?
-        <div class="problem-section">
-          <div class="problem-buttons">
-            <div class="problem-btn"><span>🚰</span> Tap / Faucet Leakage</div>
-            <div class="problem-btn"><span>🚽</span> Toilet / Flush Problem</div>
-            <div class="problem-btn"><span>🚿</span> Shower / Bathroom Leak</div>
-            <div class="problem-btn"><span>🧹</span> Blocked Drain / Pipe</div>
-            <div class="problem-btn"><span>🛠️</span> Pipe Burst / Major Leak</div>
-            <div class="problem-btn"><span>♨️</span> Water Heater / Tank</div>
-            <div class="problem-btn"><span>🏗️</span> Installation / Fitting</div>
-            <div class="problem-btn"><span>❓</span> Other Plumbing Problem</div>
-          </div>
-        </div>` },
-      { type: "badge", text: "📌 Pinned the selected option" },
-      { type: "superhero", html: `⚠️ <strong>Is there any immediate danger?</strong><br>Please select if you notice any of the following:
-        <div class="danger-buttons">
-          <div class="danger-btn">🌊 Severe Water Flooding</div>
-          <div class="danger-btn">💥 Pipe Burst / Gushing Water</div>
-          <div class="danger-btn">☣️ Sewage Overflow</div>
-          <div class="danger-btn">⚡ Water Near Electrical Socket</div>
-          <div class="danger-btn">🚫 Complete Water Blockage</div>
-        </div>` },
-      { type: "user", text: "But, I am unable to describe the exact problem" },
-      { type: "superhero", text: "Boss, Could you please share a photo of the issue? That will help us analyze the problem and find a quick solution for you." },
-      { type: "user", html: `📷 Photo uploaded:<br><img src="https://tse4.mm.bing.net/th/id/OIP.dnXuRsvGbi2hzQPV9DFeYQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Uploaded Issue Photo" class="chat-img-attachment" />` },
-      { type: "superhero", text: "Thank you Boss! 📸 I have received the photo. Analyzing the issue now..." },
-      { type: "superhero", text: "I understand the problem boss! But I want to check indetail issues that are surrounded." },
-      { type: "superhero", text: "Pin your location" },
-      { type: "badge", text: "📌 Pinned the location" },
-      { type: "superhero", text: "Boss! 🕐 What time would you like the plumber to visit your place?" },
-      { type: "user", text: "today 6:00 Pm" },
-      { type: "superhero", text: "Got it, Boss! 💧 Plumber is scheduled to arrive today at 6:00 PM. See you then!" },
-      { type: "superhero", html: `💧 <strong>Plumber will be there on time.</strong><br><em>A small submission: Transport charges will be seperately collected.</em>` },
-      { type: "badge", text: "📌 Plumber reached the location" },
-      { type: "user", text: "The plumber arrived and fixed everything perfectly! Our work is successfully completed and the plumbing issue is completely cleared now. Thanks!" },
-      { type: "superhero", text: "That's the power of SuperHero! 🔥🚰" },
-      { type: "superhero", text: "Once I step in, I will surely make tasks completed with my superpower!" },
-      { type: "superhero", html: `💳 <strong>Payment Details</strong><br>Here is the invoice breakdown for your plumbing service:
-        <div class="invoice-card">
-          <div class="invoice-row"><span>Inspection & Diagnostics:</span><span>₹</span></div>
-          <div class="invoice-row"><span>Plumbing Repair Charge:</span><span>₹</span></div>
-          <div class="invoice-total"><span>Total Amount Due:</span><span>₹</span></div>
-        </div>
-        <br>Payment Options:
-        <div class="payment-options">
-          <div class="pay-btn"><span>🟣</span> Pay through PhonePe</div>
-          <div class="pay-btn"><span>🔵</span> Pay through Google Pay (GPay)</div>
-          <div class="pay-btn"><span>🔷</span> Pay through Paytm</div>
-        </div>` },
-      { type: "user", text: "Pay through PhonePe" },
-      { type: "superhero", text: "✅ Payment Successfully Received!" },
-      { type: "superhero", text: "Thank you for believing in me, My Boss! 🦸‍♂️🚰 Have a great day ahead!" },
-    ];
-
-    const scrollToBottom = (container: Element) => {
-      if (container instanceof HTMLElement) {
-        container.scrollTop = container.scrollHeight;
-      }
-    };
-
-    const createTypingBubble = (type: string) => {
-      const msgDiv = document.createElement("div");
-      msgDiv.className = `message ${type}`;
-      const senderName = type === "user" ? "You" : "⚡hAI SuperHero";
-      msgDiv.innerHTML = `
-        <div class="sender">${senderName}</div>
-        <div class="typing-indicator">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      `;
-      return msgDiv;
-    };
-
-    const runSequentialDemo = (steps: Array<{ type: string; text?: string; html?: string }>, container: HTMLElement, index = 0) => {
-      if (index >= steps.length) return;
-
-      const step = steps[index];
-
-      if (step.type === "badge") {
-        const badgeDiv = document.createElement("div");
-        badgeDiv.className = "system-pinned-badge";
-        badgeDiv.textContent = step.text || "";
-        container.appendChild(badgeDiv);
-        scrollToBottom(container);
-
-        activeTimeoutRef.current = window.setTimeout(() => {
-          runSequentialDemo(steps, container, index + 1);
-        }, 1200);
-        return;
-      }
-
-      const typingMessageElement = createTypingBubble(step.type);
-      container.appendChild(typingMessageElement);
-      scrollToBottom(container);
-
-      activeTimeoutRef.current = window.setTimeout(() => {
-        const senderName = step.type === "user" ? "You" : "⚡hAI SuperHero";
-        const content = step.html || step.text || "";
-        typingMessageElement.innerHTML = `
-          <div class="sender">${senderName}</div>
-          <div class="bubble">${content}</div>
-        `;
-        scrollToBottom(container);
-
-        activeTimeoutRef.current = window.setTimeout(() => {
-          runSequentialDemo(steps, container, index + 1);
-        }, 1200);
-      }, 1200);
-    };
-
-    const initializePage = () => {
-      renderPopularQueries();
-    };
-
-    initializePage();
-
+    /*
+     * Cleanup
+     */
     return () => {
       if (activeTimeoutRef.current !== null) {
-        clearTimeout(activeTimeoutRef.current);
+        window.clearTimeout(
+          activeTimeoutRef.current
+        );
+
+        activeTimeoutRef.current = null;
       }
     };
   }, []);
@@ -278,7 +617,12 @@ export default function TrendingPage() {
         body {
           width: 100%;
           min-height: 100vh;
-          font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+          font-family:
+            "Segoe UI",
+            system-ui,
+            -apple-system,
+            Roboto,
+            sans-serif;
           background: #07111f;
           color: #ffffff;
         }
@@ -296,7 +640,13 @@ export default function TrendingPage() {
         .wrap {
           width: 100%;
           min-height: 100vh;
-          background: linear-gradient(135deg, #07111f, #101827, #172033);
+          background:
+            linear-gradient(
+              135deg,
+              #07111f,
+              #101827,
+              #172033
+            );
           color: white;
           padding-bottom: 50px;
         }
@@ -305,14 +655,22 @@ export default function TrendingPage() {
           position: sticky;
           top: 0;
           z-index: 100;
-          background: rgba(15, 23, 42, 0.96);
+          background: rgba(
+            15,
+            23,
+            42,
+            0.96
+          );
           backdrop-filter: blur(10px);
           padding: 16px 20px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-bottom: 2px solid rgba(0, 188, 212, 0.5);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+          border-bottom: 2px solid
+            rgba(0, 188, 212, 0.5);
+          box-shadow:
+            0 4px 20px
+              rgba(0, 0, 0, 0.4);
         }
 
         .header h1 {
@@ -346,13 +704,35 @@ export default function TrendingPage() {
         @keyframes floatScroll {
           0%,
           100% {
-            transform: translateY(0px) rotate(-0.3deg);
-            filter: drop-shadow(0 0 18px rgba(0, 229, 255, 0.6));
+            transform:
+              translateY(0px)
+              rotate(-0.3deg);
+            filter:
+              drop-shadow(
+                0 0 18px
+                  rgba(
+                    0,
+                    229,
+                    255,
+                    0.6
+                  )
+              );
           }
 
           50% {
-            transform: translateY(-9px) rotate(0.3deg);
-            filter: drop-shadow(0 0 32px rgba(0, 229, 255, 0.9));
+            transform:
+              translateY(-9px)
+              rotate(0.3deg);
+            filter:
+              drop-shadow(
+                0 0 32px
+                  rgba(
+                    0,
+                    229,
+                    255,
+                    0.9
+                  )
+              );
           }
         }
 
@@ -374,17 +754,28 @@ export default function TrendingPage() {
           width: 95%;
           max-width: 980px;
           margin: 30px auto 35px;
-          animation: floatScroll 5s ease-in-out infinite;
+          animation:
+            floatScroll 5s ease-in-out
+              infinite;
         }
 
         .scrollTopRoll {
           height: 40px;
-          background: linear-gradient(180deg, #c2f3ff 0%, #0093ba 60%, #00283b 100%);
+          background:
+            linear-gradient(
+              180deg,
+              #c2f3ff 0%,
+              #0093ba 60%,
+              #00283b 100%
+            );
           border: 3px solid #001624;
-          border-radius: 40px 40px 12px 12px;
+          border-radius:
+            40px 40px 12px 12px;
           position: relative;
           z-index: 3;
-          box-shadow: 0 6px 15px rgba(0, 229, 255, 0.6);
+          box-shadow:
+            0 6px 15px
+              rgba(0, 229, 255, 0.6);
         }
 
         .scrollTopRoll::before,
@@ -396,8 +787,15 @@ export default function TrendingPage() {
           height: 38px;
           border: 3px solid #001624;
           border-radius: 50%;
-          background: radial-gradient(circle, #e0f8ff 30%, #007d9c 85%);
-          box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+          background:
+            radial-gradient(
+              circle,
+              #e0f8ff 30%,
+              #007d9c 85%
+            );
+          box-shadow:
+            0 0 10px
+              rgba(0, 229, 255, 0.5);
         }
 
         .scrollTopRoll::before {
@@ -411,25 +809,57 @@ export default function TrendingPage() {
         .scrollBody {
           position: relative;
           background:
-            repeating-linear-gradient(transparent, transparent 28px, rgba(0, 75, 115, 0.35) 28px, rgba(0, 75, 115, 0.35) 30px),
-            radial-gradient(circle at 50% 50%, #eefcff 0%, #bceeff 60%, #8edeff 100%);
+            repeating-linear-gradient(
+              transparent,
+              transparent 28px,
+              rgba(
+                0,
+                75,
+                115,
+                0.35
+              ) 28px,
+              rgba(
+                0,
+                75,
+                115,
+                0.35
+              ) 30px
+            ),
+            radial-gradient(
+              circle at 50% 50%,
+              #eefcff 0%,
+              #bceeff 60%,
+              #8edeff 100%
+            );
           border-left: 5px solid #001f30;
           border-right: 5px solid #001f30;
           padding: 20px 40px 30px;
           box-shadow:
-            inset 0 0 30px rgba(0, 160, 220, 0.5),
-            inset 0 0 15px rgba(255, 255, 255, 0.8),
-            0 0 25px rgba(0, 229, 255, 0.5);
+            inset 0 0 30px
+              rgba(0, 160, 220, 0.5),
+            inset 0 0 15px
+              rgba(255, 255, 255, 0.8),
+            0 0 25px
+              rgba(0, 229, 255, 0.5);
         }
 
         .scrollBottomRoll {
           height: 42px;
-          background: linear-gradient(0deg, #c2f3ff 0%, #0093ba 60%, #00283b 100%);
+          background:
+            linear-gradient(
+              0deg,
+              #c2f3ff 0%,
+              #0093ba 60%,
+              #00283b 100%
+            );
           border: 3px solid #001624;
-          border-radius: 12px 12px 40px 40px;
+          border-radius:
+            12px 12px 40px 40px;
           position: relative;
           z-index: 3;
-          box-shadow: 0 -6px 15px rgba(0, 229, 255, 0.6);
+          box-shadow:
+            0 -6px 15px
+              rgba(0, 229, 255, 0.6);
         }
 
         .scrollBottomRoll::before,
@@ -441,8 +871,15 @@ export default function TrendingPage() {
           height: 38px;
           border: 3px solid #001624;
           border-radius: 50%;
-          background: radial-gradient(circle, #e0f8ff 30%, #007d9c 85%);
-          box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+          background:
+            radial-gradient(
+              circle,
+              #e0f8ff 30%,
+              #007d9c 85%
+            );
+          box-shadow:
+            0 0 10px
+              rgba(0, 229, 255, 0.5);
         }
 
         .scrollBottomRoll::before {
@@ -461,12 +898,35 @@ export default function TrendingPage() {
           bottom: 0;
           pointer-events: none;
           background-image:
-            radial-gradient(3px 3px at 25px 35px, #ffffff, transparent),
-            radial-gradient(3px 3px at 85px 120px, #e0f7fc, transparent),
-            radial-gradient(2px 2px at 88% 15%, #ffffff, transparent),
-            radial-gradient(4px 4px at 93% 75%, #ffffff, transparent),
-            radial-gradient(3px 3px at 12% 88%, #e0f7fc, transparent);
-          animation: sparkleGlow 3.5s ease-in-out infinite alternate;
+            radial-gradient(
+              3px 3px at 25px 35px,
+              #ffffff,
+              transparent
+            ),
+            radial-gradient(
+              3px 3px at 85px 120px,
+              #e0f7fc,
+              transparent
+            ),
+            radial-gradient(
+              2px 2px at 88% 15%,
+              #ffffff,
+              transparent
+            ),
+            radial-gradient(
+              4px 4px at 93% 75%,
+              #ffffff,
+              transparent
+            ),
+            radial-gradient(
+              3px 3px at 12% 88%,
+              #e0f7fc,
+              transparent
+            );
+          animation:
+            sparkleGlow 3.5s
+              ease-in-out infinite
+              alternate;
           z-index: 2;
         }
 
@@ -478,13 +938,26 @@ export default function TrendingPage() {
         .notesContent p {
           margin: 0;
           color: #032035;
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            Roboto,
+            sans-serif;
           font-size: 16px;
           line-height: 30px;
           padding-top: 2px;
           font-weight: 700;
           letter-spacing: 0.3px;
-          text-shadow: 0 0 1px rgba(255, 255, 255, 0.6);
+          text-shadow:
+            0 0 1px
+              rgba(
+                255,
+                255,
+                255,
+                0.6
+              );
           word-spacing: 1px;
         }
 
@@ -510,12 +983,22 @@ export default function TrendingPage() {
           margin: 14px 0;
           display: flex;
           align-items: center;
-          background: linear-gradient(90deg, #f5f5f5 0%, #f5f5f5 12%, #079db5 12%, #079db5 100%);
+          background:
+            linear-gradient(
+              90deg,
+              #f5f5f5 0%,
+              #f5f5f5 12%,
+              #079db5 12%,
+              #079db5 100%
+            );
           border: 2px solid #00e5ff;
-          border-radius: 16px 16px 4px 16px;
+          border-radius:
+            16px 16px 4px 16px;
           overflow: visible;
           cursor: pointer;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
           padding: 0;
           text-align: left;
         }
@@ -528,9 +1011,16 @@ export default function TrendingPage() {
           width: 0;
           height: 0;
           border-style: solid;
-          border-width: 9px 0 0 12px;
-          border-color: #079db5 transparent transparent transparent;
-          filter: drop-shadow(0px 2px 0px #00e5ff);
+          border-width:
+            9px 0 0 12px;
+          border-color:
+            #079db5 transparent
+            transparent transparent;
+          filter:
+            drop-shadow(
+              0px 2px 0px
+                #00e5ff
+            );
           z-index: 10;
         }
 
@@ -563,7 +1053,9 @@ export default function TrendingPage() {
 
         .query:hover {
           transform: scale(1.015);
-          box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+          box-shadow:
+            0 0 15px
+              rgba(0, 229, 255, 0.5);
         }
 
         .query:active {
@@ -584,12 +1076,19 @@ export default function TrendingPage() {
           padding: 12px 18px;
           border: 2px solid #00eaff;
           border-radius: 30px;
-          background: linear-gradient(135deg, #009db5, #007f99);
+          background:
+            linear-gradient(
+              135deg,
+              #009db5,
+              #007f99
+            );
           color: white;
           font-size: 16px;
           font-weight: 800;
           cursor: pointer;
-          box-shadow: 0 0 12px rgba(0, 234, 255, 0.45);
+          box-shadow:
+            0 0 12px
+              rgba(0, 234, 255, 0.45);
           transition: 0.2s ease;
           text-decoration: none;
           text-align: center;
@@ -620,7 +1119,9 @@ export default function TrendingPage() {
           display: flex;
           flex-direction: column;
           position: relative;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+          box-shadow:
+            0 10px 30px
+              rgba(0, 0, 0, 0.5);
         }
 
         .chat-area {
@@ -636,7 +1137,9 @@ export default function TrendingPage() {
         .message {
           display: flex;
           flex-direction: column;
-          animation: fadeIn 0.3s ease-in-out;
+          animation:
+            fadeIn 0.3s
+              ease-in-out;
         }
 
         @keyframes fadeIn {
@@ -710,9 +1213,13 @@ export default function TrendingPage() {
           padding: 7px 20px;
           border-radius: 20px;
           margin: 8px 0;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          box-shadow:
+            0 2px 8px
+              rgba(0, 0, 0, 0.3);
           text-align: center;
-          animation: fadeIn 0.3s ease-in-out;
+          animation:
+            fadeIn 0.3s
+              ease-in-out;
         }
 
         .problem-section {
@@ -722,7 +1229,11 @@ export default function TrendingPage() {
 
         .problem-buttons {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns:
+            repeat(
+              2,
+              minmax(0, 1fr)
+            );
           gap: 8px;
           width: 100%;
         }
@@ -772,6 +1283,7 @@ export default function TrendingPage() {
           font-size: 13px;
           margin-bottom: 6px;
           color: #a0a5b1;
+          gap: 10px;
         }
 
         .invoice-total {
@@ -783,6 +1295,7 @@ export default function TrendingPage() {
           padding-top: 8px;
           margin-top: 6px;
           color: #00e5ff;
+          gap: 10px;
         }
 
         .payment-options {
@@ -813,13 +1326,15 @@ export default function TrendingPage() {
           border-radius: 16px;
         }
 
-        .message.superhero .typing-indicator {
+        .message.superhero
+          .typing-indicator {
           background: #1d1f26;
           border: 1px solid #30323a;
           border-bottom-left-radius: 4px;
         }
 
-        .message.user .typing-indicator {
+        .message.user
+          .typing-indicator {
           background: #087f91;
           border-bottom-right-radius: 4px;
         }
@@ -829,26 +1344,37 @@ export default function TrendingPage() {
           height: 7px;
           border-radius: 50%;
           display: inline-block;
-          animation: bounceDots 1.4s infinite ease-in-out both;
+          animation:
+            bounceDots 1.4s
+              infinite
+              ease-in-out
+              both;
         }
 
-        .message.superhero .typing-indicator span {
+        .message.superhero
+          .typing-indicator
+          span {
           background: #00e5ff;
         }
 
-        .message.user .typing-indicator span {
+        .message.user
+          .typing-indicator
+          span {
           background: #ffffff;
         }
 
-        .typing-indicator span:nth-child(1) {
+        .typing-indicator
+          span:nth-child(1) {
           animation-delay: -0.32s;
         }
 
-        .typing-indicator span:nth-child(2) {
+        .typing-indicator
+          span:nth-child(2) {
           animation-delay: -0.16s;
         }
 
-        .typing-indicator span:nth-child(3) {
+        .typing-indicator
+          span:nth-child(3) {
           animation-delay: 0s;
         }
 
@@ -894,7 +1420,13 @@ export default function TrendingPage() {
         }
 
         .footer-back-btn {
-          background: rgba(0, 229, 255, 0.15);
+          background:
+            rgba(
+              0,
+              229,
+              255,
+              0.15
+            );
           color: #00e5ff;
           border: 1px solid #00e5ff;
           border-radius: 20px;
@@ -937,7 +1469,13 @@ export default function TrendingPage() {
         }
 
         .restart-btn {
-          background: rgba(0, 229, 255, 0.1);
+          background:
+            rgba(
+              0,
+              229,
+              255,
+              0.1
+            );
           border: 1px solid #00e5ff;
           color: #00e5ff;
           padding: 10px 14px;
@@ -1079,74 +1617,227 @@ export default function TrendingPage() {
         }
       `}</style>
 
-      <div id="mainView" className="view-section active">
+      {/* =========================================================
+          MAIN TRENDING WORKS VIEW
+      ========================================================= */}
+
+      <div
+        id="mainView"
+        className="view-section active"
+      >
         <main className="wrap">
+
           <header className="header">
             <h1>Trending Works</h1>
           </header>
 
           <section className="scrollContainer">
+
             <div className="scrollTopRoll" />
+
             <div className="scrollBody">
+
               <div className="scrollSparkles" />
+
               <div className="notesContent">
                 <p>
-                  Just Convey me here / Describe me the type of work you want me to do, I will be fullfill your orders. Simply type your requirement in your own words — whether it is a small household task, a service request, a professional service, a technical requirement, a question, or something that needs a skilled person, just describe it naturally. You don&apos;t need to know complicated procedures, understand technical terminologyies or search through different applications, websites, directories, advertisements, and service platforms,
+                  Just Convey me here / Describe me
+                  the type of work you want me to do,
+                  I will be fullfill your orders.
+                  Simply type your requirement in your
+                  own words — whether it is a small
+                  household task, a service request,
+                  a professional service, a technical
+                  requirement, a question, or something
+                  that needs a skilled person, just
+                  describe it naturally. You don&apos;t
+                  need to know complicated procedures,
+                  understand technical terminologyies
+                  or search through different
+                  applications, websites, directories,
+                  advertisements, and service platforms.
                 </p>
               </div>
+
             </div>
+
             <div className="scrollBottomRoll" />
+
           </section>
 
           <section className="popularQueriesSection">
+
             <h2>Popular Queries:</h2>
+
             <div id="popularQueries" />
+
           </section>
 
           <div className="projectsButtonContainer">
-  <Link href="/projects" className="projectsButton">
-    OUR RECENT PROJECTS
-  </Link>
-</div>
+
+            <Link
+              href="/projects"
+              className="projectsButton"
+            >
+              OUR RECENT PROJECTS
+            </Link>
+
+          </div>
+
         </main>
       </div>
 
-      <div id="electricianView" className="view-section">
+      {/* =========================================================
+          ELECTRICIAN DEMO
+      ========================================================= */}
+
+      <div
+        id="electricianView"
+        className="view-section"
+      >
         <div className="chat-view-wrapper">
+
           <div className="chat-container">
-            <main className="chat-area" id="chatAreaElectrician" />
+
+            <main
+              className="chat-area"
+              id="chatAreaElectrician"
+            />
 
             <footer className="chat-footer">
-            <Link href="/trending" className={styles.popularSearches} aria-label="Open popular searches">
-            🔙
-          </Link>
-              <button type="button" className={styles.messageBar} onClick={openChat}>
-          <span className={styles.messagePlaceholder}>Message here... Describe the work</span>
-          <span className={styles.messageIcon} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-          </span>
-        </button>
-              
-              
+
+              <Link
+                href="/trending"
+                className={styles.popularSearches}
+                aria-label="Open popular searches"
+              >
+                🔙
+              </Link>
+
+              <button
+                type="button"
+                className={styles.messageBar}
+                onClick={openChat}
+              >
+                <span
+                  className={
+                    styles.messagePlaceholder
+                  }
+                >
+                  Message here... Describe the work
+                </span>
+
+                <span
+                  className={styles.messageIcon}
+                  aria-hidden="true"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line
+                      x1="22"
+                      y1="2"
+                      x2="11"
+                      y2="13"
+                    />
+
+                    <polygon
+                      points="
+                        22 2
+                        15 22
+                        11 13
+                        2 9
+                        22 2
+                      "
+                    />
+                  </svg>
+                </span>
+              </button>
+
             </footer>
+
           </div>
+
         </div>
       </div>
 
-      <div id="plumberView" className="view-section">
+      {/* =========================================================
+          PLUMBER DEMO
+      ========================================================= */}
+
+      <div
+        id="plumberView"
+        className="view-section"
+      >
         <div className="chat-view-wrapper">
+
           <div className="chat-container">
-            <main className="chat-area" id="chatAreaPlumber" />
+
+            <main
+              className="chat-area"
+              id="chatAreaPlumber"
+            />
 
             <footer className="chat-footer">
-              <input type="text" placeholder="Message Here... Describe the work" disabled />
-              <button className="send-btn" disabled>Send</button>
-              🔄
+
+              <Link
+                href="/trending"
+                className={styles.popularSearches}
+                aria-label="Open popular searches"
+              >
+                🔙
+              </Link>
+
+              <button
+                type="button"
+                className={styles.messageBar}
+                onClick={openChat}
+              >
+                <span
+                  className={
+                    styles.messagePlaceholder
+                  }
+                >
+                  Message here... Describe the work
+                </span>
+
+                <span
+                  className={styles.messageIcon}
+                  aria-hidden="true"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line
+                      x1="22"
+                      y1="2"
+                      x2="11"
+                      y2="13"
+                    />
+
+                    <polygon
+                      points="
+                        22 2
+                        15 22
+                        11 13
+                        2 9
+                        22 2
+                      "
+                    />
+                  </svg>
+                </span>
+              </button>
+
             </footer>
+
           </div>
+
         </div>
       </div>
     </>
