@@ -1112,7 +1112,6 @@ export default function TrendingPage() {
             <main className="chat-area" id="chatAreaElectrician" />
 
             <footer className="chat-footer">
-              <button className="footer-back-btn" onClick={() => (document.getElementById("mainView") as HTMLElement | null)?.classList.add("active")}>←</button>
               <input type="text" placeholder="Message here... Describe the work" disabled />
               <button className="send-btn" disabled>Send</button>
               🔄
@@ -1127,7 +1126,6 @@ export default function TrendingPage() {
             <main className="chat-area" id="chatAreaPlumber" />
 
             <footer className="chat-footer">
-              <button className="footer-back-btn" onClick={() => (document.getElementById("mainView") as HTMLElement | null)?.classList.add("active")}>←</button>
               <input type="text" placeholder="Message Here... Describe the work" disabled />
               <button className="send-btn" disabled>Send</button>
               🔄
