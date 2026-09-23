@@ -3,8 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
-import styles from "./portalMenu.module.css";
-
+import portalMenuStyles from "./portalMenu.module.css";
 
 export default function TrendingPage() {
   const activeTimeoutRef = useRef<number | null>(null);
@@ -1118,7 +1117,7 @@ export default function TrendingPage() {
             <main className="chat-area" id="chatAreaElectrician" />
 
             <footer className="chat-footer">
-            <Link href="/trending" className={styles.popularSearches} aria-label="Open popular searches">
+            <Link href="/trending" className={portalMenuStyles.popularSearches} aria-label="Open popular searches">
             🔙
           </Link>
               <button type="button" className={styles.messageBar} onClick={openChat}>
