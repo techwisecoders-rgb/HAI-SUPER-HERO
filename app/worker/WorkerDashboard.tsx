@@ -92,7 +92,7 @@ export default function WorkerDashboard() {
   }
   const disabled = busy || loading;
   return <main className={cx("page")}>
-    {loading && <p role="status">Loading worker profile…</p>}
+ 
     {error && !editor && <div role="alert">{error} <button type="button" onClick={() => void load()} disabled={busy}>Reload</button> <Link href="/chat">Open chat / establish session</Link></div>}
     <div className={cx("reference-header")}>
       <div className={cx("cover-container")} style={safeLink(profile.background_image_url || "") ? { backgroundImage: `url(${JSON.stringify(profile.background_image_url)})` } : undefined}>
