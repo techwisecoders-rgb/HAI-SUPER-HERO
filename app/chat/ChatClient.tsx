@@ -75,10 +75,15 @@ function ChatInner() {
   const specialReplyStateRef = useRef<SpecialReplyState>({ hasMessagedBefore: false, workCompletions: 0 });
 
   const isNewChat = params.get("new") === "1";
+  const service = params.get("service");
   useEffect(() => {
-    if (isNewChat) setMessages([]);
+    if (isNewChat) {
+      setMessages([]);
+      if (service === "electrician") setDraft("I need an electrician for my home");
+      if (service === "plumber") setDraft("I need a plumber for a broken tap");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNewChat]);
+  }, [isNewChat, service]);
 
   const appendLocalAutoReplies = useCallback(
     (list: Message[], userText: string): Message[] => {
