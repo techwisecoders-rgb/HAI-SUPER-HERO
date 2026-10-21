@@ -23,6 +23,7 @@ import {
   formatWorkerRegistrationMessage,
   formatWorkerRegistrationConfirmedMessage,
 } from "@/lib/worker-registration-message";
+import { notifyNewUserMessage } from "@/lib/telegram/notify";
 
 export const runtime = "nodejs";
 
@@ -124,6 +125,13 @@ export async function POST(req: NextRequest) {
           console.error("[worker/register] chat-mirror insert failed:", msg);
         },
       );
+      // …and mirror the same information to Telegram, so the team learns
+      // about the new registration without opening the dashboard. Also
+      // best-effort — it never blocks the registration submission.
+      void notifyNewUserMessage({
+        sessionId: registration.session_id,
+        text: chatText,
+      }).catch(() => undefined);
     }
 
     // No email → can't deliver an OTP. Auto-verify the row AND

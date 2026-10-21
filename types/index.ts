@@ -50,6 +50,8 @@ export interface CategoryItem {
   sort_order: number;
 }
 
+export type ProjectPersonType = "users" | "businesses" | "workers";
+
 export interface Project {
   id: string;
   title: string;
@@ -57,6 +59,8 @@ export interface Project {
   image_url: string;
   url: string;
   sort_order: number;
+  /** Categorizes the project in the admin dashboard: users | businesses | workers. */
+  person_type?: string | null;
 }
 
 export interface PopularQuery {
@@ -284,3 +288,76 @@ export type BusinessResourceName =
   | "staff"
   | "entries"
   | "orders";
+
+/**
+ * A row of `public.worker_profiles` exactly as stored in the database.
+ * Used by the admin dashboard to list and edit workers.
+ */
+export interface WorkerProfileRecord {
+  id: string;
+  user_id: string | null;
+  session_id: string | null;
+  email: string | null;
+  name: string;
+  phone: string;
+  location: string;
+  qualification: string;
+  experience: string;
+  profession: string;
+  profile_image_url: string | null;
+  background_image_url: string | null;
+  work_available: boolean;
+  skills: unknown;
+  about_text: string;
+  work_description: string;
+  resume_url: string | null;
+  works: unknown;
+  featured: unknown;
+  social_links: unknown;
+  rating: number | string;
+  jobs_done: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * A row of `public.business_profiles` exactly as stored in the database.
+ * Used by the admin dashboard to list and edit businesses.
+ */
+export interface BusinessProfileRecord {
+  id: string;
+  user_id: string;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  owner_name: string | null;
+  owner_bio: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  country: string | null;
+  banner_image_url: string | null;
+  logo_image_url: string | null;
+  category: string | null;
+  status: string;
+  working_hours: unknown;
+  rating_average: number | string;
+  review_count: number;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Envelope returned by the admin directory list endpoints. */
+export interface PagedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  perPage: number;
+  totalPages: number;
+}

@@ -14,6 +14,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { SESSION_COOKIE } from "@/lib/cookies";
 import { getServiceSupabase } from "@/lib/supabase/server";
+import { notifyNewUserMessage } from "@/lib/telegram/notify";
 
 const Body = z.object({
   text: z.string().trim().min(1).max(2000),
@@ -56,22 +57,39 @@ export async function POST(req: NextRequest) {
     // reply automatically — if this session has zero messages yet, a
     // welcome reply is prepended to the result regardless of what the
     // user typed. See supabase/migrations/0013_first_message_welcome.sql.
-    try {
-      const { data: rules } = await supabase.rpc("list_matching_auto_rules", {
-        p_text: parsed.data.text,
-        p_session_id: sessionId,
-      });
-      const list = (rules ?? []) as Array<{ id: string; reply: string; is_welcome?: boolean }>;
-      for (const r of list) {
-        // eslint-disable-next-line no-await-in-loop
-        await supabase.rpc("append_auto_message", {
+    const fireAutoReplies = async () => {
+      try {
+        const { data: rules } = await supabase.rpc("list_matching_auto_rules", {
+          p_text: parsed.data.text,
           p_session_id: sessionId,
-          p_text: r.reply,
         });
+        const list = (rules ?? []) as Array<{ id: string; reply: string; is_welcome?: boolean }>;
+        for (const r of list) {
+          // eslint-disable-next-line no-await-in-loop
+          await supabase.rpc("append_auto_message", {
+            p_session_id: sessionId,
+            p_text: r.reply,
+          });
+        }
+      } catch {
+        // Silent — auto replies are a "nice to have", not the main path.
       }
-    } catch {
-      // Silent — auto replies are a "nice to have", not the main path.
-    }
+    };
+
+    // Push the new message to Telegram so the team is notified on their
+    // phone. This runs in parallel with the auto-replies: both are
+    // best-effort side effects of the message that was just persisted and
+    // neither may fail the request. The Telegram call is awaited (rather
+    // than fired and forgotten) so the delivery is really attempted
+    // before the serverless function can be frozen.
+    await Promise.allSettled([
+      notifyNewUserMessage({
+        sessionId,
+        text: parsed.data.text,
+        createdAt: (data as { created_at?: string } | null)?.created_at ?? null,
+      }),
+      fireAutoReplies(),
+    ]);
 
     return NextResponse.json({ ok: true, message: data });
   } catch (e) {

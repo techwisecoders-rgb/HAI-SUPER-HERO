@@ -3,14 +3,20 @@
 //  page.tsx; both are colocated for readability.)
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import styles from "./admin.module.css";
-import type { Message, Session } from "@/types";
+import type { Message, Project, ProjectPersonType, Session } from "@/types";
 import { NotificationBell } from "@/components/NotificationBell";
+import {
+  listProjectsAction,
+  createProjectAction,
+  updateProjectAction,
+  deleteProjectAction,
+} from "./actions";
 
 type SessionWithLast = Session & {
   last_message: Message | null;
-  unread_count: number;
+  unread_count?: number;
 };
 
 export function AdminView(props: {
@@ -28,44 +34,124 @@ export function AdminView(props: {
   active: SessionWithLast | null;
   error: string | null;
   tabVisible: boolean;
+  onNavigate?: (section: "conversations" | "workers" | "businesses") => void;
+  /** Optional extra controls rendered in the sidebar header. */
+  telegramNode?: ReactNode;
 }) {
   const {
     sessions, activeId, setActiveId, messages, query, setQuery,
     draft, setDraft, send, sending, loadingList, active, error,
-    tabVisible,
+    tabVisible, onNavigate, telegramNode,
   } = props;
 
   const totalUnread = sessions.reduce((sum, s) => sum + (s.unread_count ?? 0), 0);
-  const [businessFormOpen, setBusinessFormOpen] = useState(false);
-  const [businessEmail, setBusinessEmail] = useState("");
-  const [businessPassword, setBusinessPassword] = useState("");
-  const [businessConfirmPassword, setBusinessConfirmPassword] = useState("");
-  const [businessBusy, setBusinessBusy] = useState(false);
-  const [businessError, setBusinessError] = useState<string | null>(null);
-  const [businessSuccess, setBusinessSuccess] = useState<string | null>(null);
 
-  const submitBusinessRegistration = async (event: React.FormEvent) => {
+  const [activeTab, setActiveTab] = useState<"chat" | "projects">("chat");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [personType, setPersonType] = useState<ProjectPersonType | "">("");
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [addForm, setAddForm] = useState({
+    title: "",
+    description: "",
+    image_url: "",
+    url: "",
+    person_type: "users" as ProjectPersonType,
+  });
+  const [editForm, setEditForm] = useState<{
+    title: string;
+    description: string;
+    image_url: string;
+    url: string;
+    person_type: ProjectPersonType;
+  } | null>(null);
+  const [formBusy, setFormBusy] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
+
+  const handleAddProject = async (event: React.FormEvent) => {
     event.preventDefault();
-    setBusinessError(null);
-    setBusinessSuccess(null);
-    setBusinessBusy(true);
+    setFormError(null);
+    setFormSuccess(null);
+    setFormBusy(true);
     try {
-      const { createBusinessAction } = await import("./actions");
-      const result = await createBusinessAction({
-        email: businessEmail,
-        password: businessPassword,
-        confirmPassword: businessConfirmPassword,
+      const { createProjectAction } = await import("./actions");
+      await createProjectAction({
+        title: addForm.title,
+        description: addForm.description || null,
+        image_url: addForm.image_url,
+        url: addForm.url,
+        person_type: addForm.person_type,
       });
-      setBusinessSuccess(`Business credentials created for ${result.email}.`);
-      setBusinessEmail("");
-      setBusinessPassword("");
-      setBusinessConfirmPassword("");
+      setFormSuccess(`Project "${addForm.title}" created successfully.`);
+      setAddForm({
+        title: "",
+        description: "",
+        image_url: "",
+        url: "",
+        person_type: "users",
+      });
+      setPersonType("");
+      await listProjectsAction();
     } catch (error) {
-      setBusinessError(error instanceof Error ? error.message : "could not create business credentials");
+      setFormError(error instanceof Error ? error.message : "Could not create project.");
     } finally {
-      setBusinessBusy(false);
+      setFormBusy(false);
     }
   };
+
+  const handleEditProject = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!editingProject) return;
+    setFormError(null);
+    setFormBusy(true);
+    try {
+      const { updateProjectAction } = await import("./actions");
+      await updateProjectAction(editingProject.id, {
+        title: editForm!.title,
+        description: editForm!.description || null,
+        image_url: editForm!.image_url,
+        url: editForm!.url,
+        person_type: editForm!.person_type,
+      });
+      setFormSuccess(`Project "${editForm!.title}" updated successfully.`);
+      setEditingProject(null);
+      setEditForm(null);
+      setPersonType("");
+      await listProjectsAction();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Could not update project.");
+    } finally {
+      setFormBusy(false);
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this project?")) return;
+    try {
+      const { deleteProjectAction } = await import("./actions");
+      await deleteProjectAction(id);
+      await listProjectsAction();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Could not delete project.");
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab !== "projects" || !personType) return;
+    void (async () => {
+      setProjectsLoading(true);
+      try {
+        const data = await listProjectsAction(personType || undefined);
+        setProjects(data);
+      } catch {
+        setProjects([]);
+      } finally {
+        setProjectsLoading(false);
+      }
+    })();
+  }, [activeTab, personType]);
 
   return (
     <div className={styles.shell}>
@@ -74,27 +160,14 @@ export function AdminView(props: {
           <span className={styles.sidebarTitle}>
             SESSIONS
             {totalUnread > 0 && (
-              <span
-                className={styles.totalBadge}
-                aria-label={`${totalUnread} unread messages`}
-              >
+              <span className={styles.totalBadge} aria-label={`${totalUnread} unread messages`}>
                 {totalUnread > 99 ? "99+" : totalUnread}
               </span>
             )}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <NotificationBell />
-            <button
-              type="button"
-              className={styles.signOut}
-              onClick={async () => {
-                const { signOutAction } = await import("./actions");
-                await signOutAction();
-                window.location.href = "/admin/login";
-              }}
-            >
-              Sign out
-            </button>
+            {telegramNode}
           </div>
         </div>
         <input
@@ -122,12 +195,12 @@ export function AdminView(props: {
                   {(s.display_name || "Visitor").slice(0, 24)}
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  {s.unread_count > 0 ? (
+                  {(s.unread_count ?? 0) > 0 ? (
                     <span
                       className={styles.unreadCount}
                       aria-label={`${s.unread_count} unread`}
                     >
-                      {s.unread_count > 9 ? "9+" : s.unread_count}
+                      {(s.unread_count ?? 0) > 9 ? "9+" : s.unread_count}
                     </span>
                   ) : !s.last_message ? (
                     <span className={styles.unread} aria-label="no messages yet" />
@@ -164,17 +237,28 @@ export function AdminView(props: {
               </div>
             )}
           </div>
-          <button
-            type="button"
-            className={styles.registerBusinessButton}
-            onClick={() => {
-              setBusinessError(null);
-              setBusinessSuccess(null);
-              setBusinessFormOpen(true);
-            }}
-          >
-            Register as business
-          </button>
+          <div className={styles.mainHeaderActions}>
+            <div className={styles.filterTabs} role="tablist" aria-label="Console views">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "chat"}
+                className={`${styles.filterTab} ${activeTab === "chat" ? styles.filterTabActive : ""}`}
+                onClick={() => setActiveTab("chat")}
+              >
+                Chat
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "projects"}
+                className={`${styles.filterTab} ${activeTab === "projects" ? styles.filterTabActive : ""}`}
+                onClick={() => setActiveTab("projects")}
+              >
+                Projects
+              </button>
+            </div>
+          </div>
         </header>
 
         <div className={styles.thread}>
@@ -247,95 +331,95 @@ export function AdminView(props: {
         </div>
       </section>
 
-      {businessFormOpen && (
-        <div className={styles.modalBackdrop} role="presentation">
-          <section
-            className={styles.modal}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="business-registration-title"
-          >
-            <div className={styles.modalHeader}>
-              <div>
-                <h2 id="business-registration-title" className={styles.modalTitle}>
-                  Register as business
-                </h2>
-                <p className={styles.modalDescription}>
-                  Create login credentials for a business owner. They will sign in at /business and create their profile there.
-                </p>
-              </div>
+      {activeTab === "projects" && (
+        <div className={styles.projectsContent}>
+          <div className={styles.projectsHeader}>
+            <h2 className={styles.mainTitle}>Projects</h2>
+            <button
+              type="button"
+              className={styles.addButton}
+              onClick={() => { setFormError(null); setFormSuccess(null); setAddModalOpen(true); }}
+            >
+              + Add New Project
+            </button>
+          </div>
+
+          <div className={styles.filterTabs}>
+            {([
+              { key: "" as ProjectPersonType | "", label: "All" },
+              { key: "users" as ProjectPersonType, label: "Users" },
+              { key: "businesses" as ProjectPersonType, label: "Businesses" },
+              { key: "workers" as ProjectPersonType, label: "Workers" },
+            ]).map((tab) => (
               <button
+                key={tab.label}
                 type="button"
-                className={styles.modalClose}
-                onClick={() => setBusinessFormOpen(false)}
-                aria-label="Close business registration"
+                className={`${styles.filterTab} ${personType === tab.key ? styles.filterTabActive : ""}`}
+                onClick={() => { setPersonType(tab.key); setEditingProject(null); setEditForm(null); }}
               >
-                ×
+                {tab.label}
               </button>
+            ))}
+          </div>
+
+          {projectsLoading ? (
+            <p className={styles.loadingText}>Loading projects…</p>
+          ) : projects.length === 0 ? (
+            <p className={styles.emptyText}>
+              No projects found. Click &quot;+ Add New Project&quot; to create one.
+            </p>
+          ) : (
+            <div className={styles.projectGrid}>
+              {projects.map((p) => (
+                <div key={p.id} className={styles.projectCard}>
+                  <div className={styles.cardImageWrap}>
+                    <img src={p.image_url} alt={p.title} />
+                    <span className={styles.cardTag}>{p.person_type}</span>
+                  </div>
+                  <div className={styles.cardBody}>
+                    <h3 className={styles.cardTitle}>{p.title}</h3>
+                    {p.description && <p className={styles.cardDesc}>{p.description}</p>}
+                    <div className={styles.cardActions}>
+                      <a
+                        href={p.url}
+                        target="_blank"
+                        rel="noopener noreference"
+                        className={styles.openLinkBtn}
+                      >
+                        🔗 Open URL
+                      </a>
+                      <button
+                        type="button"
+                        className={styles.editBtn}
+                        onClick={() => {
+                          setEditingProject(p);
+                          setFormError(null);
+                          setFormSuccess(null);
+                          setAddModalOpen(false);
+                          setEditForm({
+                            title: p.title,
+                            description: p.description ?? "",
+                            image_url: p.image_url,
+                            url: p.url,
+                            person_type: (p.person_type ?? "users") as ProjectPersonType,
+                          });
+                        }}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.deleteBtn}
+                        onClick={() => handleDeleteProject(p.id)}
+                      >
+                        🗑 Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <form className={styles.businessForm} onSubmit={(event) => void submitBusinessRegistration(event)}>
-              <label className={styles.businessField}>
-                <span>Business email</span>
-                <input
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={businessEmail}
-                  onChange={(event) => setBusinessEmail(event.target.value)}
-                  className={styles.businessInput}
-                  placeholder="owner@business.com"
-                />
-              </label>
-              <label className={styles.businessField}>
-                <span>Password</span>
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  autoComplete="new-password"
-                  value={businessPassword}
-                  onChange={(event) => setBusinessPassword(event.target.value)}
-                  className={styles.businessInput}
-                  placeholder="At least 6 characters"
-                />
-              </label>
-              <label className={styles.businessField}>
-                <span>Confirm password</span>
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  autoComplete="new-password"
-                  value={businessConfirmPassword}
-                  onChange={(event) => setBusinessConfirmPassword(event.target.value)}
-                  className={styles.businessInput}
-                  placeholder="Re-enter password"
-                />
-              </label>
-
-              {businessError && <p className={styles.businessError}>{businessError}</p>}
-              {businessSuccess && <p className={styles.businessSuccess}>{businessSuccess}</p>}
-
-              <div className={styles.businessActions}>
-                <button
-                  type="button"
-                  className={styles.businessCancel}
-                  onClick={() => setBusinessFormOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type={businessSuccess ? "button" : "submit"}
-                  disabled={businessBusy}
-                  className={styles.businessSubmit}
-                  onClick={businessSuccess ? () => setBusinessFormOpen(false) : undefined}
-                >
-                  {businessSuccess ? "Done" : businessBusy ? "Creating…" : "Create credentials"}
-                </button>
-              </div>
-            </form>
-          </section>
+          )}
         </div>
       )}
 

@@ -7,13 +7,24 @@ import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase/server";
 import { getServerSupabase } from "@/lib/supabase/server-user";
 import { hashPassword } from "@/lib/auth/helpers";
-
-async function requireAdmin() {
-  const sb = getServerSupabase();
-  const { data, error } = await sb.auth.getUser();
-  if (error || !data.user) throw new Error("not_authenticated");
-  return data.user;
-}
+import { requireAdmin } from "@/lib/admin/guard";
+import { signOutAdminSession } from "@/lib/admin/session";
+import {
+  BusinessListQuery,
+  WorkerListQuery,
+  getBusinessById,
+  getWorkerById,
+  listBusinesses,
+  listWorkers,
+} from "@/lib/admin/directory";
+import {
+  BusinessUpdateBody,
+  WorkerUpdateBody,
+  updateBusiness,
+  updateWorker,
+} from "@/lib/admin/updates";
+import type { Project, ProjectPersonType } from "@/types";
+import { notifyAdminReply } from "@/lib/telegram/notify";
 
 const CreateBusinessBody = z
   .object({
@@ -154,6 +165,14 @@ export async function sendAdminMessageAction(input: z.infer<typeof SendBody>) {
   await supabase
     .rpc("mark_session_read", { p_session_id: parsed.sessionId })
     .then(() => undefined, () => undefined);
+  // Mirror the reply to Telegram so the conversation is also visible on
+  // the phone. Best-effort: it never blocks (or breaks) the send.
+  await notifyAdminReply({
+    sessionId: parsed.sessionId,
+    text: parsed.text,
+    adminEmail: user.email,
+    createdAt: (data as { created_at?: string } | null)?.created_at ?? null,
+  });
   return { ok: true, message: data, adminId: user.id };
 }
 
@@ -169,8 +188,158 @@ export async function getMessagesAction(sessionId: string, limit = 200) {
   return data ?? [];
 }
 
+export async function listProjectsAction(personType?: string) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+  let query = supabase
+    .from("projects")
+    .select("*")
+    .order("sort_order", { ascending: true });
+  if (personType === "users" || personType === "businesses" || personType === "workers") {
+    query = query.eq("person_type", personType);
+  }
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Project[];
+}
+
+export async function createProjectAction(input: {
+  title: string;
+  description?: string | null;
+  image_url: string;
+  url: string;
+  person_type: ProjectPersonType;
+}) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+  const { data, error } = await supabase
+    .from("projects")
+    .insert({ ...input })
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as Project;
+}
+
+export async function updateProjectAction(id: string, input: Partial<{
+  title: string;
+  description: string | null;
+  image_url: string;
+  url: string;
+  person_type: ProjectPersonType;
+}>) {
+  await requireAdmin();
+  const supabase = getServiceSupabase();
+  const { data, error } = await supabase
+    .from("projects")
+    .update(input)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as Project;
+}
+
+export async function deleteProjectAction(id: string) {
+  await requireAdmin();
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-...[0-9a-f]{12}$/i.test(id)) throw new Error("bad id");
+  const supabase = getServiceSupabase();
+  const { error } = await supabase.from("projects").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}
+
+/**
+ * Sign the administrator out.
+ *
+ * Delegates to the shared implementation (lib/admin/session.ts) so the
+ * server action and the DELETE /api/admin/session route behave
+ * identically. The Supabase session cookie is expired by the cookie
+ * adapter; the browser client clears its own copy (see AdminDashboard).
+ */
 export async function signOutAction() {
-  const sb = getServerSupabase();
-  await sb.auth.signOut();
-  // Cookie cleanup is handled by Supabase's auth helpers on the response.
+  const result = await signOutAdminSession();
+  if (!result.ok) throw new Error(result.error ?? "Could not sign out");
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Worker & business management
+//
+// These power the admin dashboard's Workers and Businesses sections. They
+// reuse the existing service-role data layer (lib/admin/directory.ts and
+// lib/admin/updates.ts) and always run behind requireAdmin(), so a
+// non-admin can neither read nor modify protected records.
+// ---------------------------------------------------------------------------
+
+export async function listWorkersAction(input: {
+  search?: string;
+  profession?: string;
+  location?: string;
+  availability?: "all" | "available" | "unavailable";
+  sort?: string;
+  order?: "asc" | "desc";
+  page?: number;
+  perPage?: number;
+}) {
+  await requireAdmin();
+  const parsed = WorkerListQuery.safeParse(input);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "invalid input");
+  }
+  return listWorkers(parsed.data);
+}
+
+export async function getWorkerAction(id: string) {
+  await requireAdmin();
+  const worker = await getWorkerById(id);
+  if (!worker) throw new Error("worker_not_found");
+  return worker;
+}
+
+export async function updateWorkerAction(id: string, input: unknown) {
+  await requireAdmin();
+  const parsed = WorkerUpdateBody.safeParse(input);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "invalid input");
+  }
+  const worker = await updateWorker(id, parsed.data);
+  if (!worker) throw new Error("worker_not_found");
+  return worker;
+}
+
+export async function listBusinessesAction(input: {
+  search?: string;
+  category?: string;
+  location?: string;
+  status?: "all" | "draft" | "published" | "suspended";
+  sort?: string;
+  order?: "asc" | "desc";
+  page?: number;
+  perPage?: number;
+}) {
+  await requireAdmin();
+  const parsed = BusinessListQuery.safeParse(input);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "invalid input");
+  }
+  return listBusinesses(parsed.data);
+}
+
+export async function getBusinessAction(id: string) {
+  await requireAdmin();
+  const business = await getBusinessById(id);
+  if (!business) throw new Error("business_not_found");
+  return business;
+}
+
+export async function updateBusinessAction(id: string, input: unknown) {
+  await requireAdmin();
+  const parsed = BusinessUpdateBody.safeParse(input);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "invalid input");
+  }
+  const business = await updateBusiness(id, parsed.data);
+  if (!business) throw new Error("business_not_found");
+  return business;
 }

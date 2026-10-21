@@ -12,7 +12,8 @@
     "db:migrate:direct": "node scripts/migrate-direct.mjs",
     "db:seed": "node scripts/write-seed.mjs",
     "db:verify": "node scripts/verify.mjs",
-    "admin:create": "node scripts/create-admin.mjs"
+    "admin:create": "node scripts/create-admin.mjs",
+    "telegram:test": "node scripts/test-telegram.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.1",

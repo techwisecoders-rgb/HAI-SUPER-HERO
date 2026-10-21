@@ -1,13 +1,20 @@
-// Edge middleware: protects /admin/* routes by checking for a Supabase
-// auth session cookie. If absent, redirects to /admin/login.
+// Edge middleware: protects /admin/* routes.
 //
-// NOTE: this only checks for the *presence* of the Supabase auth cookie.
-// Real auth validation (JWT verification) happens in route handlers and
-// server components via getServerSupabase().getUser().
+// The cookie check below is only a fast pre-filter. The authoritative
+// checks are server-side:
+//   * app/admin/page.tsx verifies the session before rendering.
+//   * Every admin server action and API route calls requireAdmin()
+//     (lib/admin/guard.ts), which validates the JWT with Supabase.
+//
+// Because a signed-out admin must not be able to reach the dashboard by
+// refreshing the page, the presence check is enough to bounce an anonymous
+// visitor to the login screen; a stale/invalid cookie is rejected by the
+// server-side guards.
 
 import { NextResponse, type NextRequest } from "next/server";
 
-const SUPABASE_COOKIE_RE = /^sb-[^-]+-auth-token$/;
+// Supabase may split the session cookie into chunks (…-auth-token.0, .1).
+const SUPABASE_COOKIE_RE = /^sb-[^-]+-auth-token(\.\d+)?$/;
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -22,7 +29,10 @@ export function middleware(req: NextRequest) {
 
   const url = req.nextUrl.clone();
   url.pathname = "/admin/login";
-  url.searchParams.set("next", pathname);
+  // Keep the query string (e.g. ?session=<uuid> from the Telegram
+  // notification deep link) so the admin lands on the right screen
+  // after signing in.
+  url.searchParams.set("next", `${pathname}${req.nextUrl.search}`);
   return NextResponse.redirect(url);
 }
 

@@ -56,6 +56,125 @@ warning instead of failing).
 
 The `is_admin()` Postgres function treats any authenticated user as an admin.
 
+### Restricting who may use the admin dashboard
+
+The admin dashboard and its management APIs additionally enforce a
+server-side entitlement check in `lib/admin/guard.ts`:
+
+1. The Supabase Auth session must be valid (the JWT is validated by
+   Supabase, not by the app).
+2. The account must carry an admin role claim, or be listed in the
+   optional `ADMIN_EMAILS` environment variable (comma-separated).
+
+`app_metadata.role = "admin"` is the strongest signal because only the
+service-role key can set it. To grant an admin, set it with the Supabase
+dashboard or:
+
+```bash
+# one-off, using the service-role key from .env.local
+node -e "const{createClient}=require('@supabase/supabase-js');const e=require('fs').readFileSync('.env.local','utf8');const g=k=>e.split('\n').find(l=>l.startsWith(k+'='))?.split('=')[1].trim();const s=createClient(g('NEXT_PUBLIC_SUPABASE_URL'),g('SUPABASE_SERVICE_ROLE_KEY'));s.auth.admin.updateUserById(process.argv[1],{app_metadata:{role:'admin'}})" <auth-user-id>
+```
+
+Alternatively set `ADMIN_EMAILS=admin@yourcompany.com` in `.env.local`
+(or the deployment environment) — when it is present it becomes the
+authoritative list.
+
+> Worker and business owners sign in through a *different* system (the
+> `app_users` table and the `accompany_app_user` cookie), so they never
+> hold a Supabase Auth session and can never reach an admin endpoint.
+
+## Admin dashboard
+
+`/admin` is a server-rendered dashboard that verifies the session before
+rendering and redirects to `/admin/login` when it is missing or invalid.
+
+```
+Admin Dashboard
+[ Workers ] [ Businesses ]        [ Register as a Business ]
+                                  [ Sign Out ]
+```
+
+* **Workers / Businesses** — list, search, filter, sort and paginate the
+  real rows of `public.worker_profiles` and `public.business_profiles`.
+  Selecting a row opens the full profile; **Edit** opens a validated form
+  that writes straight back to the database.
+* **Register as a Business** — unchanged behaviour: it creates the login
+  credentials for a business owner.
+* **Sign Out** — invalidates the Supabase session server-side *and* in the
+  browser, then returns to the admin login page.
+
+The existing chat console (sessions list, live thread, composer) and the
+Projects panel are preserved and reachable from the console view.
+
+### Admin HTTP API
+
+All endpoints require an administrator session and return structured
+errors with the appropriate status code.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/workers/list` | Paginated worker list. `?search=&profession=&location=&availability=&sort=&order=&page=&perPage=` |
+| `GET` | `/api/workers/[id]` | One worker profile by database id |
+| `PATCH` | `/api/workers/[id]` | Update a worker profile |
+| `GET` | `/api/businesses/list` | Paginated business list. `?search=&category=&location=&status=&sort=&order=&page=&perPage=` |
+| `GET` | `/api/businesses/[id]` | One business profile by database id |
+| `PATCH` | `/api/businesses/[id]` | Update a business profile |
+| `DELETE` | `/api/admin/session` | Sign the administrator out |
+
+## Telegram notifications
+
+Every message a visitor writes on the chat is pushed to a Telegram chat, so
+the team can reply from the phone instead of watching the dashboard.
+
+### 1. Create the bot
+
+1. Open [@BotFather](https://t.me/BotFather) in Telegram → `/newbot`.
+2. Copy the token it gives you (`123456789:AA...`).
+
+### 2. Find your chat id
+
+1. Send any message to your bot (or add the bot to a group and post there).
+2. Open `https://api.telegram.org/bot<TOKEN>/getUpdates`.
+3. Copy `result[].message.chat.id`.
+
+### 3. Configure the environment
+
+```bash
+# .env.local
+TELEGRAM_BOT_TOKEN=123456789:AA...
+TELEGRAM_CHAT_ID=5987654321
+```
+
+`TELEGRAM_CHAT_ID` accepts a comma separated list (`"5987654321,-1001234567890"`)
+to deliver every notification to several chats at once.
+
+> The bot token is server-only — it is never sent to the browser.
+
+### 4. Verify
+
+```bash
+npm run telegram:test
+```
+
+The script prints the bot identity and sends a real test message to every
+configured chat. The admin dashboard also has a Telegram button next to the
+notification bell that sends the same test message.
+
+### What is sent
+
+| Trigger | Notification |
+| --- | --- |
+| A visitor sends a chat message | 🔔 New message from a visitor (name, city, e-mail, text, link) |
+| A visitor submits the worker registration form | 🔔 The registration summary, mirrored to the chat and to Telegram |
+| An admin replies | 💬 New reply sent to a visitor (set `TELEGRAM_NOTIFY_ADMIN_REPLIES=false` to disable) |
+
+The "Open this conversation" link points at `/admin?session=<uuid>`, which
+opens the admin console directly on that thread (the deep link survives the
+login round-trip).
+
+Notifications are strictly best-effort: a Telegram outage is logged and
+ignored — it can never break the chat. Every request has a 5 second timeout.
+
 ## Deploying to Vercel
 
 1. Push the repo to GitHub.
@@ -118,8 +237,16 @@ app/
   admin/
     layout.tsx
     login/page.tsx              /admin/login
-    page.tsx                    /admin     (session list + thread)
-    render.tsx                  (admin UI, split out for size)
+    page.tsx                    /admin     (server guard + dashboard shell)
+    dashboard.tsx               (nav: Workers | Businesses, Register, Sign Out)
+    dashboard.module.css
+    conversations-panel.tsx     (chat console: sessions list + live thread)
+    workers-panel.tsx           (worker list: search, filters, sort, paging)
+    worker-details.tsx          (worker profile + edit form)
+    businesses-panel.tsx        (business list)
+    business-details.tsx        (business profile + edit form)
+    register-business-modal.tsx  (Register as a Business)
+    render.tsx                  (chat console UI, split out for size)
     admin.module.css
     actions.ts                  (server actions, service role)
   api/
@@ -129,10 +256,21 @@ app/
     categories/route.ts         GET categories + items
     popular/route.ts            GET popular queries
     projects/route.ts           GET projects
+    workers/list/route.ts       GET  (admin) worker list
+    workers/[id]/route.ts       GET|PATCH (admin) one worker
+    businesses/list/route.ts    GET  (admin) business list
+    businesses/[id]/route.ts    GET|PATCH (admin) one business
+    admin/session/route.ts      DELETE (admin) sign out
 components/
   CookieBanner.tsx
 content/                        seed data mirroring the DB
 lib/
+    admin/
+      guard.ts                   server-side admin authorization
+      http.ts                    shared error/status handling
+      directory.ts               worker/business list + read (service role)
+      updates.ts                 worker/business updates (zod validated)
+      session.ts                 admin sign-out
   cookies.ts                    cookie name + Set-Cookie helpers
   use-keyboard-aware-input.ts   dvh keyboard-avoid hook
   use-session.ts                client cookie reader hook
