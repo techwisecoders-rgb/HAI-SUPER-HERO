@@ -390,9 +390,15 @@ function ChatInner() {
     <div className={`${styles.shell} ${portalOpen ? styles.portalOpen : ""}`}>
       <div className={styles.top}>
         <div className={styles.topActions}>
-          <button type="button" className={styles.portalTrigger} onClick={() => setPortalOpen(true)} aria-label="Open portal menu" title="Portal">
-            ✨
-          </button>
+          <button
+  type="button"
+  className={styles.portalTrigger}
+  onClick={() => setPortalOpen(true)}
+  aria-label="Open portal menu"
+  title="Portal"
+>
+  <i className="fa-solid fa-chalkboard-user matrix-icon"></i>
+</button>
 
           <Link href="/chat" className={styles.popularSearches} aria-label="Open popular searches">
             <h2>Universal Services Platform</h2>
@@ -402,13 +408,15 @@ function ChatInner() {
             </svg>
           </Link>
 
-          <Link href="/projects" className={`${styles.topIcon} ${styles.topIconLink}`} aria-label="About us" title="About us">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-          </Link>
+          <button
+  type="button"
+  className={`${styles.topIcon} ${styles.topIconLink}`}
+  onClick={() => window.open("https://www.idealsir.com", "_blank")}
+  aria-label="About us"
+  title="About us"
+>
+  ✨
+</button>
         </div>
 
         <div className={styles.welcomeSection}>
