@@ -1,0 +1,3528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Works | hAI SuperHero</title>
+
+    <!-- Google Fonts for Parchment Handwriting Style -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+            background: #07111f;
+            color: #ffffff;
+        }
+
+        /* =========================
+           VIEW SWITCHING MANAGEMENT
+        ========================= */
+        .view-section {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* =========================
+           MAIN PAGE STYLES
+        ========================= */
+        .wrap {
+            width: 100%;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #07111f, #101827, #172033);
+            color: white;
+            padding-bottom: 50px;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(10px);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid rgba(0, 188, 212, 0.5);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #00e5ff;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .back {
+            position: absolute;
+            left: 15px;
+            background: white;
+            color: #00a7bd;
+            border: none;
+            border-radius: 30px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.3s ease;
+        }
+
+        .back:hover {
+            background: #00d9d9;
+            color: white;
+        }
+
+        /* ENHANCED GLOWING PARCHMENT SCROLL */
+        @keyframes floatScroll {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(-0.3deg);
+                filter: drop-shadow(0 0 18px rgba(0, 229, 255, 0.6));
+            }
+
+            50% {
+                transform: translateY(-9px) rotate(0.3deg);
+                filter: drop-shadow(0 0 32px rgba(0, 229, 255, 0.9));
+            }
+        }
+
+        @keyframes sparkleGlow {
+
+            0%,
+            100% {
+                opacity: 0.35;
+                transform: scale(0.98);
+            }
+
+            50% {
+                opacity: 0.95;
+                transform: scale(1.02);
+            }
+        }
+
+        .scrollContainer {
+            position: relative;
+            width: 95%;
+            max-width: 980px;
+            margin: 30px auto 35px;
+            animation: floatScroll 5s ease-in-out infinite;
+        }
+
+        .scrollTopRoll {
+            height: 40px;
+            background: linear-gradient(180deg, #c2f3ff 0%, #0093ba 60%, #00283b 100%);
+            border: 3px solid #001624;
+            border-radius: 40px 40px 12px 12px;
+            position: relative;
+            z-index: 3;
+            box-shadow: 0 6px 15px rgba(0, 229, 255, 0.6);
+        }
+
+        .scrollTopRoll::before,
+        .scrollTopRoll::after {
+            content: "";
+            position: absolute;
+            top: -8px;
+            width: 38px;
+            height: 38px;
+            border: 3px solid #001624;
+            border-radius: 50%;
+            background: radial-gradient(circle, #e0f8ff 30%, #007d9c 85%);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        .scrollTopRoll::before {
+            left: -15px;
+        }
+
+        .scrollTopRoll::after {
+            right: -15px;
+        }
+
+        .scrollBody {
+            position: relative;
+            background:
+                repeating-linear-gradient(transparent,
+                    transparent 28px,
+                    rgba(0, 75, 115, 0.35) 28px,
+                    rgba(0, 75, 115, 0.35) 30px),
+                radial-gradient(circle at 50% 50%, #eefcff 0%, #bceeff 60%, #8edeff 100%);
+            border-left: 5px solid #001f30;
+            border-right: 5px solid #001f30;
+            padding: 20px 40px 30px;
+            box-shadow:
+                inset 0 0 30px rgba(0, 160, 220, 0.5),
+                inset 0 0 15px rgba(255, 255, 255, 0.8),
+                0 0 25px rgba(0, 229, 255, 0.5);
+        }
+
+        .scrollBottomRoll {
+            height: 42px;
+            background: linear-gradient(0deg, #c2f3ff 0%, #0093ba 60%, #00283b 100%);
+            border: 3px solid #001624;
+            border-radius: 12px 12px 40px 40px;
+            position: relative;
+            z-index: 3;
+            box-shadow: 0 -6px 15px rgba(0, 229, 255, 0.6);
+        }
+
+        .scrollBottomRoll::before,
+        .scrollBottomRoll::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            width: 38px;
+            height: 38px;
+            border: 3px solid #001624;
+            border-radius: 50%;
+            background: radial-gradient(circle, #e0f8ff 30%, #007d9c 85%);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        .scrollBottomRoll::before {
+            left: -15px;
+        }
+
+        .scrollBottomRoll::after {
+            right: -15px;
+        }
+
+        .scrollSparkles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(3px 3px at 25px 35px, #ffffff, transparent),
+                radial-gradient(3px 3px at 85px 120px, #e0f7fc, transparent),
+                radial-gradient(2px 2px at 88% 15%, #ffffff, transparent),
+                radial-gradient(4px 4px at 93% 75%, #ffffff, transparent),
+                radial-gradient(3px 3px at 12% 88%, #e0f7fc, transparent);
+            animation: sparkleGlow 3.5s ease-in-out infinite alternate;
+            z-index: 2;
+        }
+
+        .notesContent {
+            position: relative;
+            z-index: 4;
+        }
+
+        .notesContent p {
+            margin: 0;
+            color: #032035;
+
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 16px;
+            line-height: 30px;
+            padding-top: 2px;
+            /* Shifts text vertically to align right in between the 30px ruled lines */
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-shadow: 0 0 1px rgba(255, 255, 255, 0.6);
+            word-spacing: 1px;
+        }
+
+        /* POPULAR QUERIES */
+        .popularQueriesSection {
+            width: 95%;
+            max-width: 1000px;
+            margin: 0 auto 25px;
+            color: white;
+        }
+
+        .popularQueriesSection h2 {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0 0 12px 8px;
+            color: white;
+            text-align: left;
+        }
+
+        .query {
+            position: relative;
+            width: 100%;
+            min-height: 44px;
+            margin: 14px 0;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(90deg, #f5f5f5 0%, #f5f5f5 12%, #079db5 12%, #079db5 100%);
+            border: 2px solid #00e5ff;
+            border-radius: 16px 16px 4px 16px;
+            overflow: visible;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            padding: 0;
+            text-align: left;
+        }
+
+        .query::after {
+            content: "";
+            position: absolute;
+            bottom: -9px;
+            right: 16px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 9px 0 0 12px;
+            border-color: #079db5 transparent transparent transparent;
+            filter: drop-shadow(0px 2px 0px #00e5ff);
+            z-index: 10;
+        }
+
+        .queryStar {
+            width: 12%;
+            min-width: 50px;
+            align-self: stretch;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e32626;
+            font-size: 20px;
+            font-weight: 800;
+            flex-shrink: 0;
+            border-top-left-radius: 14px;
+            border-bottom-left-radius: 14px;
+        }
+
+        .queryText {
+            flex: 1;
+            padding: 10px 14px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.3;
+            white-space: normal;
+            word-break: break-word;
+            overflow: visible;
+        }
+
+        .query:hover {
+            transform: scale(1.015);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+        }
+
+        .query:active {
+            transform: scale(0.98);
+        }
+
+        /* PROJECTS BUTTON */
+        .projectsButtonContainer {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0 60px;
+            padding: 0 10px;
+        }
+
+        .projectsButton {
+            width: min(90%, 380px);
+            padding: 12px 18px;
+            border: 2px solid #00eaff;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #009db5, #007f99);
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(0, 234, 255, 0.45);
+            transition: 0.2s ease;
+            text-decoration: none;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .projectsButton:hover {
+            transform: scale(1.03);
+        }
+
+        .projectsButton:active {
+            transform: scale(0.97);
+        }
+
+        /* =========================
+           CHAT CONTAINER STYLES
+        ========================= */
+        .chat-view-wrapper {
+            background: #0d0e11;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 100vh;
+            background: #121318;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 20px 18px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scroll-behavior: smooth;
+        }
+
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.superhero {
+            align-items: flex-start;
+        }
+
+        .sender {
+            font-size: 11px;
+            color: #858993;
+            margin-bottom: 5px;
+            margin-left: 2px;
+            margin-right: 2px;
+        }
+
+        .bubble {
+            max-width: 85%;
+            padding: 13px 16px;
+            border-radius: 16px;
+            line-height: 1.5;
+            font-size: 14.5px;
+        }
+
+        .user .bubble {
+            background: #087f91;
+            border-bottom-right-radius: 4px;
+            color: #ffffff;
+        }
+
+        .superhero .bubble {
+            background: #1d1f26;
+            border: 1px solid #30323a;
+            border-bottom-left-radius: 4px;
+            color: #e2e8f0;
+        }
+
+        .superhero .bubble strong {
+            color: #00e5ff;
+        }
+
+        .chat-img-attachment {
+            max-width: 240px;
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #00e5ff;
+            display: block;
+            margin-top: 8px;
+        }
+
+        .system-pinned-badge {
+            align-self: center;
+            background-color: #f1f0ec;
+            color: #33363b;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 7px 20px;
+            border-radius: 20px;
+            margin: 8px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .problem-section {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .problem-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            width: 100%;
+        }
+
+        .problem-btn {
+            border: 1px solid #343740;
+            background: #191b21;
+            color: #e2e8f0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .problem-btn span {
+            margin-right: 6px;
+        }
+
+        .danger-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .danger-btn {
+            background: #2a1518;
+            border: 1px solid #ff4d4d;
+            color: #ffcccc;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .invoice-card {
+            background: #15171e;
+            border: 1px solid #292b32;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .invoice-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #a0a5b1;
+        }
+
+        .invoice-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+            border-top: 1px dashed #343740;
+            padding-top: 8px;
+            margin-top: 6px;
+            color: #00e5ff;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .pay-btn {
+            background: #191b21;
+            border: 1px solid #00e5ff;
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 12px 18px;
+            border-radius: 16px;
+        }
+
+        .message.superhero .typing-indicator {
+            background: #1d1f26;
+            border: 1px solid #30323a;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user .typing-indicator {
+            background: #087f91;
+            border-bottom-right-radius: 4px;
+        }
+
+        .typing-indicator span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounceDots 1.4s infinite ease-in-out both;
+        }
+
+        .message.superhero .typing-indicator span {
+            background: #00e5ff;
+        }
+
+        .message.user .typing-indicator span {
+            background: #ffffff;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        @keyframes bounceDots {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.3);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .chat-header {
+            background: #15171e;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #292b32;
+        }
+
+        .chat-header title {
+            display: block;
+            font-size: 16px;
+            font-weight: bold;
+            color: #00e5ff;
+        }
+
+        /* CHAT FOOTER ROW LAYOUT */
+        .chat-footer {
+            padding: 10px 12px;
+            background: #1b1c21;
+            border-top: 1px solid #292b32;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer-back-btn {
+            background: rgba(0, 229, 255, 0.15);
+            color: #00e5ff;
+            border: 1px solid #00e5ff;
+            border-radius: 20px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .footer-back-btn:hover {
+            background: #00e5ff;
+            color: #000;
+        }
+
+        .chat-footer input {
+            flex: 1;
+            background: #121318;
+            border: 1px solid #343740;
+            padding: 10px 14px;
+            border-radius: 20px;
+            color: #a0a5b1;
+            outline: none;
+            font-size: 13.5px;
+            min-width: 0;
+        }
+
+        .send-btn {
+            background: #00e5ff;
+            color: #000000;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 13px;
+            opacity: 0.6;
+            cursor: not-allowed;
+            white-space: nowrap;
+        }
+
+        .restart-btn {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid #00e5ff;
+            color: #00e5ff;
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .restart-btn:hover {
+            background: #00e5ff;
+            color: #000000;
+        }
+
+        /* MEDIA QUERIES */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .scrollBody {
+                padding: 20px 25px 25px;
+            }
+
+            .notesContent p {
+                font-size: 15px;
+                line-height: 30px;
+            }
+
+            .popularQueriesSection {
+                width: 96%;
+            }
+
+            .popularQueriesSection h2 {
+                font-size: 19px;
+            }
+
+            .query {
+                min-height: 42px;
+            }
+
+            .queryStar {
+                min-width: 44px;
+                font-size: 18px;
+            }
+
+            .queryText {
+                font-size: 15px;
+                padding: 8px 12px;
+            }
+
+            .projectsButton {
+                font-size: 15px;
+                padding: 11px 16px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .chat-area {
+                padding: 16px 12px 16px;
+                gap: 16px;
+            }
+
+            .bubble {
+                max-width: 90%;
+                font-size: 13.5px;
+            }
+
+            .problem-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-footer {
+                gap: 5px;
+                padding: 8px 8px;
+            }
+
+            .footer-back-btn,
+            .send-btn,
+            .restart-btn,
+            .skip-to-end-btn {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .chat-footer input {
+                padding: 8px 10px;
+                font-size: 12.5px;
+            }
+        }
+
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 12px 10px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .back {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .scrollBody {
+                padding: 15px 16px 20px;
+            }
+
+            .notesContent p {
+                font-size: 14px;
+                line-height: 30px;
+            }
+
+            .popularQueriesSection h2 {
+                font-size: 17px;
+            }
+
+            .query {
+                min-height: 38px;
+            }
+
+            .queryStar {
+                min-width: 40px;
+                font-size: 16px;
+            }
+
+            .queryText {
+                font-size: 15px;
+                padding: 7px 10px;
+            }
+
+            .projectsButton {
+                font-size: 14px;
+                padding: 10px 14px;
+            }
+        }
+
+        /* WEB DEVELOPER CHAT SPECIFIC STYLES */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .category-card {
+            border: 1px solid #343740;
+            background: #191b21;
+            color: #e2e8f0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .category-card span {
+            margin-right: 6px;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #252833;
+            border: 1px solid #3d4150;
+            color: #00e5ff;
+            padding: 6px 10px;
+            border-radius: 14px;
+            font-size: 12px;
+        }
+
+        .arch-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .arch-btn {
+            background: #181a22;
+            border: 1px solid #00e5ff;
+            color: #ffffff;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .arch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .price-badge {
+            background: #00e5ff;
+            color: #000000;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .arch-btn small {
+            display: block;
+            color: #858993;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .skip-to-end-btn {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #ffc107;
+            color: #ffc107;
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .skip-to-end-btn:hover {
+            background: #ffc107;
+            color: #000000;
+        }
+
+        @media (max-width: 600px) {
+            .skip-to-end-btn {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ==========================================
+         VIEW 1: MAIN LANDING PAGE
+    =========================================== -->
+    <div id="mainView" class="view-section active">
+        <main class="wrap">
+            <header class="header">
+                <h1>Trending Searches</h1>
+            </header>
+
+            <section class="scrollContainer">
+                <div class="scrollTopRoll"></div>
+                <div class="scrollBody">
+                    <div class="scrollSparkles"></div>
+                    <div class="notesContent">
+                        <p>
+                            Just Convey me here / Describe me the type of work you want me to do, I will be fullfill your orders. Simply type your requirement in your own words — whether it is a small household task, a service request, a professional service, a technical requirement, a question, or something that needs a skilled person, just describe it naturally. You don't need to know complicated procedures, understand technical terminologyies or search through different applications, websites, directories, advertisements, and service platforms.
+                        </p>
+                    </div>
+                </div>
+                <div class="scrollBottomRoll"></div>
+            </section>
+
+            <section class="popularQueriesSection">
+                <h2>Popular Queries:</h2>
+                <div id="popularQueries"></div>
+            </section>
+
+            <div class="projectsButtonContainer">
+                <a class="projectsButton">
+                    OUR MILESTONE PROJECTS
+                </a>
+            </div>
+        </main>
+    </div>
+
+
+    <!-- ==========================================
+         VIEW 2: ELECTRICIAN CHAT DEMO
+    =========================================== -->
+    <div id="electricianView" class="view-section">
+        <div class="chat-view-wrapper">
+            <div class="chat-container">
+
+
+                <main class="chat-area" id="chatAreaElectrician">
+                    <!-- Dynamic chat items render here -->
+                </main>
+
+                <footer class="chat-footer">
+                    <button class="footer-back-btn" onclick="showView('mainView')">←</button>
+                    <input type="text" placeholder="Message here... Describe the work" disabled />
+
+                    <button class="restart-btn" type="button" onclick="restartDemo('electrician')">🔄</button>
+                    <button class="skip-to-end-btn" type="button" onclick="skipToEnd('electrician')">⏭️ End</button>
+                </footer>
+
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         VIEW 3: PLUMBER CHAT DEMO
+    =========================================== -->
+    <div id="plumberView" class="view-section">
+        <div class="chat-view-wrapper">
+            <div class="chat-container">
+
+
+                <main class="chat-area" id="chatAreaPlumber">
+                    <!-- Dynamic chat items render here -->
+                </main>
+
+                <footer class="chat-footer">
+                    <button class="footer-back-btn" onclick="showView('mainView')">←</button>
+                    <input type="text" placeholder="Message Here... Describe the work" disabled />
+
+                    <button class="restart-btn" type="button" onclick="restartDemo('plumber')">🔄</button>
+                    <button class="skip-to-end-btn" type="button" onclick="skipToEnd('plumber')">⏭️ End</button>
+                </footer>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+     VIEW 4: WEB DEVELOPER CHAT DEMO
+=========================================== -->
+    <div id="webdeveloperView" class="view-section">
+        <div class="chat-view-wrapper">
+            <div class="chat-container">
+                <main class="chat-area" id="chatAreaWebDev"></main>
+
+                <footer class="chat-footer">
+                    <button class="footer-back-btn" onclick="showView('mainView')">←</button>
+                    <input type="text" placeholder="Message here... Describe your website vision" disabled />
+                    <button class="send-btn" disabled>Send</button>
+                    <button class="restart-btn" type="button" onclick="restartDemo('webdeveloper')">🔄</button>
+                    <button class="skip-to-end-btn" type="button" onclick="skipToEnd('webdeveloper')">⏭️ End</button>
+                </footer>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         VIEW 5: APP DEVELOPER CHAT DEMO
+    =========================================== -->
+    <div id="appdeveloperView" class="view-section">
+        <div class="chat-view-wrapper">
+            <div class="chat-container">
+                <main class="chat-area" id="chatAreaAppDev"></main>
+                <footer class="chat-footer">
+                    <button class="footer-back-btn" onclick="showView('mainView')">←</button>
+                    <input type="text" placeholder="Message here... Describe your mobile app vision" disabled />
+
+                    <button class="restart-btn" type="button" onclick="restartDemo('appdeveloper')">🔄</button>
+                    <button class="skip-to-end-btn" type="button" onclick="skipToEnd('appdeveloper')">⏭️ End</button>
+                </footer>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         VIEW 6: ROADSIDE MECHANIC CHAT DEMO
+    =========================================== -->
+    <div id="mechanicView" class="view-section">
+        <div class="chat-view-wrapper">
+            <div class="chat-container">
+                <main class="chat-area" id="chatAreaMechanic"></main>
+                <footer class="chat-footer">
+                    <button class="footer-back-btn" onclick="showView('mainView')">←</button>
+                    <input type="text" placeholder="Message here... Describe the vehicle problem" disabled />
+
+                    <button class="restart-btn" type="button" onclick="restartDemo('mechanic')">🔄</button>
+                    <button class="skip-to-end-btn" type="button" onclick="skipToEnd('mechanic')">⏭️ End</button>
+                </footer>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 7: AI JOB CHAT DEMO -->
+    <div id="aijobView" class="view-section">
+        <div class="chat-view-wrapper">
+            <div class="chat-container">
+                <main class="chat-area" id="chatAreaAIJob"></main>
+                <footer class="chat-footer">
+                    <button class="footer-back-btn" onclick="showView('mainView')">←</button>
+                    <input type="text" placeholder="Message here... Describe your job requirements" disabled />
+
+                    <button class="restart-btn" type="button" onclick="restartDemo('aijob')">🔄</button>
+                    <button class="skip-to-end-btn" type="button" onclick="skipToEnd('aijob')">⏭️ End</button>
+                </footer>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 8: TUTOR CHAT DEMO -->
+    <div id="tutorView" class="view-section">
+        <div class="chat-view-wrapper">
+            <div class="chat-container">
+                <main class="chat-area" id="chatAreaTutor"></main>
+                <footer class="chat-footer">
+                    <button class="footer-back-btn" onclick="showView('mainView')">←</button>
+                    <input type="text" placeholder="Message here... Describe your learning needs" disabled />
+
+                    <button class="restart-btn" type="button" onclick="restartDemo('tutor')">🔄</button>
+                    <button class="skip-to-end-btn" type="button" onclick="skipToEnd('tutor')">⏭️ End</button>
+                </footer>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 9: YOUTUBE CHAT DEMO -->
+    <div id="youtubeView" class="view-section">
+        <div class="chat-view-wrapper">
+            <div class="chat-container">
+                <main class="chat-area" id="chatAreaYouTube"></main>
+                <footer class="chat-footer">
+                    <button class="footer-back-btn" onclick="showView('mainView')">←</button>
+                    <input type="text" placeholder="Message here... What do you want to learn?" disabled />
+
+                    <button class="restart-btn" type="button" onclick="restartDemo('youtube')">🔄</button>
+                    <button class="skip-to-end-btn" type="button" onclick="skipToEnd('youtube')">⏭️ End</button>
+                </footer>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 10: MANGO CHAT DEMO -->
+    <div id="mangoView" class="view-section">
+        <div class="chat-view-wrapper">
+            <div class="chat-container">
+                <main class="chat-area" id="chatAreaMango"></main>
+                <footer class="chat-footer">
+                    <button class="footer-back-btn" onclick="showView('mainView')">←</button>
+                    <input type="text" placeholder="Message here... Describe your requirement" disabled />
+                    <button class="restart-btn" type="button" onclick="restartDemo('mango')">🔄</button>
+
+                    <button class="skip-to-end-btn" type="button" onclick="skipToEnd('mango')">⏭️ End</button>
+                </footer>
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        /* =====================================================
+       GLOBAL VARIABLES
+    ===================================================== */
+        let activeTimeout = null;
+
+        /* =====================================================
+           VIEW ROUTER LOGIC
+        ===================================================== */
+        function showView(viewId) {
+            if (activeTimeout) {
+                clearTimeout(activeTimeout);
+            }
+
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.remove('active');
+            });
+            const target = document.getElementById(viewId);
+            if (target) {
+                target.classList.add('active');
+            }
+            if (viewId === 'electricianView') {
+                document.getElementById('chatAreaElectrician').innerHTML = '';
+                runSequentialDemo(electricianSteps, document.getElementById('chatAreaElectrician'));
+            } else if (viewId === 'plumberView') {
+                document.getElementById('chatAreaPlumber').innerHTML = '';
+                runSequentialDemo(plumberSteps, document.getElementById('chatAreaPlumber'));
+            } else if (viewId === 'webdeveloperView') {
+                document.getElementById('chatAreaWebDev').innerHTML = '';
+                runSequentialDemo(webDevSteps, document.getElementById('chatAreaWebDev'));
+            } else if (viewId === 'appdeveloperView') {
+                document.getElementById('chatAreaAppDev').innerHTML = '';
+                runSequentialDemo(appDevSteps, document.getElementById('chatAreaAppDev'));
+            } else if (viewId === 'mechanicView') {
+                document.getElementById('chatAreaMechanic').innerHTML = '';
+                runSequentialDemo(mechanicSteps, document.getElementById('chatAreaMechanic'));
+            } else if (viewId === 'aijobView') {
+                document.getElementById('chatAreaAIJob').innerHTML = '';
+                runSequentialDemo(aiJobSteps, document.getElementById('chatAreaAIJob'));
+            } else if (viewId === 'tutorView') {
+                document.getElementById('chatAreaTutor').innerHTML = '';
+                runSequentialDemo(tutorSteps, document.getElementById('chatAreaTutor'));
+            } else if (viewId === 'youtubeView') {
+                document.getElementById('chatAreaYouTube').innerHTML = '';
+                runSequentialDemo(youtubeSteps, document.getElementById('chatAreaYouTube'));
+            } else if (viewId === 'mangoView') {
+                document.getElementById('chatAreaMango').innerHTML = '';
+                runSequentialDemo(mangoSteps, document.getElementById('chatAreaMango'));
+            }
+        }
+
+        function goBackMain() {
+            window.location.href = "/chat";
+        }
+
+        /* =====================================================
+           POPULAR QUERIES DATA & RENDERING
+        ===================================================== */
+        const popularQueries = [
+            "I need an electrician for my home",
+            "I need a plumber for a broken tap",
+            "i want a website developer",
+            "i need an app developer",
+            "I need immediate mechanic assistance",
+            "I want to join as AI Engineer",
+            "I need a tutor for my child",
+            "YouTube Channel Support",
+            "Order Mangoes"
+        ];
+
+
+        function initializePage() {
+            renderPopularQueries();
+        }
+
+        function renderPopularQueries() {
+            const container = document.getElementById("popularQueries");
+            container.innerHTML = "";
+
+            popularQueries.forEach(query => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "query";
+
+                button.innerHTML = `
+                    <span class="queryStar">★</span>
+                    <span class="queryText">${query}</span>
+                `;
+
+                button.onclick = () => {
+                    openChatWith(query);
+                };
+
+                container.appendChild(button);
+            });
+        }
+
+        function openChatWith(text) {
+            if (text === "I need an electrician for my home") {
+                showView('electricianView');
+            } else if (text === "I need a plumber for a broken tap") {
+                showView('plumberView');
+            } else if (text === "i want a website developer") {
+                showView('webdeveloperView');
+            } else if (text === "i need an app developer") {
+                showView('appdeveloperView');
+            } else if (text === "I need immediate mechanic assistance") {
+                showView('mechanicView');
+            } else if (text === "I want to join as AI Engineer") {
+                showView('aijobView');
+            } else if (text === "I need a tutor for my child") {
+                showView('tutorView');
+            } else if (text === "YouTube Channel Support") {
+                showView('youtubeView');
+            } else if (text === "Order Mangoes") {
+                showView('mangoView');
+            } else {
+                try {
+                    sessionStorage.setItem("haiSuperHeroPrefill", text);
+                } catch (error) {
+                    console.log("Session storage unavailable");
+                }
+                window.location.href = "/chat";
+            }
+        }
+
+        /* =====================================================
+           ELECTRICIAN CHAT DATA
+        ===================================================== */
+        const electricianSteps = [{
+                type: 'user',
+                text: "I need a electrician"
+            },
+            {
+                type: 'superhero',
+                html: `<strong>Boss! ⚡🦸‍♂️</strong><br>As I'm your superhero, I’m transforming myself into an <strong>“Electrician”</strong> for you.`
+            },
+            {
+                type: 'superhero',
+                html: `Could you please describe me the in-detail problem that are you facing?
+                <div class="problem-section">
+                  <div class="problem-buttons">
+                    <div class="problem-btn"><span>💡</span> Light Problem</div>
+                    <div class="problem-btn"><span>🔌</span> Switch / Socket</div>
+                    <div class="problem-btn"><span>🌀</span> Fan Problem</div>
+                    <div class="problem-btn"><span>⚡</span> Power / Wiring</div>
+                    <div class="problem-btn"><span>🛡️</span> MCB / Fuse</div>
+                    <div class="problem-btn"><span>🏠</span> Appliance Electrical</div>
+                    <div class="problem-btn"><span>🏗️</span> Installation / New Work</div>
+                    <div class="problem-btn"><span>❓</span> Other Problem</div>
+                  </div>
+                </div>`
+            },
+            {
+                type: 'badge',
+                text: "📌 Pinned the selected option"
+            },
+            {
+                type: 'superhero',
+                html: `⚠️ <strong>Is there any immediate danger?</strong><br>Please select if you notice any of the following:
+                <div class="danger-buttons">
+                  <div class="danger-btn">💥 Sparks</div>
+                  <div class="danger-btn">🔥 Burning Smell</div>
+                  <div class="danger-btn">⚡ Exposed Wires</div>
+                  <div class="danger-btn">⚠️ Electric Shock</div>
+                  <div class="danger-btn">🔌 Power Tripping</div>
+                </div>`
+            },
+            {
+                type: 'user',
+                text: "But, I am unable to describe the exact problem"
+            },
+            {
+                type: 'superhero',
+                text: "Boss, Could you please share a photo of the issue? That will help us analyze the problem and find a quick solution for you."
+            },
+            {
+                type: 'user',
+                html: `📷 Photo uploaded:<br><img src="https://tse4.mm.bing.net/th/id/OIP.dnXuRsvGbi2hzQPV9DFeYQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Uploaded Issue Photo" class="chat-img-attachment" />`
+            },
+            {
+                type: 'superhero',
+                text: "Thank you Boss! I have received the photo. Analyzing the issue now..."
+            },
+            {
+                type: 'superhero',
+                text: "I understand the problem boss! But I want to check indetail issues that are surrounded."
+            },
+            {
+                type: 'superhero',
+                text: "Pin your location"
+            },
+            {
+                type: 'badge',
+                text: "📌 Pinned the location"
+            },
+            {
+                type: 'superhero',
+                text: "Boss! 🕐 What time would you like the electrician to visit your place?"
+            },
+            {
+                type: 'user',
+                text: "Today 6:00 Pm"
+            },
+            {
+                type: 'superhero',
+                text: "Got it, Boss! ⚡ Electrician is scheduled to arrive today at 6:00 PM. See you then!"
+            },
+            {
+                type: 'superhero',
+                html: `⚡ <strong>Electrician will be there on time.</strong><br><em>A small submission: Transport Charges will be seperate</em>`
+            },
+            {
+                type: 'badge',
+                text: "📌 Electrician reached the location"
+            },
+            {
+                type: 'user',
+                text: "The electrician arrived and fixed everything perfectly! Our work is successfully completed and the electrical issue is completely cleared now. Thanks!"
+            },
+            {
+                type: 'superhero',
+                text: "That's the power of SuperHero! 🔥⚡"
+            },
+            {
+                type: 'superhero',
+                text: "Once I step in, I will surely make tasks completed with my superpower!"
+            },
+            {
+                type: 'superhero',
+                html: `💳 <strong>Payment Details</strong><br>Here is the invoice breakdown for your electrical service:
+                <div class="invoice-card">
+                  <div class="invoice-row"><span>Inspection & Diagnostics:</span><span>₹___</span></div>
+                  <div class="invoice-row"><span>Electrical Repair Charge:</span><span>₹___</span></div>
+                  <div class="invoice-total"><span>Total Amount Due:</span><span>₹___</span></div>
+                </div>
+                <br>Payment Options:
+                <div class="payment-options">
+                  <div class="pay-btn"><span>🟣</span> Pay through PhonePe</div>
+                  <div class="pay-btn"><span>🔵</span> Pay through Google Pay (GPay)</div>
+                  <div class="pay-btn"><span>🔷</span> Pay through Paytm</div>
+                </div>`
+            },
+            {
+                type: 'user',
+                text: "Pay through PhonePe"
+            },
+            {
+                type: 'superhero',
+                text: "✅ Payment Successfully Received!"
+            },
+            {
+                type: 'superhero',
+                text: "Thank you for believing in me, My Boss! 🦸‍♂️⚡ Have a great day ahead!"
+            }
+        ];
+
+        /* =====================================================
+           PLUMBER CHAT DATA
+        ===================================================== */
+        const plumberSteps = [{
+                type: 'user',
+                text: "I need a plumber"
+            },
+            {
+                type: 'superhero',
+                html: `<strong>Boss! 🚰🦸‍♂️</strong><br>As I'm your superhero, I’m transforming myself into a <strong>“Plumber”</strong> for you.`
+            },
+            {
+                type: 'superhero',
+                html: `Could you please describe me the in-detail problem that are you facing?
+                <div class="problem-section">
+                  <div class="problem-buttons">
+                    <div class="problem-btn"><span>🚰</span> Tap / Faucet Leakage</div>
+                    <div class="problem-btn"><span>🚽</span> Toilet / Flush Problem</div>
+                    <div class="problem-btn"><span>🚿</span> Shower / Bathroom Leak</div>
+                    <div class="problem-btn"><span>🧹</span> Blocked Drain / Pipe</div>
+                    <div class="problem-btn"><span>🛠️</span> Pipe Burst / Major Leak</div>
+                    <div class="problem-btn"><span>♨️</span> Water Heater / Tank</div>
+                    <div class="problem-btn"><span>🏗️</span> Installation / Fitting</div>
+                    <div class="problem-btn"><span>❓</span> Other Plumbing Problem</div>
+                  </div>
+                </div>`
+            },
+            {
+                type: 'badge',
+                text: "📌 Pinned the selected option"
+            },
+            {
+                type: 'superhero',
+                html: `⚠️ <strong>Is there any immediate danger?</strong><br>Please select if you notice any of the following:
+                <div class="danger-buttons">
+                  <div class="danger-btn">🌊 Severe Water Flooding</div>
+                  <div class="danger-btn">💥 Pipe Burst / Gushing Water</div>
+                  <div class="danger-btn">☣️ Sewage Overflow</div>
+                  <div class="danger-btn">⚡ Water Near Electrical Socket</div>
+                  <div class="danger-btn">🚫 Complete Water Blockage</div>
+                </div>`
+            },
+            {
+                type: 'user',
+                text: "But, I am unable to describe the exact problem"
+            },
+            {
+                type: 'superhero',
+                text: "Boss, Could you please share a photo of the issue? That will help us analyze the problem and find a quick solution for you."
+            },
+            {
+                type: 'user',
+                html: `📷 Photo uploaded:<br><img src="https://tse4.mm.bing.net/th/id/OIP.dnXuRsvGbi2hzQPV9DFeYQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Uploaded Issue Photo" class="chat-img-attachment" />`
+            },
+            {
+                type: 'superhero',
+                text: "Thank you Boss! 📸 I have received the photo. Analyzing the issue now..."
+            },
+            {
+                type: 'superhero',
+                text: "I understand the problem boss! But I want to check indetail issues that are surrounded."
+            },
+            {
+                type: 'superhero',
+                text: "Pin your location"
+            },
+            {
+                type: 'badge',
+                text: "📌 Pinned the location"
+            },
+            {
+                type: 'superhero',
+                text: "Boss! 🕐 What time would you like the plumber to visit your place?"
+            },
+            {
+                type: 'user',
+                text: "today 6:00 Pm"
+            },
+            {
+                type: 'superhero',
+                text: "Got it, Boss! 💧 Plumber is scheduled to arrive today at 6:00 PM. See you then!"
+            },
+            {
+                type: 'superhero',
+                html: `💧 <strong>Plumber will be there on time.</strong><br><em>A small submission: Transport charges will be seperately collected.</em>`
+            },
+            {
+                type: 'badge',
+                text: "📌 Plumber reached the location"
+            },
+            {
+                type: 'user',
+                text: "The plumber arrived and fixed everything perfectly! Our work is successfully completed and the plumbing issue is completely cleared now. Thanks!"
+            },
+            {
+                type: 'superhero',
+                text: "That's the power of SuperHero! 🔥🚰"
+            },
+            {
+                type: 'superhero',
+                text: "Once I step in, I will surely make tasks completed with my superpower!"
+            },
+            {
+                type: 'superhero',
+                html: `💳 <strong>Payment Details</strong><br>Here is the invoice breakdown for your plumbing service:
+                <div class="invoice-card">
+                  <div class="invoice-row"><span>Inspection & Diagnostics:</span><span>₹</span></div>
+                  <div class="invoice-row"><span>Plumbing Repair Charge:</span><span>₹</span></div>
+                  <div class="invoice-total"><span>Total Amount Due:</span><span>₹</span></div>
+                </div>
+                <br>Payment Options:
+                <div class="payment-options">
+                  <div class="pay-btn"><span>🟣</span> Pay through PhonePe</div>
+                  <div class="pay-btn"><span>🔵</span> Pay through Google Pay (GPay)</div>
+                  <div class="pay-btn"><span>🔷</span> Pay through Paytm</div>
+                </div>`
+            },
+            {
+                type: 'user',
+                text: "Pay through PhonePe"
+            },
+            {
+                type: 'superhero',
+                text: "✅ Payment Successfully Received!"
+            },
+            {
+                type: 'superhero',
+                text: "Thank you for believing in me, My Boss! 🦸‍♂️🚰 Have a great day ahead!"
+            }
+        ];
+
+        /* =====================================================
+   WEB DEVELOPER CHAT DATA
+===================================================== */
+        const webDevSteps = [{
+                type: 'user',
+                text: "Hi! I have a business idea in mind and I need a professional website developer for it."
+            },
+            {
+                type: 'superhero',
+                html: `As I'm your superhero, I’m transforming myself into an <strong>“Full-Stack Web Developer”</strong> for you. Let's build something scalable, fast, and modern.`
+            },
+            {
+                type: 'superhero',
+                html: `To tailor the perfect solution, which <strong>Industry or Category</strong> best fits your project?
+        <div class="category-grid">
+            <div class="category-card"><span>🍽️️</span> 1. Restaurants & Cafés</div>
+            <div class="category-card"><span>💇‍♀️</span> 2. Beauty Salons & Spas</div>
+            <div class="category-card"><span>🏥</span> 3. Clinics & Healthcare</div>
+            <div class="category-card"><span>🏢</span> 4. Real Estate & Builders</div>
+            <div class="category-card"><span>🎓</span> 5. Schools & Education</div>
+            <div class="category-card"><span>🏋️‍♂️</span> 6. Gyms & Fitness</div>
+            <div class="category-card"><span>🚕</span> 7. Travel & Taxi Services</div>
+            <div class="category-card"><span>🏨</span> 8. Hotels & Resorts</div>
+            <div class="category-card"><span>🚗</span> 9. Automobile & EV</div>
+            <div class="category-card"><span>🛍️</span> 10. Retail & E-Commerce</div>
+            <div class="category-card"><span>💍</span> 11. Wedding & Events</div>
+            <div class="category-card"><span>💼</span> 12. Professional Services</div>
+            <div class="category-card"><span>🏡</span> 13. Interior & Architects</div>
+            <div class="category-card"><span>📸</span> 14. Photography Studios</div>
+            <div class="category-card"><span>💻</span> 15. Tech & AI Training</div>
+            <div class="category-card"><span>🏭</span> 16. Manufacturing</div>
+            <div class="category-card"><span>🚚</span> 17. Logistics & Transport</div>
+            <div class="category-card"><span>🌾</span> 18. Agriculture & Agro</div>
+            <div class="category-card"><span>🛕</span> 19. Pilgrimage & Tourism</div>
+            <div class="category-card"><span>🚀</span> 20. Other Custom Venture</div>
+        </div>`
+            },
+            {
+                type: 'user',
+                text: "I run a Family Restaurant & Cloud Kitchen, so I need a website for Restaurants & Food business."
+            },
+            {
+                type: 'badge',
+                text: "📌 Selected Industry: Restaurants, Cafés & Cloud Kitchens"
+            },
+            {
+                type: 'superhero',
+                html: `Awesome choice! 🍕🍔 For <strong>Restaurants & Food Businesses</strong>, here are core features we usually integrate:
+        <div class="feature-tags">
+            <div class="tag">📜 Digital Menu Card</div>
+            <div class="tag">📲 WhatsApp Ordering</div>
+            <div class="tag">📅 Table Reservations</div>
+            <div class="tag">📍 Google Maps Navigation</div>
+            <div class="tag">⭐ Customer Reviews</div>
+            <div class="tag">🎁 Special Offers & Coupons</div>
+            <div class="tag">📸 Photo & Video Gallery</div>
+            <div class="tag">📸 Instagram Feed Sync</div>
+        </div>`
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Pinned Core Features Checklist"
+            },
+            {
+                type: 'superhero',
+                text: "Boss! 🕐 And Also I would like to schedule a video call in google meet to get to know the exact user requirements. Could you please convey me your free timings"
+            },
+            {
+                type: 'user',
+                text: "Today at 5:00 PM"
+            },
+            {
+                type: 'badge',
+                text: "📌 Google meet link"
+            },
+            {
+                type: 'user',
+                html: `Meeeting started..<br><br>📷 Discussions are going on:<br><img src="https://ts3.mm.bing.net/th?id=OIP.dzhIBZh9iZhIOGbxoi64MgHaHa&pid=15.1" alt="Video Call" class="chat-img-attachment" />`
+            },
+            {
+                type: 'superhero',
+                text: "Got it, Boss! Now i can able to analyze the complete overview of the website. Thank you for conveying the complete exact user-requirements and structure of the website"
+            },
+            {
+                type: 'badge',
+                text: "📌 User requirements Notes Saved"
+            },
+            {
+                type: 'superhero',
+                html: `Now, let's decide the <strong>Technical Stack & Website Architecture</strong> along with estimated pricing. What kind of structure do you prefer?
+        <div class="arch-options">
+            <div class="arch-btn">
+                <div class="arch-header">
+                    <span>⚡ 1. Static Responsive Website</span>
+                    <span class="price-badge">₹8,999</span>
+                </div>
+                <small>Fast loading, HTML5/Tailwind CSS, fixed menu & location showcase.</small>
+            </div>
+            <div class="arch-btn">
+                <div class="arch-header">
+                    <span>🔥 2. Dynamic Web App (React / Next.js)</span>
+                    <span class="price-badge">₹14,999</span>
+                </div>
+                <small>Interactive menu filtering, live table booking system, mobile responsive.</small>
+            </div>
+            <div class="arch-btn">
+                <div class="arch-header">
+                    <span>🛡 3. Full-Stack Web Portal + Admin Dashboard</span>
+                    <span class="price-badge">₹24,998</span>
+                </div>
+                <small>Next.js + Node.js/MongoDB: Manage items, track orders, view analytics & customer DB.</small>
+            </div>
+        </div>`
+            },
+            {
+                type: 'user',
+                text: "Let's go with Full-Stack Web Portal with Admin Dashboard so I can edit menu prices and view table bookings anytime."
+            },
+            {
+                type: 'superhero',
+                text: "Great choice, Boss! 🛠️And Could you please share all the details of prefered user interfaces (UI/UX),  themes, brand colours that you want according to your personal interests."
+            },
+            {
+                type: 'user',
+                html: `I prefer a dark aesthetic UI with gold accents, high-res food photos, smooth category switching for food items, and a quick WhatsApp checkout button.............<br><br>📷 Reference UI design inspiration:<br><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80" alt="Restaurant Interior Inspiration" class="chat-img-attachment" />`
+            },
+            {
+                type: 'superhero',
+                html: `Yeah Boss! 🦸‍♂️⚡ I am starting the website development works according to all your inputs, Boss! <br><br>
+    <strong>Which Includes:</strong><br><br>
+
+    1. Home Page & Restaurant Introduction<br>
+    2. Digital Food Menu<br>
+    3. Online Food Ordering System<br>
+    4. Shopping Cart & Checkout<br>
+    5. Table Booking & Reservations<br>
+    6. Home Delivery & Takeaway<br>
+    7. Offers, Discounts & Memberships<br>
+    8. Customer Registration & Login<br>
+    9. Customer Profile & Order History<br>
+    10. Restaurant Information<br>
+    11. Chef & Staff Introductions<br>
+    12. Food Photography & Video Gallery<br>
+    13. Customer Reviews & Ratings<br>
+    14. Feedback & Complaint System<br>
+    15. Birthday & Special Event Bookings<br>
+    16. Catering Services<br>
+    17. Admin Dashboard<br>
+    18. Food Menu Management<br>
+    19. Order & Reservation Management<br>
+    20. Kitchen Management System<br>
+    21. Staff & Employee Management<br>
+    22. Inventory & Stock Management<br>
+    23. Payments & Digital Billing<br>
+    24. Sales & Revenue Reports<br>
+    25. WhatsApp & Social Media Integration<br>
+    26. Email, SMS & Push Notifications<br>
+    27. QR Code Digital Menu & Ordering<br>
+    28. Multiple Restaurant Branch Management<br>
+    29. AI Food Recommendations & Chatbot<br>
+    30. SEO & Digital Marketing Integration<br><br>
+
+    <strong>And So On.... </strong>`
+            },
+            {
+                type: 'user',
+                text: "When are you going to deliver the website?"
+            },
+            {
+                type: 'superhero',
+                text: "Within 10-15 days."
+            },
+            {
+                type: 'badge',
+                text: "📌 Website Development Started"
+            },
+            {
+                type: 'badge',
+                text: "📸 Live Tracking"
+            },
+            {
+                type: 'badge',
+                text: "⏰ After 10 Days"
+            },
+            {
+                type: 'badge',
+                text: "📌 Development Completed & Website delivered"
+            },
+            {
+                type: 'user',
+                text: "The website looks stunning on mobile and desktop! The admin panel table booking and dark gold theme look incredible. Thanks!"
+            },
+            {
+                type: 'superhero',
+                text: "Thank you for your positive review. We are so happy to recieve your positive feedback. And Ofcourse, That's the power of SuperHero Web Studio! 🔥⚡"
+            },
+            {
+                type: 'superhero',
+                html: `💳 <strong>Project Invoice Breakdown</strong><br>Here is the summary for your Full-Stack Web Development:
+        <div class="invoice-card">
+            <div class="invoice-row"><span>UI/UX Custom Design & Branding:</span><span>₹4,999</span></div>
+            <div class="invoice-row"><span>Frontend React / Next.js Setup:</span><span>₹9,999</span></div>
+            <div class="invoice-row"><span>Backend Node.js & Admin Panel:</span><span>₹8,000</span></div>
+            <div class="invoice-row"><span>WhatsApp API & Google Maps:</span><span>₹2,000</span></div>
+            <div class="invoice-total"><span>Total Amount Due:</span><span>₹24,998</span></div>
+        </div>
+        <br>Payment Options:
+        <div class="payment-options">
+            <div class="pay-btn"><span>🟣</span> Pay through PhonePe</div>
+            <div class="pay-btn"><span>🔵</span> Pay through Google Pay (GPay)</div>
+            <div class="pay-btn"><span>🔷</span> Pay through Paytm</div>
+        </div>`
+            },
+            {
+                type: 'user',
+                text: "Pay through PhonePe"
+            },
+            {
+                type: 'superhero',
+                text: "✅ Payment Successfully Received! Domain SSL & Cloud Hosting Activated!"
+            },
+            {
+                type: 'superhero',
+                text: "Thank you for believing in me, My Boss! 🦸‍♂️⚡ Have a high-converting business ahead!"
+            }
+        ];
+
+
+        /* =====================================================
+           APP DEVELOPER CHAT DATA
+        ===================================================== */
+        const appDevSteps = [{
+                type: 'user',
+                text: "i need a app developer"
+            },
+            {
+                type: 'superhero',
+                html: `As I'm your superhero, I’m transforming myself into an <strong>“Android & iOS Mobile App Developer”</strong> for you. Let's build a secure, fast, and modern mobile app.`
+            },
+            {
+                type: 'superhero',
+                html: `To tailor the perfect solution, which <strong>Industry or Category</strong> best fits your project?
+                <div class="category-grid">
+                    <div class="category-card">🍽️ 1. Restaurants & Cafés</div>
+                    <div class="category-card">💇‍♀️ 2. Beauty Salons & Spas</div>
+                    <div class="category-card">🏥 3. Clinics & Healthcare</div>
+                    <div class="category-card">🏢 4. Real Estate & Builders</div>
+                    <div class="category-card">🎓 5. Schools & Education</div>
+                    <div class="category-card">🏋️‍♂️ 6. Gyms & Fitness</div>
+                    <div class="category-card">🚕 7. Travel & Taxi Services</div>
+                    <div class="category-card">🏨 8. Hotels & Resorts</div>
+                    <div class="category-card">🚗 9. Automobile & EV</div>
+                    <div class="category-card">🛍️ 10. Retail & E-Commerce</div>
+                    <div class="category-card">💍 11. Wedding & Events</div>
+                    <div class="category-card">💼 12. Professional Services</div>
+                    <div class="category-card">🏡 13. Interior & Architects</div>
+                    <div class="category-card">📸 14. Photography Studios</div>
+                    <div class="category-card">💻 15. Tech & AI Training</div>
+                    <div class="category-card">🏭 16. Manufacturing</div>
+                    <div class="category-card">🚚 17. Logistics & Transport</div>
+                    <div class="category-card">🌾 18. Agriculture & Agro</div>
+                    <div class="category-card">🛕 19. Pilgrimage & Tourism</div>
+                    <div class="category-card">🚀 20. Other Custom Venture</div>
+                </div>`
+            },
+            {
+                type: 'user',
+                text: "5. Schools & Education"
+            },
+            {
+                type: 'superhero',
+                html: `To tailor the perfect solution, which <strong>Educational Segment</strong> best fits your school department or institution?
+                <div class="category-grid">
+                    <div class="category-card">🏫 1. K-12 Primary & High Schools</div>
+                    <div class="category-card">🎒 2. Preschools & Daycares</div>
+                    <div class="category-card">🏛️ 3. Colleges & Universities</div>
+                    <div class="category-card">📚 4. Coaching & Tuition Institutes</div>
+                    <div class="category-card">🎨 5. Special Education & Hobby Schools</div>
+                    <div class="category-card">🌐 6. Multi-Branch International Schools</div>
+                </div>`
+            },
+            {
+                type: 'user',
+                text: "We are a K-12 Private High School with 1,500+ students, so we need a complete School & Parent Communication App."
+            },
+            {
+                type: 'badge',
+                text: "📌 Selected Institution: K-12 Primary & High Schools"
+            },
+            {
+                type: 'superhero',
+                html: `Awesome choice! 📚 Graduation cap ready! For <strong>K-12 School Apps</strong>, here are core modules we typically integrate:
+                <div class="feature-tags">
+                    <div class="tag">📊 Attendance Tracking</div>
+                    <div class="tag">💳 Online Fee Payment</div>
+                    <div class="tag">📝 Homework & Assignments</div>
+                    <div class="tag">🚌 GPS School Bus Tracker</div>
+                    <div class="tag">📑 Report Cards & Exam Marks</div>
+                    <div class="tag">📢 Circulars & Push Notifications</div>
+                    <div class="tag">🗓️ Event Calendar & Timetable</div>
+                    <div class="tag">💬 Teacher-Parent Direct Chat</div>
+                </div>`
+            },
+            {
+                type: 'badge',
+                text: "📌 Pinned Core Modules Checklist"
+            },
+            {
+                type: 'superhero',
+                text: "Boss! 🕐 And Also I would like to schedule a video call in google meet to get to know the exact user requirements. Could you please convey me your free timings"
+            },
+            {
+                type: 'user',
+                text: "Today at 4:30 PM"
+            },
+            {
+                type: 'badge',
+                text: "📌 Google meet link"
+            },
+            {
+                type: 'user',
+                html: `Meeeting started..<br><br>📷 Discussions are going on:<br><img src="https://ts3.mm.bing.net/th?id=OIP.dzhIBZh9iZhIOGbxoi64MgHaHa&pid=15.1" alt="Video Call" class="chat-img-attachment" />`
+            },
+            {
+                type: 'superhero',
+                text: "Got it, Boss! Now i can able to analyze the complete overview of the app. Thank you for conveying the complete exact user-requirements and structure of the app"
+            },
+            {
+                type: 'badge',
+                text: "📌 User requirements Notes Saved"
+            },
+            {
+                type: 'superhero',
+                html: `Got it, Boss! Now let's pick the <strong>Mobile Architecture & Cross-Platform Tech Stack</strong> along with estimated pricing. Which target platform setup do you prefer?
+                <div class="arch-options">
+                    <div class="arch-btn">
+                        <div class="arch-header"><span>🤖 1. Android-Only Native App</span><span class="price-badge">₹19,999</span></div>
+                        <small>Native Android (Kotlin), Google Play Store launch, push alerts & fee gateway.</small>
+                    </div>
+                    <div class="arch-btn">
+                        <div class="arch-header"><span>📱 2. Cross-Platform Mobile App (Flutter / React Native)</span><span class="price-badge">₹34,999</span></div>
+                        <small>Single codebase for Android & iOS App Store, parent/student portals, live bus tracking.</small>
+                    </div>
+                    <div class="arch-btn">
+                        <div class="arch-header"><span>🛡️ 3. Full Enterprise Ecosystem (Android + iOS + Web Admin Portal)</span><span class="price-badge">₹49,998</span></div>
+                        <small>Flutter Mobile Apps + React Web Dashboard for Principal/Staff: Full DB management, payment reconciliation, analytics & SMS backup.</small>
+                    </div>
+                </div>`
+            },
+            {
+                type: 'user',
+                text: "Let's go with Full Enterprise Ecosystem (Android + iOS Apps + Staff Web Admin Dashboard) so admins can control data and manage fees from desktop."
+            },
+            {
+                type: 'superhero',
+                text: "Great choice, Boss! 🛠️ And Could you please share your branding preferences, color palette, or any UI wireframes you'd like us to align with."
+            },
+            {
+                type: 'user',
+                html: `We want a clean navy blue and gold theme reflecting our school crest, biometric login for teachers, card-style dashboard for parents, and automated PDF report card downloads.<br><strong>And So On..</strong><br><br>📷 Reference Dashboard Mockup:<br><img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=600&q=80" alt="School App Inspiration" class="chat-img-attachment" />`
+            },
+            {
+                type: 'superhero',
+                html: `Yeah Boss! 🦸‍♂️⚡ I am starting the website development works according to all your inputs, Boss! <br><br>
+    <strong>Which Includes:</strong><br><br>
+
+    1. School Home Page & Introduction<br>
+    2. About School, Vision & Mission<br>
+    3. School Management & Administration<br>
+    4. Principal & Teacher Profiles<br>
+    5. Student Registration & Admissions<br>
+    6. Online Admission System<br>
+    7. Student Profile & Digital ID Cards<br>
+    8. Class-Wise & Section-Wise Management<br>
+    9. Digital Attendance System<br>
+    10. Online Classes & E-Learning<br>
+    11. Digital Classroom Management<br>
+    12. Subject-Wise Study Materials<br>
+    13. Digital Library & E-Books<br>
+    14. Homework & Assignment Management<br>
+    15. Online Examinations & Assessments<br>
+    16. Unit Tests, Quarterly & Final Exams<br>
+    17. Question Papers & Model Papers<br>
+    18. Results & Progress Reports<br>
+    19. Digital Report Cards<br>
+    20. Student Performance Analytics<br>
+    21. Homework & Parent Notifications<br>
+    22. Parent Login & Dashboard<br>
+    23. Teacher Login & Dashboard<br>
+    24. Student Login & Dashboard<br>
+    25. Fee Payment & Digital Receipts<br>
+    26. Scholarships & Financial Assistance<br>
+    27. Olympiads & Competitive Examinations<br>
+    28. Arts, Drawing & Cultural Activities<br>
+    29. Dance, Singing & Music Competitions<br>
+    30. Sports & Games Competitions<br>
+    31. Talent Identification & Development<br>
+    32. Technology Clubs & Innovation Labs<br>
+    33. Robotics, Coding & AI Learning<br>
+    34. Educational Tours & Travel Together<br>
+    35. School Events & Celebrations<br>
+    36. Annual Day & Sports Day Management<br>
+    37. Student Certificates & Achievements<br>
+    38. Career Guidance & Counselling<br>
+    39. Health, Safety & Student Welfare<br>
+    40. Transport & School Bus Tracking<br>
+    41. Hostel Management System<br>
+    42. Canteen & Food Management<br>
+    43. School Gallery & Videos<br>
+    44. Alumni Registration & Network<br>
+    45. Notices, Circulars & Announcements<br>
+    46. Leave Application Management<br>
+    47. Staff Attendance & Payroll Management<br>
+    48. Timetable & Academic Calendar<br>
+    49. Inventory & School Asset Management<br>
+    50. Admin Dashboard & School Analytics<br>
+    51. Multiple Branch Management<br>
+    52. WhatsApp, Email & SMS Integration<br>
+    53. Mobile Application Integration<br>
+    54. QR Code Student Identification<br>
+    55. AI-Powered Learning Assistant<br>
+    56. AI-Based Student Performance Analysis<br>
+    57. AI Career & Talent Recommendations<br>
+    58. Online Enquiry & Admission Chatbot<br>
+    59. SEO & Digital Marketing Integration<br>
+    60. Multi-Language Website Support<br><br>
+
+    <strong>And So On....</strong><br><br>`
+            },
+
+            {
+                type: 'user',
+                text: "When are you going to deliver the app?"
+            },
+            {
+                type: 'superhero',
+                text: "Within 20-25 days."
+            },
+            {
+                type: 'badge',
+                text: "📌 Application Development Started"
+            },
+            {
+                type: 'badge',
+                text: "📸 Live Tracking"
+            },
+            {
+                type: 'badge',
+                text: "⏰ After 20 Days"
+            },
+
+            {
+                type: 'badge',
+                text: "📌 App Build Completed, Delivered, Play Store & App Store Deployment Approved"
+            },
+            {
+                type: 'user',
+                text: "The Android and iOS apps run smoothly! Parents love the school app specifically live bus tracking. The school management team is super impressed. Thanks!"
+            },
+            {
+                type: 'superhero',
+                text: "Thank you for your positive review. We are so happy to recieve your positive feedback. And Ofcourse, That's the power of SuperHero Mobile Studio! 🔥⚡"
+            },
+            {
+                type: 'superhero',
+                html: `💳 <strong>Project Invoice Breakdown</strong><br>Here is the summary for your School Mobile App Ecosystem:
+                <div class="invoice-card">
+                    <div class="invoice-row"><span>Mobile UI/UX Design & Branding (Figma):</span><span>₹8,000</span></div>
+                    <div class="invoice-row"><span>Flutter Cross-Platform App (Android & iOS):</span><span>₹22,000</span></div>
+                    <div class="invoice-row"><span>Backend Node.js API & Admin Web Dashboard:</span><span>₹14,000</span></div>
+                    <div class="invoice-row"><span>Payment Gateway & Play/App Store Setup:</span><span>₹5,998</span></div>
+                    <div class="invoice-total"><span>Total Amount Due:</span><span>₹49,998</span></div>
+                </div>
+                <br>Payment Options:
+                <div class="payment-options">
+                    <div class="pay-btn"><span>🟣</span> Pay through PhonePe</div>
+                    <div class="pay-btn"><span>🔵</span> Pay through Google Pay (GPay)</div>
+                    <div class="pay-btn"><span>🔷</span> Pay through Bank NEFT / RTGS</div>
+                </div>`
+            },
+            {
+                type: 'user',
+                text: "Pay through Google Pay (GPay)"
+            },
+            {
+                type: 'superhero',
+                text: "✅ Payment Successfully Received! Mobile App Licenses, Source Code & SSL Cloud Server Handover Complete!"
+            },
+            {
+                type: 'superhero',
+                text: "Thank you for believing in me, My Boss! 🦸‍♂️⚡ Wishing your school department an empowered academic year ahead!"
+            }
+        ];
+
+
+
+
+        /* =====================================================
+           ROADSIDE MECHANIC CHAT DATA
+        ===================================================== */
+        const mechanicSteps = [{
+                type: 'user',
+                text: "My car suddenly stopped on the way from Nellore to Tirupati. I am stranded on the highway. I need immediate mechanic assistance!"
+            },
+            {
+                type: 'superhero',
+                html: `Don't worry boss! <br> As I'm your superhero, I'm transforming myself into a <strong>“Mechanic”</strong> for you to get the car back on the road!`
+            },
+            {
+                type: 'superhero',
+                html: `Boss! Primarily, your safety is my priority.<br><br><strong>⚠️ So please follow these safety instructions:</strong><div class="danger-buttons"><div class="danger-btn">🚨 Switch ON Hazard Lights</div><div class="danger-btn">🛣️ Move to a Safe Area if Possible</div><div class="danger-btn">🚶 Stay Away From Traffic</div><div class="danger-btn">🚫 Don't Stand Behind the Car</div></div>`
+            },
+            {
+                type: 'user',
+                text: "Yeah, the car is in a safe place. But please come fast!"
+            },
+            {
+                type: 'superhero',
+                html: `Understood, Boss! 🔧<br><br>I need a few vehicle details to find the right mechanic.<br>Could you please share your car details and a photo or short video of your dashboard and engine area?`
+            },
+            {
+                type: 'user',
+                html: `Hyundai i20, 2021 model, Petrol.<br><br>📷 Vehicle photo shared:<br><img src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600" alt="Car engine" class="chat-img-attachment" />`
+            },
+            {
+                type: 'superhero',
+                text: "Thank you, Boss! 📸 I have received the photo. This information can help the mechanic understand the situation. A physical inspection will be required to confirm the actual fault."
+            },
+            {
+                type: 'superhero',
+                html: `<strong>📍 Boss! Before proceeding, I need your exact location.</strong><br><br>Please share your live location or drop a location pin. Also mention the nearest landmark, highway, or village.`
+            },
+            {
+                type: 'user',
+                text: "Yeah, I am now sharing my live location. I am near a roadside village between Nellore and Tirupati."
+            },
+            {
+                type: 'badge',
+                text: "📌 Customer location received"
+            },
+            {
+                type: 'superhero',
+                html: `Yeah, Boss! 📍<br>Your location details have been received.<br><br><strong>Now connecting with nearby mechanics to reach there as quickly as possible...</strong>`
+            },
+            {
+                type: 'badge',
+                text: "🔍 Searching for nearby available mechanics..."
+            },
+            {
+                type: 'superhero',
+                html: `⚡ <strong>Good News, Boss!</strong><br><br>I found a nearby mechanic who has accepted your request!<br><br><div class="invoice-card"><div class="invoice-row"><span>Service Provider:</span><span>Mechanic Raju</span></div><div class="invoice-row"><span>Service:</span><span>Emergency Car Repair</span></div><div class="invoice-row"><span>Vehicle:</span><span>Hyundai i20</span></div><div class="invoice-row"><span>Distance:</span><span>2 km</span></div><div class="invoice-row"><span>Estimated Arrival:</span><span>5-10 Minutes</span></div><div class="invoice-total"><span>Status:</span><span>Request Accepted</span></div></div><br><em>The mechanic has started travelling towards your location.</em>`
+            },
+            {
+                type: 'superhero',
+                html: `In the meanwhile of mechanic arrival, could you please explain what actually happened to your vehicle?<br><br><strong>What problem are you experiencing?</strong><div class="problem-section"><div class="problem-buttons"><div class="problem-btn">🔋 Battery Dead / Starting Problem</div><div class="problem-btn">⚙️ Engine Not Starting</div><div class="problem-btn">🌡️ Engine Overheating</div><div class="problem-btn">🛞 Tyre Puncture / Burst</div><div class="problem-btn">⛽ Fuel Empty / Fuel Supply</div><div class="problem-btn">💧 Oil / Coolant Leakage</div><div class="problem-btn">⚡ Electrical / Wiring Problem</div><div class="problem-btn">🚗 Car Suddenly Stopped</div><div class="problem-btn">🔊 Unusual Noise / Vibration</div><div class="problem-btn">❓ I Don't Know the Problem</div></div></div>`
+            },
+            {
+                type: 'user',
+                text: "The car suddenly stopped while driving. Now the engine is not starting. But I am unable to understand the exact problem."
+            },
+            {
+                type: 'superhero',
+                text: "Don't worry, Boss! The mechanic has arrived at your location. You can explain the issue directly to the mechanic. And you can now proceed with his service."
+            },
+            {
+                type: 'badge',
+                text: "📌 Vehicle inspection completed"
+            },
+            {
+                type: 'superhero',
+                html: `🔧 <strong>Vehicle Inspection Report</strong><br><br>The mechanic has diagnosed a loose battery terminal connection, causing the vehicle starting problem.<br><br><strong>Recommended Work:</strong><div class="problem-section"><div class="problem-buttons"><div class="problem-btn">🔋 Battery Terminal Inspection</div><div class="problem-btn">🛠️ Terminal Connection Repair</div><div class="problem-btn">⚡ Electrical System Check</div><div class="problem-btn">🚘 Engine Starting Test</div></div></div>Please approve the repair estimate before the mechanic proceeds.`
+            },
+            {
+                type: 'user',
+                text: "Yes! Please proceed with the repair."
+            },
+            {
+                type: 'badge',
+                text: "🔧 Vehicle repair in progress..."
+            },
+            {
+                type: 'superhero',
+                html: `🎉 <strong>Boss! Your Car Is Back on the Road!</strong><br><br>The mechanic has repaired the battery terminal connection and tested the vehicle.<br><br>Your Hyundai i20 is now starting successfully! Please ensure the mechanic checks the charging system and confirms the vehicle is safe to drive.`
+            },
+            {
+                type: 'user',
+                text: "Excellent! My car is working perfectly now. Thank you for arranging immediate mechanic assistance."
+            },
+            {
+                type: 'superhero',
+                text: "That's the power of SuperHero! 🔥🚗 Once I step in, I connect you with the right service provider and help get your task completed!"
+            },
+            {
+                type: 'superhero',
+                html: `💳 <strong>Final Payment Details</strong><br>Here is the illustrative invoice breakdown for your roadside mechanic service:<div class="invoice-card"><div class="invoice-row"><span>Mechanic Visiting Charges:</span><span>₹300</span></div><div class="invoice-row"><span>Inspection Charges:</span><span>₹200</span></div><div class="invoice-row"><span>Repair Charges:</span><span>₹500</span></div><div class="invoice-row"><span>Spare Parts:</span><span>₹0</span></div><div class="invoice-total"><span>Total Amount Due:</span><span>₹1,000</span></div></div><br><strong>Payment Options:</strong><div class="payment-options"><div class="pay-btn">🟣 Pay through PhonePe</div><div class="pay-btn">🔵 Pay through Google Pay (GPay)</div><div class="pay-btn">🔷 Pay through Paytm</div></div>`
+            },
+            {
+                type: 'user',
+                text: "Pay through PhonePe."
+            },
+            {
+                type: 'superhero',
+                text: "✅ Payment Successfully Received!"
+            },
+            {
+                type: 'badge',
+                text: "📌 Mechanic Service Completed"
+            },
+            {
+                type: 'superhero',
+                html: `Thank you for believing in me, Boss! 🦸‍♂️🚗<br><br>Whether you are at home, on a highway, or travelling between cities, your SuperHero is always ready to connect you with the right service provider!<br><br><strong>ALWAYS AT YOUR SERVICE, BOSS! ⚡</strong>`
+            }
+        ];
+
+        /* =====================================================
+   AI JOB CHAT DATA
+===================================================== */
+        const aiJobSteps = [
+
+            {
+                type: 'user',
+                text: "Hello! I am Arjun. I am interested in joining your Universal Company and contributing my technical skills to your projects."
+            },
+            {
+                type: 'badge',
+                text: "📌 Resume Uploaded"
+            },
+
+            {
+                type: 'superhero',
+                html: `<strong>Welcome Boss! 🦸‍♂️</strong><br><br>
+                
+                As I'm your superhero, I’m transforming myself into a
+                <strong>“Universal Company Coordinator”</strong> for you to guide you through our professional onboarding process.<br><br>
+                We welcome skilled professionals from different technical domains!`
+            },
+
+            {
+                type: 'superhero',
+                html: `Our Universal Company brings together professionals, technical experts, service providers and project teams to work on diverse assignments.<br><br>
+                Let me understand your professional profile first.<br><br>
+                <strong>Could you please share your application details?</strong>`
+            },
+
+            {
+                type: 'user',
+                text: `Full Name: Arjun Kumar<br>
+                Email: arjun@example.com<br>
+                Mobile: xxxxxxxxxx<br>
+                Location: Vijayawada, Andhra Pradesh<br>
+                Qualification: B.Tech Computer Science<br>
+                Graduation Year: 2020`
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Applicant details verified"
+            },
+
+            {
+                type: 'superhero',
+                html: ` Now let's identify your technical specialization.<br><br>
+                <strong>Which professional role would you like to apply for?</strong>
+                <div class="problem-section">
+                    <div class="problem-buttons">
+                        <div class="problem-btn">🤖 AI/ML Engineer</div>
+                        <div class="problem-btn">🧠 Generative AI Developer</div>
+                        <div class="problem-btn">📊 Data Scientist</div>
+                        <div class="problem-btn">📈 Data Analyst</div>
+                        <div class="problem-btn">💻 Software Engineer</div>
+                        <div class="problem-btn">🌐 Full-Stack Developer</div>
+                        <div class="problem-btn">☁️ Cloud Engineer</div>
+                        <div class="problem-btn">⚙️ Automation Engineer</div>
+                    </div>
+                </div>`
+            },
+
+            {
+                type: 'user',
+                text: "AI/ML Engineer."
+            },
+
+            {
+                type: 'superhero',
+                html: `Wonderful choice, Boss! 🤖<br><br>
+                <strong>What are your primary technical skills?</strong><br><br>
+                Please mention the programming languages, frameworks and technologies you have worked with.`
+            },
+
+            {
+                type: 'user',
+                text: "Python, TensorFlow, PyTorch, Scikit-learn, Pandas, NumPy, SQL and Machine Learning."
+            },
+
+            {
+                type: 'superhero',
+                html: `Excellent technical stack, Boss! ⚡<br><br>
+                <strong>Technical Skills Summary</strong>
+                <div class="study-plan">
+                    <ul>
+                        <li>Programming: Python, SQL</li>
+                        <li>Machine Learning: Scikit-learn</li>
+                        <li>Deep Learning: TensorFlow, PyTorch</li>
+                        <li>Data Processing: Pandas, NumPy</li>
+                    </ul>
+                </div><br>
+                <strong>Which AI/ML specializations have you worked on?</strong>
+                <div class="problem-section">
+                    <div class="problem-buttons">
+                        <div class="problem-btn">🧠 Machine Learning</div>
+                        <div class="problem-btn">🕸️ Deep Learning</div>
+                        <div class="problem-btn">💬 NLP</div>
+                        <div class="problem-btn">👁️ Computer Vision</div>
+                        <div class="problem-btn">✨ Generative AI / LLMs</div>
+                        <div class="problem-btn">🔍 Predictive Analytics</div>
+                        <div class="problem-btn">🎙️ Speech Recognition</div>
+                        <div class="problem-btn">🤖 AI Agents</div>
+                    </div>
+                </div>`
+            },
+
+            {
+                type: 'user',
+                text: "Machine Learning, Deep Learning, NLP and Generative AI."
+            },
+
+            {
+                type: 'superhero',
+                html: `Impressive, Boss! 🌟<br><br>
+                Could you tell me about your professional experience?<br><br>
+                <strong>How many years of experience do you have?</strong>`
+            },
+
+            {
+                type: 'user',
+                text: "I have 2 years of experience as an AI/ML Engineer in past ABC company."
+            },
+
+            {
+                type: 'superhero',
+                html: `Great, Boss! 💼<br><br>
+                Please tell me about two or three important AI/ML projects you have completed.<br><br>
+                You may include the project name, objective, technologies used and your contribution.`
+            },
+
+            {
+                type: 'user',
+                text: `1. Customer Churn Prediction – Built a machine learning model using Python and Scikit-learn.<br>
+                2. Chatbot Development – Developed an NLP chatbot using Python.<br>
+                3. AI Document Assistant – Created a document question-answering prototype using an LLM.`
+            },
+
+            {
+                type: 'superhero',
+                html: `Excellent work, Boss! 🚀<br><br>
+                Your projects demonstrate experience across predictive analytics, NLP and Generative AI.<br><br>
+                <strong>Do you have a portfolio, GitHub profile or project demonstration link?</strong>`
+            },
+
+            {
+                type: 'user',
+                text: "Yes. GitHub: github.com/arjunkumar and Portfolio: arjunkumar.dev"
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Technical portfolio details collected"
+            },
+
+            {
+                type: 'superhero',
+                html: `Wonderful, Boss!<br><br>
+                Now let us understand your preferred work arrangement.<br><br>
+                <strong>Which type of engagement are you interested in?</strong>
+                <div class="problem-section">
+                    <div class="problem-buttons">
+                        <div class="problem-btn">🏢 Full-Time Employment</div>
+                        <div class="problem-btn">⏰ Part-Time Employment</div>
+                        <div class="problem-btn">📋 Project-Based Work</div>
+                        <div class="problem-btn">🤝 Freelance Assignments</div>
+                        <div class="problem-btn">🏠 Remote Work</div>
+                        <div class="problem-btn">🎓 Internship / Training</div>
+                    </div>
+                </div>`
+            },
+
+            {
+                type: 'user',
+                text: "I prefer full-time employment, but I am also open to project-based opportunities."
+            },
+
+            {
+                type: 'superhero',
+                html: `Understood, Boss! 🎯<br><br>
+                <strong>What is your preferred working arrangement?</strong>
+                <div class="problem-section">
+                    <div class="problem-buttons">
+                        <div class="problem-btn">🏢 Work From Office</div>
+                        <div class="problem-btn">🏠 Work From Home</div>
+                        <div class="problem-btn">🔄 Hybrid</div>
+                        <div class="problem-btn">🌍 Flexible / Remote</div>
+                    </div>
+                </div>`
+            },
+
+            {
+                type: 'user',
+                text: "Hybrid or remote."
+            },
+
+            {
+                type: 'superhero',
+                html: `Excellent, Boss!<br><br>
+                <strong>When can you join our professional network?</strong>`
+            },
+
+            {
+                type: 'user',
+                text: "I can join immediately."
+            },
+
+            {
+                type: 'superhero',
+                html: `Thank you, Boss! 💰<br><br>
+                What is your expected monthly salary or project-based professional fee?<br><br>
+                You may also mention whether it is negotiable.`
+            },
+
+            {
+                type: 'user',
+                text: "My expected monthly salary is ₹60,000, negotiable based on the role and responsibilities."
+            },
+
+            {
+                type: 'superhero',
+                html: `Understood, Boss!<br><br>
+                Here is your professional application summary:<br><br>
+                <div class="invoice-card">
+                    <div class="invoice-row"><span>Applicant:</span><span>Arjun Kumar</span></div>
+                    <div class="invoice-row"><span>Professional Role:</span><span>AI/ML Engineer</span></div>
+                    <div class="invoice-row"><span>Qualification:</span><span>B.Tech CSE</span></div>
+                    <div class="invoice-row"><span>Experience:</span><span>2 Years</span></div>
+                    <div class="invoice-row"><span>Specialization:</span><span>ML, DL, NLP, GenAI</span></div>
+                    <div class="invoice-row"><span>Work Preference:</span><span>Full-Time</span></div>
+                    <div class="invoice-row"><span>Work Mode:</span><span>Hybrid / Remote</span></div>
+                    <div class="invoice-row"><span>Availability:</span><span>Immediate</span></div>
+                    <div class="invoice-total"><span>Expected Salary:</span><span>₹60,000/month</span></div>
+                </div>`
+            },
+
+            {
+                type: 'user',
+                text: "Everything is correct. Please proceed."
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Professional details verified"
+            },
+
+            {
+                type: 'superhero',
+                html: `Excellent, Boss! 📂<br><br>
+                Please keep the following documents ready for the recruitment process:<br><br>
+                <div class="study-plan">
+                    <ul>
+                        <li>Updated professional resume / CV</li>
+                        <li>Educational certificates</li>
+                        <li>Experience certificates, if applicable</li>
+                        <li>Project portfolio or GitHub profile</li>
+                        <li>Relevant technical certifications</li>
+                    </ul>
+                </div><br>
+                <strong>Our recruitment team may request these documents for verification.</strong>`
+            },
+
+            {
+                type: 'user',
+                text: "I have my updated resume, certificates and project portfolio ready."
+            },
+
+            {
+                type: 'superhero',
+                html: `Fantastic, Boss! 🌟<br><br>
+                Your application is now ready for submission to our Universal Company recruitment team.<br><br>
+                <strong>One final question:</strong><br>
+                Are you willing to participate in a technical assessment and interview?`
+            },
+
+            {
+                type: 'user',
+                text: "Yes, I am ready for the technical assessment and interview."
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Interview started"
+            },
+
+            {
+                type: 'superhero',
+                html: `🎉 <strong>Hearty Congratulations, Boss!</strong><br><br>
+    We are delighted to inform you that you have been <strong>successfully selected as an AI/ML Engineer</strong> at UNIVERSAL COMPANY!<br><br>
+    <div class="profile-card">
+        <img class="profile-avatar" src="data:image/webp;base64,UklGRqoOAABXRUJQVlA4IJ4OAAAQSwCdASrxAPEAPp1IoEolpKOhqhVp2LATiWJu4WpQt10djZu/0f9v9Nau/4L+lf2r09dynWfoBdJedD/S+pT9K+wN4zvqb8yvnJ+nb/G+lH1UHoZ9NFgM3Zr5U6yG/e0J7DZUoQNkd/bjCAeM/2/Ik+IMGRbCJRlr//PIXj7eq42jf9Msp1vvxk62I2mEIlHb4CTz4n8JstbnremRkZQuJ2m9O5yNLobcCbSUOANKjmoaTWGRMAmPSGk2oKDbQzKGJhhD33gOQBJY8fpUob+Pds+QMLAXHYMbTfHjx3k2ORpGNV0PfePRaMmDFYJFgbAaI3cxGdSeHBEMw/NIbGH3pS69Co9/Wux7Jic6KtQJKYxcSrV4fID3zP6txHK2DFIfXEJzY77AIiCFbN41Z0WJwnqfzXj//EIZ/HUOQRYEGrVr+sC9TMOGwGS1Cdo7lIYWU7vAaomEc7oai8PU1XbvicLhEUkWAnL/DSJoZNWz2pfSFTwtVNiOtUQVMDe00Ogv2wbdTkWCKiRvxlwdbI7QoisabacKRr+IMDOsLJBZwXEKxQ20MW4tDtOz8nj5XdaBw449lvsl4niCVnDg3pkaoFP0EwwoxiPYP8NvitkMLkwJgBWf6Gh5U2PnBoYfREy4+JmOr7iwh+elqeVPpBeHS4BPpttS7YJ8qfi+PWD3ucii7+5fKvzNBOWRdwXK+ObAEvGbwctPCZ88iNjc6gCrT/64cvsP2HBKA091Ie9XCdxPp9zTOjciH1tDwWuxcj2p91maVZbvz4vOf0qKG7g67qRG/IoUMKje53vuz2eddEAA/v2egFBJ1pw85Tjf3IgQzuQw6tz6LPA4qWx6JVathvZDmxWmAhEcEsUUq9IJXWat4GwN+JwZIbMuNcTVXf3sAFMB/l0oC5kCn85PwMBa4OPfIL5/rVbL9KfsIMxfc4RDalQJBw5Ki2MMfgDRsczFDrqeAIpEjIuYLbbKIlcRHi6Ad+IA8WIixq50KVFYLoVeGFbSgiHu+Bn6RTdOrdDxsizdzFnmUimUI+TCLA+61hrv/3AKvEfUSYswD7uAZKQAlnSIV9s+saUnZYzPsNYUY6J3lo5f1G+uuGYoDbe9mA542Q3Cw1jYAd94ymtAb0wEGlS6oeSJbAW7HdfiGR5j7BibJUC/ebc3nbj/lK/B3T2grGT+fp7hQ5pIAyC5boe5u/uYX9WR9zdCDm3cSzGjzp8DMQodF5V7T5z599XtGGYCW9oj6bq0PZwdLthqN2x+Oahd0Dh3iY/YwdaH+spZwGMmIlgbAs0gZfWvdPpa+10xU+yDWp+i0370P9sRAlyAAbdb3GvN0VEQBlJsHjV7zryh3QqAK7H7T2iDbAkTKU/kDFHBBNW8TP90dKNHbmuewA5xJJ/BmrIKftXz2kvljpuQaIghHTg9qO3Ps0vHAPywBTNTvg3cn1RWcLjqKuf6ldjD1FvnWd3r2LS/2iHInj1tmnwtSX8BT7WDezajcvJ3FRzAclN6LShsKhTCdFosIw95CLojIEiBlqFp6sWGZuVSWIIUU0cF8jpVWLjhr1/ps29jO1j+mTbACOzXKL7YQtbxAtXSX20YCCT3i6B75daeq6LbScmzWzFob5RXoCKBkvvoAzAaXJvzEBwFTNXC0tgCzFuQAI+JQ1VGQJY6OgHjgUIcplUpxhIP6HQtcgfRvBZ2KPa+MWbJNBgEudiicu9K45yq33HWvKgHwTti6L7tJhEfVBCvxQ5YE6eMkWEnO8t0HeU1w0WgHniqOGx2QQ6HoE1fMJs4Q6IjmV6KdMBaN+t+HzqjkJehKepBi5Jr92UcRuwdYPYYfbLCaaxEe/DpXx2uzXmXmWdAUB5ZhmfJWUl+2gtPwvfx+a9a4fLXLWHuxzfe5TEsmnS56do8J+obkcTkXUW1hdIOQNo2P2hmWWfTI/UpICACAhG0CBqOZnaA04oM/ccDzxXzPCU12bbxG12mDTVjqvZYgaeaQS0CJzCWsOm5rUq75axJehxAG3s7EB3hrPNUPXgUy/mwmI6Jf+aiCjm3DVC2jpyj+Co9HMGnhwm8mhWFJ8UEUo3WZhZpKV9GV5UQtlt8fS+tUi/YpoRJ+s90unLW/Aiu3FqGD9m91Jn96kevk6LfEFN9eeK0YNuDXlUhtYQ6JVC7izTt5byIAk7ZmKJ7LErQmF/4i2M8fmeAmwxc8pG5rDpRYYKtgBncN69P7L63V+kVPwGEwM0w3C9uzknGaxNMJp9C/BhdWgZDW8cJjcC6QeMVCmN14RjcybEKCJvdVqPI0rWCxEAQ88mhyGk/bnWTdy/pxAy1Htu8+mg0Epms82ubQx7JcAF7VIAIBTwFIyQ8D479hHeiouKgNh6pLS2r8aknT8i4kFHiaP6B3Bamoc/3TlG5DYAz/TmLlAqwgWkiFr6l5QJD0VjSXkvSGgMJ+IG/GIWPiLLWNTFk07beI0EEyGcefbe9xhXiE8+TetK+gwQhBHP8LoJ9fsGxV7fgIUXwc4rorddg8cKZKJk0Y6hqGOWYMZcpdJ200vwbdr4UaaeD5hHQ9Hv38tdmVbQiMVCaR3R/UFXCLIKmK4sqxQAK8RXLvk2ucUStpqofdZUcSQcYXWGOBYSLdaKNxTxhQ6/Zf63fJg8Qf9zUGv4D/cYSLuyGTRD4v0RSVIgV2bJgNQf3g5Ksjyds8dmLJwvm4q+EBTPJnbIzf+jyeS3KWDS66mtX7dIxxsDG/GQKZv1QWE38cF6paRBk3bkiydRKGCP9ZUtuY1pyjAKHAaMBD6B6IGaAWF6vaScAI10obaIRZ1e14c/F6mLw8P1EVgAHQdmK7dLc6h0GRBMAgGmVeX2FzEl8PY8bpcJn1w6hhyxNQbK4bUdX+lw9nlW5L/CFFdMdgPOtlN3fFNseOsJyQltkdrzH3cWMNUfeQMQ1276j0a0IsKWxjsZBeCihElHym/ZunhSZiO5eOOG50YLRnWpDU6bISBRZpfyhzowb84A+WjScrUHBxnVBT0NCQougJjNB4+52PuCMWONy/8BzUUY9jWetw52Jng8LTf+bk06T3oOAhjh8feUmPAGLJstwIhEPJugQ3RzSSJ9fUJqPHatcRSSdGcUODpZApCWgJVU4sqfiUWQzE4sdwa3HrWfKvdu0TAVaJ03eaqnvgepU+RPNkjQ3bjeab+y/YhxpTics91YEvTlXsTcFp6Bd03uleg8mymK+3qs3D9+fE42HoPJcGTHy3SNuiLZamXhms+kLSvFjOQMg7zTa6abTzBURFIXzymCtxUMGROwKY3fYpq4LHszQfaPCnlfmIe7VqLKS9QoQ3U/k/mT3x85qyNp1kK6oC3ccLZPnNv+lPyUzuTylWaKvuZB6noA47F0ssDpAAAE7V6uxybbgBgnj6xGeQUkSkkskPEo8EYBQRNG7cyu4p76avYEzlXIESGJUycHdhTwvWUSWblVG1iSofGIHdUwUY+kotes4JpeFqz+P1zj7X54UJuRnLpR0/ach+C6xIKWqvgP0XqqBJP3grrCK+LHSvpuplBO9IqzVNPHcFCcUUhxKqbDUqYLnxEc308w6MEgVxZ5VNJQ4+RUa/psgm5pKkKRKiXdff33M1x8AS2J+wAd0alGDe4S+tMDRiuINVVLumhbzuXdcbVtFGm07Y4X7Nqwc9MGmXAmZ3SGNlLRqIqaQN5QM8JV37LevGgqOJWCUjFdolSyPdSFYnq2TAgcWhBbgAskDSYZr3PF34ZwQGZiIhF0TluEDqieHgMsFOls7pmGHZRUEYbqeehQmWQdFAfHNu9JbJVFXAbMGzHEO3qboMg0aAvRThHfQBiwdywPPU/aSKl7SPu7UVHV4vNBU9loeN9ILWfmSLxSfllEsDtWPaZL5L9KWfOPIwB00lKobX2hCXBFgYVnCMNPTBWKDdAOyw078mwmo/XyQ6hdqi5dOQussAIZthmiqKInfSDc1YbLgPOBPcJJTARsbP43/ZeSlN9Lfbol7nziWJj0M0u0kV+uCDYPaIoR28qx1EdGa68Siu0tDNmR8RkrSjpWhuFCcDnymcdybMWj4bz8xIKylTgOjjikOAagla+lgWscxMVgDthANDCONoZS60g4r8L5GjLB6MDRdIc/1nc5qqUkT+22VK6TZsnWGgWcTdofXWMNXYy192L3xGvHuhTZfDbBVibww8Cez8Flcp8j/k8QDqx2mZ1gRM61vaqmJ9ZwBdCrtwg+egkvOPUO4UXBHnNjpI9Ntd4HiaV4R2srkKsNFY6o11PnXQEbjlTZxQz5i7pL6Cv5Gxi1Noe6W2dsSztbao2h/g06Ft/GQ5zHEfM5co1Ca4GRuHjhSE8jNQAeCXM5ohHu4xCj1HkAjNWpFgmG12UGN+0ZiUHw9vEd1f/Znq7VHyhkdwTWAjZFpWfzlJT0CsJBpvVQysgqVG/07i9eXGlSFfIxWH61XO9MtQwG48967iI926FNr6JnOi5MNaZOIptt07CaU+2v3y2YTdPjB+C/MxeTp3xpg6k3xEUmIXMTm4ySEeVdDvZWXSKCVcrzyS/EVgMcoIAG+qaw3SCwVs21IydI9h22pWzUKSktacnoVoppkUK61hagpD0uvIut1cBWNZWFP46JXamxbHHINi3DiZDMzxpbvpGjsrbRwirjP594PyLsAGRai8pBrY64QhSnbUM5g7qSrgWo9u2i0jqnaR6hvJRtVwPs1jDHZnFNG82jRoymeI6cFfA7rENpfn16JXQqNEFXd4MDLiDOV7Y/DustBdav4rSRBElharP1t2oXjnpysgmyK8YaPFekaXMMNBQxN1syRZUic+qXO0t0JjBs2H5XZefGD1LCagSWTt9p0xfuTQMjPUbbuOHnDgZRmnt+0jzxfEMczWWao0vy+IOTY7mI9Ahc4KJ7msWMhnsULD5v+KXnYAAAAeeAfi66yQht5s4RfIfk14tBFRVacnYzaCErSfsa+/QhQMByTuU6fjCm5xpHASsL+PTSURhw4AAAA" alt="Professional profile">
+        <div class="profile-details">
+            <strong>Arjun Kumar</strong>
+            <p>AI/ML Engineer</p>
+            <p>Selection Status: <span class="success-text">Selected</span></p>
+            <p class="success-text">Welcome to Our Team!</p>
+        </div>
+    </div>
+    <br>
+    <div class="study-plan">
+        <strong>📅 Joining Details</strong>
+        <ul>
+            <li><strong>Company:</strong> UNIVERSAL COMPANY</li>
+            <li><strong>Designation:</strong> AI/ML Engineer</li>
+            <li><strong>Date of Joining:</strong> 01 January</li>
+        </ul>
+    </div>
+    <br>
+    We look forward to welcoming you to our team, Boss! Get ready to innovate, collaborate and build the future together.<br><br>
+    <strong>WELCOME ABOARD! ⚡🤖🦸‍♂️</strong>`
+            }
+        ];
+
+
+        /* =====================================================
+           TUTOR CHAT DATA
+        ===================================================== */
+        const tutorSteps = [
+
+            {
+                type: 'user',
+                text: "Hi! My child is studying in 10th class. I am looking for a good home tutor to prepare my child for SSC public examinations."
+            },
+
+            {
+                type: 'superhero',
+                html: `<strong>Boss! 📚⚡🦸‍♂️</strong><br><br>
+                As I'm your superhero, I’m transforming myself into an
+                <strong>“Tutor”</strong> to teach your child!`
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! 📝 Before proceeding with the tutor enrolment, could you please provide the following application details?<br><br>
+    <strong>🎓 Student & Parent Application Form</strong><br><br>
+    1. Child's Full Name<br>
+    2. Parent Name<br>
+    3. Student's Date of Birth<br>
+    4. Gender<br>
+    5. School Name<br>
+    6. Class & Academic Year<br>
+    7. Board of Education<br>
+    8. Parent's Mobile Number<br>
+    9. Preferred Tuition Location<br>
+    Please ensure that the details are accurate, Boss!`
+            },
+
+            {
+                type: 'user',
+                text: `Child Name: Rahul Kumar<br>
+    Parent Name: Suresh Kumar<br>
+    Date of Birth: 15-06-2010<br>
+    Gender: Male<br>
+    School: ABC High School<br>
+    Class: 10th<br>
+    Board: SSC<br>
+    Parent Mobile: xxxxxxxxxx<br>
+    Address: Guntur<br>`
+            },
+
+
+            {
+                type: 'badge',
+                text: "📌 Student application details verified"
+            },
+            {
+                type: 'superhero',
+                html: `Boss! 🎯<br><br>
+                Let me understand your child's academic requirements first.<br><br>
+                <strong>Which subjects does your child need support with?</strong>
+                <div class="problem-section">
+                    <div class="problem-buttons">
+                    <div class="problem-btn">📔 Telugu</div>
+                        <div class="problem-btn">🖊️ Hindi</div>
+                        <div class="problem-btn">📖 English</div>
+                        <div class="problem-btn">📐 Mathematics</div>
+                        <div class="problem-btn">⚛️ Physical Science</div>
+                        <div class="problem-btn">🧬 Biological Science</div>
+                        <div class="problem-btn">🌍 Social Studies</div>
+                        <div class="problem-btn">📚 All Subjects</div>
+                    </div>
+                </div>`
+            },
+
+            {
+                type: 'user',
+                text: "All Subjects."
+            },
+
+            {
+                type: 'superhero',
+                text: "Ok Boss! Would you prefer individual subject tutors or one tutor who can teach all three subjects?"
+            },
+
+            {
+                type: 'user',
+                text: "One tutor who can teach all the subjects."
+            },
+
+            {
+                type: 'superhero',
+                text: "May I know your child's current academic performance?"
+            },
+
+            {
+                type: 'user',
+                text: "My child gets around 65% marks. I want at least 90% in the public examinations."
+            },
+
+            {
+                type: 'superhero',
+                html: `That's a great target, Boss! 🎯<br><br>
+                My mission is to work towards your child's 90%+ target through a structured preparation plan.<br><br>
+                <div class="study-plan">
+                    <strong>📘 My SSC Success Plan</strong>
+                    <ul>
+                        <li>Concept-based teaching</li>
+                        <li>Daily practice and homework</li>
+                        <li>Weekly chapter-wise tests</li>
+                        <li>Previous public examination papers</li>
+                        <li>Important questions and revision</li>
+                        <li>Regular academic progress reports</li>
+                    </ul>
+                </div>`
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! ⏰<br>
+                Please share your preferred tuition schedule.<br><br>
+                `
+            },
+
+            {
+                type: 'user',
+                text: "Two hours daily, from 6 PM to 8 PM."
+            },
+
+            {
+                type: 'superhero',
+                text: "Ok Boss! What is your preferred monthly tuition budget?"
+            },
+
+            {
+                type: 'user',
+                text: "₹10,000 per month."
+            },
+
+            {
+                type: 'superhero',
+                html: `Thank you, Boss! ⚡<br><br>
+                <strong>Your child's tutor requirements have been successfully collected!</strong><br><br>
+                <div class="invoice-card">
+                    <div class="invoice-row"><span>Student:</span><span>10th Class</span></div>
+                    <div class="invoice-row"><span>Board:</span><span>SSC</span></div>
+                    <div class="invoice-row"><span>Subjects:</span><span>All Subjects</span></div>
+                    <div class="invoice-row"><span>Current Performance:</span><span>65%</span></div>
+                    <div class="invoice-row"><span>Target:</span><span>90%+</span></div>
+                    <div class="invoice-row"><span>Tutor Preference:</span><span>One Tutor</span></div>
+                    <div class="invoice-row"><span>Daily Duration:</span><span>2 Hours</span></div>
+                    <div class="invoice-row"><span>Preferred Timing:</span><span>6 PM – 8 PM</span></div>
+                    <div class="invoice-total"><span>Monthly Budget:</span><span>₹10,000</span></div>
+                </div>`
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Student requirements successfully collected"
+            },
+
+            {
+                type: 'superhero',
+                text: "Would you like to schedule a demo class before confirming the tuition?"
+            },
+
+            {
+                type: 'user',
+                text: "Yes. Please arrange a demo class tomorrow."
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Demo class started according to schedule"
+            },
+            {
+                type: 'superhero',
+                text: "I understand the child academics more clearly. From here, I will make him improve more."
+            },
+
+            {
+                type: 'user',
+                text: "That's great! And I also want regular tests and progress reports."
+            },
+
+            {
+                type: 'superhero',
+                html: `Definitely, Boss! 📊<br><br>
+                Your child's academic journey will include regular assessment and parent updates.<br><br>
+                <div class="study-plan">
+                    <strong>📈 Student Progress Monitoring</strong>
+                    <ul>
+                        <li>Daily attendance and homework updates</li>
+                        <li>Weekly subject-wise tests</li>
+                        <li>Chapter completion tracking</li>
+                        <li>Monthly examination reports</li>
+                        <li>Identification of weak topics</li>
+                        <li>Personalized revision plans</li>
+                        <li>Parent–tutor communication</li>
+                    </ul>
+                </div>
+                <br>
+                <strong>Our goal is continuous improvement, not just examination preparation!</strong>`
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! 📝<br><br>
+                We can also provide additional SSC examination resources:<br><br>
+                <div class="problem-section">
+                    <div class="problem-buttons">
+                        <div class="problem-btn">📚 Previous Public Papers</div>
+                        <div class="problem-btn">📝 Model Question Papers</div>
+                        <div class="problem-btn">🎯 Important Questions</div>
+                        <div class="problem-btn">📖 Chapter-wise Notes</div>
+                        <div class="problem-btn">⏱️ Mock Examinations</div>
+                        <div class="problem-btn">💻 Online Practice Tests</div>
+                    </div>
+                </div>`
+            },
+
+            {
+                type: 'user',
+                text: "It's great to hear."
+            },
+
+            {
+                type: 'superhero',
+                html: `Yeah Boss! 🌟<br><br>
+                Your child can now follow a structured learning programme with guidance, regular assessments and examination resources.<br><br>
+                <strong>Let's make every study hour count!</strong>`
+            },
+            {
+                type: 'superhero',
+                text: "Could you please share your location to proceed home tuition from tomorrow?"
+            },
+            {
+                type: 'badge',
+                text: "📌 Live Location"
+            },
+
+            {
+                type: 'superhero',
+                html: `💳 <strong>Advance Payment Options:</strong>
+    <div class="payment-options">
+        <div class="pay-btn">🟣 Pay through PhonePe</div>
+        <div class="pay-btn">🔵 Pay through Google Pay (GPay)</div>
+        <div class="pay-btn">🔷 Pay through Paytm</div>
+    </div>`
+            },
+
+            {
+                type: 'user',
+                text: "PhonePe."
+            },
+
+            {
+                type: 'superhero',
+                text: "Thank you, Boss!"
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Tutor enrolment process completed"
+            },
+
+            {
+                type: 'superhero',
+                html: `🎉 <strong>Boss! Your Child's Learning Journey Begins!</strong><br><br>
+                From finding the right tutor to tracking academic progress, your SuperHero is here to make education more accessible and organized.<br><br>
+                Let's work towards your child's SSC success with confidence, consistency and dedication!<br><br>
+                <strong>ALWAYS AT YOUR SERVICE, BOSS! ⚡📚🦸‍♂️</strong>`
+            }
+
+        ];
+
+
+        /* =====================================================
+           YOUTUBE CHAT DATA
+        ===================================================== */
+        const youtubeSteps = [
+
+            {
+                type: 'user',
+                text: "I want to start a YouTube channel, but I don't know anything about YouTube. Guide me how to create professional videos, write scripts, edit videos or bring views."
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! 🎬⚡ As I'm your superhero, I’m transforming myself into an <strong>“YouTube Channel Expert"</strong> for you.<br><br>
+        I can take care complete YouTube channel development and video production requirements.`
+            },
+
+            {
+                type: 'superhero',
+                html: `<strong>🎯 Boss! What services would you like to hire?</strong><br><br>
+        <div class="study-plan">
+            <strong>🎥 Video Production Team</strong>
+            <ul>
+                <li>📸 Cameraman / Videographer</li>
+                <li>🎤 Video Recording & Voice-over Artist</li>
+                <li>✍️ Professional Script Writer</li>
+                <li>🎞️ Video Editor</li>
+                <li>🎨 Thumbnail Designer</li>
+                <li>🎬 Animator / Motion Graphics Designer</li>
+                <li>🎧 Audio & Sound Designer</li>
+            </ul>
+            <strong>📈 YouTube Growth Team</strong>
+            <ul>
+                <li>🔍 YouTube SEO Specialist</li>
+                <li>🏷️ Title & Description Writer</li>
+                <li>📊 YouTube Channel Manager</li>
+                <li>🚀 YouTube Promotion Specialist</li>
+                <li>📱 Social Media Manager</li>
+                <li>💡 Content Strategist</li>
+            </ul>
+            <strong>🎨 Channel Development</strong>
+            <ul>
+                <li>Channel Logo Designer</li>
+                <li>Channel Banner Designer</li>
+                <li>Channel Setup Specialist</li>
+                <li>Branding Designer</li>
+            </ul>
+        </div>`
+            },
+
+            {
+                type: 'user',
+                text: "I want a complete team. I need content creator, someone who write scripts, record videos, edit them, design thumbnails and manage SEO."
+            },
+
+            {
+                type: 'superhero',
+                html: `Excellent choice, Boss! ⚡ Your complete YouTube production team will include:<br><br>
+        <div class="study-plan">
+            <strong>👥 Your Professional Team</strong>
+            <ul>
+                <li>✍️ Script Writer – Prepares video scripts.</li>
+                <li>📸 Cameraman – Records professional videos.</li>
+                <li>🎞️ Video Editor – Edits and enhances videos.</li>
+                <li>🎨 Thumbnail Designer – Designs attractive thumbnails.</li>
+                <li>🔍 SEO Specialist</li>
+                <li>📊 Channel Manager – Organizes uploads and monitors performance.</li>
+            </ul>
+        </div>`
+            },
+            {
+                type: 'superhero',
+                text: "Could you share your preferences of interest."
+
+            },
+
+            {
+                type: 'user',
+                text: "I want to create videos about parents' love and motivational content. I prefer Telugu videos."
+            },
+
+            {
+                type: 'superhero',
+                html: `Beautiful concept, Boss! ❤️<br><br>
+       <strong>🎬 Your Content Requirements</strong>
+        <ul>
+            <li>Parents' love and emotional stories.</li>
+            <li>Mother and father sacrifices.</li>
+            <li>Family values and relationships.</li>
+            <li>Inspirational and motivational stories.</li>
+            <li>Telugu narration and dialogues.</li>
+        </ul>`
+            },
+            {
+                type: 'superhero',
+                html: `Boss! ❤️ I am sharing 5 emotional and motivational scripts. These are suitable for Telugu audiences, with powerful emotional messages and engaging storytelling.<br><br>
+
+    <strong>1. Amma – The Love That Never Changes</strong><br>
+    A mother sacrifices her sleep, happiness and dreams to make her children happy. Even when her child grows up and becomes successful, she still waits for one loving phone call.<br>
+    <strong>Message:</strong> No love in this world is as unconditional as a mother's love.<br><br>
+
+    <strong>2. Nanna – The Silent Hero</strong><br>
+    A father works hard every day, hides his pain behind a smile and silently sacrifices his wishes for his children's future. His children may not understand his struggles until they grow up.<br>
+    <strong>Message:</strong> Behind every child's success, there may be a father's untold sacrifices.<br><br>
+
+    <strong>3. One Day, You Will Understand</strong><br>
+    A busy child ignores repeated calls from parents. Years later, after becoming successful, the child realizes that the most precious moments were the simple conversations and time spent with them.<br>
+    <strong>Message:</strong> Don't wait for tomorrow to show your parents love. Spend time with them today.<br><br>
+
+    <strong>4. Their Dreams Were Your Dreams</strong><br>
+    Parents give up their own dreams to fulfil their children's ambitions. They celebrate every small achievement of their children, even when nobody celebrates their own sacrifices.<br>
+    <strong>Message:</strong> Make your parents proud, but never forget to make them happy along the journey.<br><br>
+
+    <strong>5. The Last Seat at the Dining Table</strong><br>
+    A family sits together for dinner, but the child is always busy with a mobile phone. The parents wait for a conversation that never happens. One day, the child realizes that family time is more valuable than screen time.<br>
+    <strong>Message:</strong> Give your parents your time, not just your money and gifts.<br><br>
+
+    <strong>Boss! ❤️</strong> Once Finalize the script, So that, We can develop each into a complete Telugu voice-over script with dialogues, emotional scenes, background music cues and a powerful ending for YouTube Shorts or long videos.`
+            },
+            {
+                type: 'user',
+                text: "I want to go through all the 5 scripts."
+            },
+            {
+                type: 'badge',
+                text: "📌 YouTube Pack has selected"
+            },
+
+            {
+                type: 'superhero',
+                html: `Wonderful, Boss! 🎉 Your project requirements have been collected. Now we can prepare a professional service quotation.<br><br>
+        <strong>💰 Sample Monthly Service Estimate</strong>
+        <div class="invoice-card">
+            <div class="invoice-row"><span>5 Video Scripts</span><span>₹3,000</span></div>
+            <div class="invoice-row"><span>Telugu Voice-over</span><span>₹2,000</span></div>
+            <div class="invoice-row"><span>5 Long Video Editing</span><span>₹4,000</span></div>
+            <div class="invoice-row"><span>5 Shorts Editing</span><span>₹2,000</span></div>
+            <div class="invoice-row"><span>Thumbnail Designing</span><span>₹1,000</span></div>
+            <div class="invoice-row"><span>YouTube SEO</span><span>₹1,500</span></div>
+            <div class="invoice-row"><span>Channel Management</span><span>₹1,500</span></div>
+            <div class="invoice-total"><span>Estimated Total</span><span>₹15,000</span></div>
+        </div>
+        <br>`
+            },
+
+            {
+                type: 'user',
+                text: "Yeah, The quotation is within my budget. How can I proceed?"
+            },
+
+            {
+                type: 'superhero',
+                html: `💳 <strong>Payment Options For Advance Amount</strong>
+        <div class="payment-options">
+            <div class="pay-btn">🟣 PhonePe</div>
+            <div class="pay-btn">🔵 Google Pay (GPay)</div>
+            <div class="pay-btn">🔷 Paytm</div>
+            <div class="pay-btn">🏦 Bank Transfer</div>
+        </div>
+        <br>`
+            },
+
+            {
+                type: 'user',
+                text: "I prefer Google Pay. Please proceed."
+            },
+            {
+                type: 'badge',
+                text: "📌 YouTube Pack Enrolment Completed"
+            },
+
+            {
+                type: 'superhero',
+                html: `🎉 <strong>Hearty Congratulations, Boss!</strong><br><br>
+        Your YouTube pack has been successfully enrolled!<br><br>
+        From script writing to final video editing, thumbnail designing and SEO, your SuperHero is ready to coordinate your complete creator development journey.<br><br>
+        <strong>LET'S CREATE STRONG CONTENT. LET'S BUILD EVERLASTING CHANNEL. LET'S GROW! 🚀🎬</strong>`
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! Let's start our work. I will share the best shooting locations. We can shoot there.`
+            },
+            {
+                type: 'user',
+                text: "Great! Could you explain in-detail process?"
+            },
+            {
+                type: 'superhero',
+                html: `
+
+    <strong>1. Video Shooting:</strong> Our cameraman and videographer will arrive at the selected location. We will arrange the cameras, lighting, microphones and other required equipment before shooting our video.<br><br>
+
+    <strong>2. Video Editing:</strong> Our video editor will edit the footage, add emotional background music, Telugu voice-over, subtitles and visual effects. Our thumbnail designer will create an attractive thumbnail.<br><br>
+
+    <strong>3. SEO & Publishing:</strong> Our YouTube SEO specialist will prepare an engaging title, description, relevant keywords, hashtags and tags. Then, we will upload the video with its attractive thumbnail and publish it on our channel! 🎬<br><br>
+
+    <strong>4. Promotion & Growth:</strong> Now the exciting journey begins, Boss! We will promote the video, reach a wider audience and monitor views, likes, comments and shares. We will engage with viewers, respond to their comments and encourage them to subscribe❤️. We will regularly publish quality Shorts and long videos, understand audience feedback and improve every time.`
+            },
+
+            {
+                type: 'user',
+                text: "When will we earn money from YouTube?"
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! ❤️ We can start earning through YouTube advertisements after meeting the YouTube Partner Program (YPP) requirements and getting approval.<br><br>
+
+    <strong>🎯 YouTube Monetization Criteria:</strong><br><br>
+
+    We must achieve either of these two targets:<br><br>
+
+    <strong>Option 1 – Long Videos:</strong><br>
+    1. 1,000 subscribers<br>
+    2. 4,000 valid public watch hours within the last 12 months<br><br>
+
+    <strong>Option 2 – YouTube Shorts:</strong><br>
+    1. 1,000 subscribers<br>
+    2. 10 million valid public Shorts views within the last 90 days<br><br>
+
+    <strong>Other Requirements:</strong><br>
+    1. Follow YouTube monetization policies.<br>
+    2. Have no active Community Guidelines strikes.<br>
+    3. Enable Google Account 2-Step Verification.<br>
+    4. Have access to YouTube advanced features.<br>
+    5. Link an active AdSense for YouTube account.<br><br>
+
+    <strong>💰 What happens next?</strong><br>
+    Once we reach either target, we can apply through YouTube Studio → Earn. YouTube will review our channel. After approval, we can enable eligible monetization features and start earning!`
+            },
+            {
+                type: 'user',
+                text: "Ok, Let's continue..."
+            },
+
+            {
+                type: 'badge',
+                text: "📌 After 1 Year Journey 🎯❤️"
+            },
+            {
+                type: 'superhero',
+                html: `Boss! ❤️ Let's re-visit the beautiful journey of our YouTube channel over the past year!<br><br>
+
+    <strong>1. Growing Audience 📈</strong><br>
+    <strong>February – April</strong><br>
+    Gradually, our videos started receiving more views, likes, shares and comments. New viewers began subscribing to our channel.<br><br>
+
+    <strong>2. First 1,000 Subscribers 🎉</strong><br>
+    <strong>February 14</strong><br>
+    Our channel reached its first 1,000 subscribers. It was a memorable milestone!<br><br>
+
+    <strong>3. First Monetization 💰</strong><br>
+    <strong>May 15</strong><br>
+    After meeting YouTube's eligibility requirements and receiving approval, our channel became eligible to earn money through monetization.<br><br>
+
+    <strong>4. Growing Earnings 🚀</strong><br>
+    <strong>June – July</strong><br>
+    As our audience and eligible video views increased, our channel started earning through ads and other available earning features.<br><br>
+
+    <strong>5. 10,000 to 100,000 Subscribers 🏆</strong><br>
+    <strong>August – October</strong><br>
+    Each and every Telugu audiences loved our YouTube videos. Our community grew, engagement increased, and our channel became more popular.<br><br>
+
+    <strong>6. 100,000 Subscribers – Silver Creator Award 🥈</strong><br>
+    <strong>November 10</strong><br>
+    It was a huge achievement! Our channel reached 100,000 subscribers and became eligible for YouTube's Silver Creator Award, subject to its award criteria.<br><br>
+
+    <strong>7. 1 Million Subscribers – Golden Milestone 🥇</strong><br>
+    <strong>January 31</strong><br>
+    We reached one million subscribers! Our channel achieved an incredible milestone and became eligible for the Gold Creator Award, subject to YouTube's criteria.<br><br>
+
+    <strong>Boss! ❤️</strong> From our first video to one million subscribers, it was an unforgettable one-year journey filled with creativity, hard work and success.<br><br>
+
+    <strong>Our Journey, Our Success! ❤️🎯</strong>`
+            }
+        ];
+
+        /* =====================================================
+           MANGO CHAT DATA
+        ===================================================== */
+        const mangoSteps = [
+
+            {
+                type: 'user',
+                text: "I want to book some fresh mangoes."
+            },
+
+            {
+                type: 'superhero',
+                html: `<strong>Boss! 🥭⚡</strong><br>
+        As I'm your superhero, I’m transforming myself into an <strong>“Personal Assistant”</strong> for you. I will find the best available mangoes near your location and verify their quality before you purchase.`
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! ❤️ Which type of mangoes would you like?
+        <div class="problem-section">
+            <div class="problem-buttons">
+                <div class="problem-btn">🥭 Banganapalli</div>
+                <div class="problem-btn">🥭 Alphonso</div>
+                <div class="problem-btn">🥭 Himayat</div>
+                <div class="problem-btn">🥭 Kesar</div>
+                <div class="problem-btn">🥭 Dasheri</div>
+                <div class="problem-btn">🥭 Totapuri</div>
+                <div class="problem-btn">🥭 Neelam</div>
+                <div class="problem-btn">🥭 Any Fresh Variety</div>
+            </div>
+        </div>`
+            },
+
+            {
+                type: 'user',
+                text: "Banganapalli mangoes."
+            },
+
+            {
+                type: 'superhero',
+                html: ` How many kilograms would you like to purchase?
+        <div class="problem-section">
+            <div class="problem-buttons">
+                <div class="problem-btn">1 KG</div>
+                <div class="problem-btn">2 KG</div>
+                <div class="problem-btn">5 KG</div>
+                <div class="problem-btn">10 KG</div>
+                <div class="problem-btn">15 KG</div>
+                <div class="problem-btn">20 KG or More</div>
+            </div>
+        </div>`
+            },
+
+            {
+                type: 'user',
+                text: "I need 5 KG."
+            },
+
+            {
+                type: 'superhero',
+                html: `Super, Boss! What type of ripeness do you prefer?
+        <div class="problem-section">
+            <div class="problem-buttons">
+                <div class="problem-btn">🟢 Raw / Unripe</div>
+                <div class="problem-btn">🟡 Half Ripe</div>
+                <div class="problem-btn">🟠 Fully Ripe</div>
+                <div class="problem-btn">🍯 Naturally Sweet</div>
+            </div>
+        </div>`
+            },
+
+            {
+                type: 'user',
+                text: "Half ripe and naturally sweet mangoes."
+            },
+
+            {
+                type: 'superhero',
+                html: `Got it, Boss! ❤️<br>
+        Do you have a preferred budget per kilogram?
+        <div class="problem-section">
+            <div class="problem-buttons">
+                <div class="problem-btn">₹50 – ₹80 / KG</div>
+                <div class="problem-btn">₹80 – ₹120 / KG</div>
+                <div class="problem-btn">₹120 – ₹180 / KG</div>
+                <div class="problem-btn">Best Quality – Any Price</div>
+            </div>
+        </div>`
+            },
+
+            {
+                type: 'user',
+                text: "₹80 to ₹120 per KG."
+            },
+
+            {
+                type: 'superhero',
+                html: `Wonderful, Boss! 🦸‍♂️<br>
+        Now please pin your delivery location or share your complete address. I will search for mango shops near your place.`
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Customer delivery location pinned"
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! 📍 I am searching for nearby fruit shops and mango vendors around your location.`
+            },
+
+            {
+                type: 'superhero',
+                html: `I have identified a nearby mango shop! 🥭<br><br>
+        <strong>Shop Details</strong><br>
+        Shop: Sri Lakshmi Fruits<br>
+        Location: Near Tadepalli<br>
+        Distance: 2 KM<br>
+        <br>
+        I am assigning a nearby field worker to visit the shop and inspect the available mangoes before confirming your order.`
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Field worker accepted the mango inspection request"
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! ⚡ Now I am turning myself as field worker. I have reached the shop.<br><br>
+        Quality Checking the Banganapalli mangoes and capturing genuine live photographs for you.`
+            },
+            {
+                type: 'superhero',
+                html: `📸 <strong>LIVE MANGOES!</strong><br>
+        Boss, here are the mangoes currently available at the shop.
+        <br><br>
+        <img src="https://images.unsplash.com/photo-1553279768-865429fa0078?w=600" class="chat-img-attachment" alt="Mangoes available at shop">
+        <br>
+        <img src="https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=600" class="chat-img-attachment" alt="Fresh mangoes">`
+            },
+
+            {
+                type: 'superhero',
+                html: `🔍 <strong>MANGO QUALITY INSPECTION REPORT</strong>
+        <div class="quality-card">
+            <div class="quality-row">
+                <span>Variety</span>
+                <span class="quality-good">Banganapalli</span>
+            </div>
+            <div class="quality-row">
+                <span>Appearance</span>
+                <span class="quality-good">Good</span>
+            </div>
+            <div class="quality-row">
+                <span>Freshness</span>
+                <span class="quality-good">Fresh-looking</span>
+            </div>
+            <div class="quality-row">
+                <span>Ripeness</span>
+                <span class="quality-good">Half Ripe</span>
+            </div>
+            <div class="quality-row">
+                <span>Visible Damage</span>
+                <span class="quality-good">No visible damage</span>
+            </div>
+            <div class="quality-row">
+                <span>Size</span>
+                <span class="quality-good">Medium to Large</span>
+            </div>
+            <div class="quality-row">
+                <span>Smell / Sweetness</span>
+                <span class="quality-good">Verified</span>
+            </div>
+        </div>`
+            },
+
+            {
+                type: 'superhero',
+                html: `Boss! ❤️ The shop has quoted ₹100 per KG for the selected mangoes.<br><br>
+        Would you like me to book this batch?
+        <div class="problem-section">
+            <div class="problem-buttons">
+                <div class="problem-btn">✅ Yes, Book These</div>
+                <div class="problem-btn">🔄 Show Other Mangoes</div>
+                <div class="problem-btn">📸 Request More Photos</div>
+                <div class="problem-btn">❌ Cancel Order</div>
+            </div>
+        </div>`
+            },
+
+            {
+                type: 'user',
+                text: "Yes, book these mangoes."
+            },
+
+            {
+                type: 'superhero',
+                html: `💳 <strong>YOUR MANGO ORDER INVOICE</strong>
+        <div class="invoice-card">
+            <div class="invoice-row">
+                <span>Mango Variety:</span>
+                <span>Banganapalli</span>
+            </div>
+            <div class="invoice-row">
+                <span>Quantity:</span>
+                <span>5 KG</span>
+            </div>
+            <div class="invoice-row">
+                <span>Price Per KG:</span>
+                <span>₹100</span>
+            </div>
+            <div class="invoice-row">
+                <span>Mango Cost:</span>
+                <span>₹500</span>
+            </div>
+            <div class="invoice-row">
+                <span>Field Inspection:</span>
+                <span>₹20</span>
+            </div>
+            <div class="invoice-row">
+                <span>Delivery Charges:</span>
+                <span>₹30</span>
+            </div>
+            <div class="invoice-total">
+                <span>Total Amount:</span>
+                <span>₹550</span>
+            </div>
+        </div>
+        <br>
+        Please confirm the order and delivery charges before payment.`
+            },
+
+            {
+                type: 'user',
+                text: "Confirmed. Please deliver today."
+            },
+
+            {
+                type: 'superhero',
+                html: `Wonderful, Boss! 🥭⚡<br>
+        Your mango order has been confirmed!<br><br>
+        <strong>Delivery Details:</strong><br>
+        Product: Banganapalli Mangoes<br>
+        Quantity: 5 KG<br>
+        Location: Tadepalli<br>
+        Delivery: Within 10 Min`
+            },
+
+            {
+                type: 'badge',
+                text: "📌 Mangoes successfully delivered"
+            },
+
+            {
+                type: 'superhero',
+                html: `🎉 <strong>Hearty Congratulations, Boss!</strong><br><br>
+        Your mangoes have been successfully delivered! 🥭❤️<br><br>
+        Please check the mangoes and confirm whether you are satisfied with their quality.`
+            },
+
+            {
+                type: 'user',
+                text: "Excellent quality! The mangoes are fresh and tasty. Thank you!"
+            },
+
+            {
+                type: 'superhero',
+                html: `That's the power of hAI SuperHero, Boss! 🦸‍♂️⚡<br><br>
+        From finding the nearby shop to physically inspecting the mangoes and delivering them to your doorstep — your SuperHero takes care of the entire journey!`
+            },
+
+            {
+                type: 'superhero',
+                html: `💳 <strong>Payment Options</strong>
+        <div class="payment-options">
+            <div class="pay-btn">🟣 Pay through PhonePe</div>
+            <div class="pay-btn">🔵 Pay through Google Pay</div>
+            <div class="pay-btn">🔷 Pay through Paytm</div>
+            <div class="pay-btn">💵 Cash on Delivery</div>
+        </div>`
+            },
+
+            {
+                type: 'user',
+                text: "Pay through PhonePe."
+            },
+
+            {
+                type: 'superhero',
+                text: "✅ Payment Successfully Received! Thank you, Boss!"
+            },
+
+            {
+                type: 'superhero',
+                html: `❤️ Thank you for believing in me, Boss!<br><br>
+        Your SuperHero is always ready to bring the best local products directly to your doorstep! 🦸‍♂️🥭`
+            }
+
+        ];
+
+        /* =====================================================
+           CHAT RUNNER ENGINE
+        ===================================================== */
+        function scrollToBottom(container) {
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function createTypingBubble(type) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${type}`;
+            const senderName = type === 'user' ? 'You' : '⚡hAI SuperHero';
+
+            msgDiv.innerHTML = `
+                <div class="sender">${senderName}</div>
+                <div class="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+            `;
+            return msgDiv;
+        }
+
+        function runSequentialDemo(steps, container, index = 0) {
+            if (index >= steps.length) return;
+
+            const step = steps[index];
+
+            if (step.type === 'badge') {
+                const badgeDiv = document.createElement('div');
+                badgeDiv.className = 'system-pinned-badge';
+                badgeDiv.textContent = step.text;
+                container.appendChild(badgeDiv);
+                scrollToBottom(container);
+
+                activeTimeout = setTimeout(() => {
+                    runSequentialDemo(steps, container, index + 1);
+                }, 1200);
+                return;
+            }
+
+            const typingMessageElement = createTypingBubble(step.type);
+            container.appendChild(typingMessageElement);
+            scrollToBottom(container);
+
+            activeTimeout = setTimeout(() => {
+                const senderName = step.type === 'user' ? 'You' : '⚡hAI SuperHero';
+                const content = step.html || step.text;
+
+                typingMessageElement.innerHTML = `
+                    <div class="sender">${senderName}</div>
+                    <div class="bubble">${content}</div>
+                `;
+                scrollToBottom(container);
+
+                activeTimeout = setTimeout(() => {
+                    runSequentialDemo(steps, container, index + 1);
+                }, 1200);
+
+            }, 1200);
+        }
+
+        function restartDemo(type) {
+            if (activeTimeout) clearTimeout(activeTimeout);
+            if (type === 'electrician') {
+                const container = document.getElementById('chatAreaElectrician');
+                container.innerHTML = '';
+                setTimeout(() => runSequentialDemo(electricianSteps, container, 0), 300);
+            } else if (type === 'plumber') {
+                const container = document.getElementById('chatAreaPlumber');
+                container.innerHTML = '';
+                setTimeout(() => runSequentialDemo(plumberSteps, container, 0), 300);
+            } else if (type === 'webdeveloper') {
+                const container = document.getElementById('chatAreaWebDev');
+                container.innerHTML = '';
+                setTimeout(() => runSequentialDemo(webDevSteps, container, 0), 300);
+            } else if (type === 'appdeveloper') {
+                const container = document.getElementById('chatAreaAppDev');
+                container.innerHTML = '';
+                setTimeout(() => runSequentialDemo(appDevSteps, container, 0), 300);
+            } else if (type === 'mechanic') {
+                const container = document.getElementById('chatAreaMechanic');
+                container.innerHTML = '';
+                setTimeout(() => runSequentialDemo(mechanicSteps, container, 0), 300);
+            } else if (type === 'aijob') {
+                const container = document.getElementById('chatAreaAIJob');
+                container.innerHTML = '';
+                setTimeout(() => runSequentialDemo(aiJobSteps, container, 0), 300);
+            } else if (type === 'tutor') {
+                const container = document.getElementById('chatAreaTutor');
+                container.innerHTML = '';
+                setTimeout(() => runSequentialDemo(tutorSteps, container, 0), 300);
+            } else if (type === 'youtube') {
+                const container = document.getElementById('chatAreaYouTube');
+                container.innerHTML = '';
+                setTimeout(() => runSequentialDemo(youtubeSteps, container, 0), 300);
+            } else if (type === 'mango') {
+                const container = document.getElementById('chatAreaMango');
+                container.innerHTML = '';
+                setTimeout(() => runSequentialDemo(mangoSteps, container, 0), 300);
+            }
+        }
+
+
+
+        /* =====================================================
+           INITIALIZE
+        ===================================================== */
+        document.addEventListener("DOMContentLoaded", initializePage);
+
+        function skipToEnd(type) {
+            if (activeTimeout) clearTimeout(activeTimeout);
+
+            let steps, container;
+
+            if (type === 'electrician') {
+                steps = electricianSteps;
+                container = document.getElementById('chatAreaElectrician');
+            } else if (type === 'plumber') {
+                steps = plumberSteps;
+                container = document.getElementById('chatAreaPlumber');
+            } else if (type === 'webdeveloper') {
+                steps = webDevSteps;
+                container = document.getElementById('chatAreaWebDev');
+            } else if (type === 'appdeveloper') {
+                steps = appDevSteps;
+                container = document.getElementById('chatAreaAppDev');
+            } else if (type === 'mechanic') {
+                steps = mechanicSteps;
+                container = document.getElementById('chatAreaMechanic');
+            } else if (type === 'aijob') {
+                steps = aiJobSteps;
+                container = document.getElementById('chatAreaAIJob');
+            } else if (type === 'tutor') {
+                steps = tutorSteps;
+                container = document.getElementById('chatAreaTutor');
+            } else if (type === 'youtube') {
+                steps = youtubeSteps;
+                container = document.getElementById('chatAreaYouTube');
+            } else if (type === 'mango') {
+                steps = mangoSteps;
+                container = document.getElementById('chatAreaMango');
+            }
+
+            if (!steps || !container) return;
+
+            container.innerHTML = '';
+
+            // Render all steps instantly without animation
+            steps.forEach(step => {
+                if (step.type === 'badge') {
+                    const badgeDiv = document.createElement('div');
+                    badgeDiv.className = 'system-pinned-badge';
+                    badgeDiv.textContent = step.text;
+                    container.appendChild(badgeDiv);
+                } else {
+                    const senderName = step.type === 'user' ? 'You' : '⚡hAI SuperHero';
+                    const content = step.html || step.text;
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `message ${step.type}`;
+                    msgDiv.innerHTML = `
+                <div class="sender">${senderName}</div>
+                <div class="bubble">${content}</div>
+            `;
+                    container.appendChild(msgDiv);
+                }
+            });
+
+            // Scroll to bottom
+            scrollToBottom(container);
+        }
+    </script>
+</body>
+
+</html>
