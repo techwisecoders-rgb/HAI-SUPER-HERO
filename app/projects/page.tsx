@@ -56,7 +56,14 @@ export default function ProjectsPage() {
     <main className={styles.wrap}>
       <header className={styles.header}>
         <button type="button" className={styles.back} onClick={() => router.back()}>←</button>
-        <h1>Our Recent Projects</h1>
+        <div className={styles.headerInner}>
+          <h1>Our Milestone Collaborations</h1>
+          <p className={styles.headerSubtitle}>
+            Though we collaborated with a huge number of businesses for their complete software
+            developments. Few of these will stay forever in our hearts because our journey takes
+            milestone turns with these special collaborations.
+          </p>
+        </div>
       </header>
 
       <div className={styles.carousel}>

@@ -519,6 +519,7 @@
   color: #00e5ff;
 }
 
+
 /* Light-theme overrides for the chat shell. Applied inline by the
    page when `theme === "light"` so the JS-set background colours
    cascade correctly. */

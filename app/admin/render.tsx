@@ -285,6 +285,8 @@ export function AdminView(props: {
                       m.sender_type === "admin"
                         ? "none"
                         : "1px solid rgba(255,255,255,0.08)",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
                   }}
                 >
                   {m.text}
