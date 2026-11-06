@@ -460,7 +460,7 @@ function ChatInner() {
       </div>
   {!portalOpen && (
   <div ref={barRef} className={styles.bar}>
-    <input
+    <textarea
       className={styles.input}
       placeholder="Message here... Describe the work"
       value={draft}
@@ -471,6 +471,8 @@ function ChatInner() {
           void send();
         }
       }}
+      rows={1}
+      style={{ resize: "none", minHeight: "44px", maxHeight: "150px" }}
     />
 
     <a

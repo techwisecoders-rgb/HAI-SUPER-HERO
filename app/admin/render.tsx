@@ -302,7 +302,7 @@ export function AdminView(props: {
             the admin always has a visible "send" area. It's disabled
             until a session is selected and the draft is non-empty. */}
         <div className={styles.composer}>
-          <input
+          <textarea
             className={styles.composerInput}
             placeholder={
               activeId
@@ -320,6 +320,8 @@ export function AdminView(props: {
                 void send();
               }
             }}
+            rows={1}
+            style={{ resize: "none", minHeight: "44px", maxHeight: "150px" }}
           />
           <button
             type="button"

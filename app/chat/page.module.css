@@ -399,24 +399,27 @@
   box-sizing: border-box;
 }
 
-/* Message input */
+/* Message input (textarea for multiline support) */
 .input {
   flex: 1 1 auto;
   width: auto;
   min-width: 0;
 
-  height: 42px;
+  min-height: 42px;
+  max-height: 150px;
   margin: 0;
 
   background: #2b3540;
   border: none;
   border-radius: 22px;
 
-  padding: 9px 16px;
+  padding: 8px 16px;
 
   color: #ffffff;
   font-size: 13px;
-  line-height: 1.2;
+  line-height: 1.4;
+  font-family: inherit;
+  resize: none;
 
   outline: none;
   box-sizing: border-box;

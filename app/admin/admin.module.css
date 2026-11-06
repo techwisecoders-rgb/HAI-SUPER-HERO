@@ -173,14 +173,18 @@
 }
 .composerInput {
   flex: 1 1 auto;
-  height: 44px;
+  min-height: 44px;
+  max-height: 150px;
   border-radius: 9999px;
-  padding: 0 1rem;
+  padding: 0.5rem 1rem;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #f3f3f7;
   outline: none;
   font-size: 0.95rem;
+  font-family: inherit;
+  resize: none;
+  line-height: 1.4;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 .composerInput:focus { border-color: #7a5cff; background: rgba(255,255,255,0.09); }
