@@ -390,15 +390,32 @@ function ChatInner() {
     <div className={`${styles.shell} ${portalOpen ? styles.portalOpen : ""}`}>
       <div className={styles.top}>
         <div className={styles.topActions}>
+          {/* Original portal icon hidden (functionality preserved) */}
           <button
-  type="button"
-  className={styles.portalTrigger}
-  onClick={() => setPortalOpen(true)}
-  aria-label="Open portal menu"
-  title="Portal"
->
-  <i className="fa-solid fa-chalkboard-user matrix-icon"></i>
-</button>
+            type="button"
+            className={styles.portalTrigger}
+            style={{ display: "none" }}
+            hidden
+            aria-hidden="true"
+            tabIndex={-1}
+            onClick={() => setPortalOpen(true)}
+            aria-label="Open portal menu"
+            title="Portal"
+          >
+            <i className="fa-solid fa-chalkboard-user matrix-icon"></i>
+          </button>
+
+          <button
+            type="button"
+            className={styles.portalTrigger}
+            onClick={() => {
+              window.location.href = "https://companyinfinity.com/";
+            }}
+            aria-label="Company Infinity"
+            title="Company Infinity"
+          >
+            <i className="fa-solid fa-chalkboard-user matrix-icon"></i>
+          </button>
 
           <Link href="/trending" className={styles.popularSearches} aria-label="Open popular searches">
             <h2>Universal Services Platform</h2>
